@@ -104,7 +104,7 @@ int MainTest(){
   ccpi0_signal_map.insert( std::make_pair( pi,  0 ) );
   ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
   
-  for( unsigned int i = 0; i < 398; ++i ){
+  for( unsigned int i = 0; i < 500; ++i ){
   
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -114,8 +114,7 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    
-    ss << "/hepstore/rjones/Samples/FNAL/analysis_trees/all/3486578_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318/5103689_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
@@ -368,7 +367,7 @@ int MainTest(){
   h_true_energy->Draw("same");
   l->Draw();
 
-  c->SaveAs("plots/cc0pi_nu_energy.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_nu_energy.root");
   c->Clear();
 
   h_true_energy_mc->SetLineColor(2);
@@ -384,7 +383,7 @@ int MainTest(){
   h_reco_energy_mc->Draw("same");
   l->Draw();
 
-  c->SaveAs("plots/cc0pi_nu_energy_mc.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_nu_energy_mc.root");
   c->Clear();
 
   h_true_energy_mu->SetLineColor(2);
@@ -400,7 +399,7 @@ int MainTest(){
   h_true_energy_mu->Draw("same");
   l->Draw();
 
-  c->SaveAs("plots/cc0pi_mu_energy.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_mu_energy.root");
   c->Clear();
 
   h_energy_eff->SetStats(kFALSE);
@@ -409,7 +408,7 @@ int MainTest(){
 
   h_energy_eff->Draw();
 
-  c->SaveAs("plots/cc0pi_nu_energy_eff.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_nu_energy_eff.root");
   c->Clear();
 
   h_reco_energy_cos->SetStats(kFALSE);
@@ -417,7 +416,7 @@ int MainTest(){
   h_reco_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_reco_energy_cos->Draw("colz");
 
-  c->SaveAs("plots/cc0pi_reco_energy_cos.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_cos.root");
   c->Clear();
   
   h_good_energy_cos->SetStats(kFALSE);
@@ -425,7 +424,7 @@ int MainTest(){
   h_good_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_good_energy_cos->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_energy_cos.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_cos.root");
   c->Clear();
   
   h_reco_energy_proton->SetStats(kFALSE);
@@ -433,7 +432,7 @@ int MainTest(){
   h_reco_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_reco_energy_proton->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_reco_energy_proton.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_proton.root");
   c->Clear();
   
   h_good_energy_proton->SetStats(kFALSE);
@@ -441,7 +440,7 @@ int MainTest(){
   h_good_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_good_energy_proton->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_energy_proton.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_proton.root");
   c->Clear();
   
   h_reco_energy_proton_e->SetStats(kFALSE);
@@ -449,7 +448,7 @@ int MainTest(){
   h_reco_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_reco_energy_proton_e->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_reco_proton_energies.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_proton_energies.root");
   c->Clear();
   
   h_good_energy_proton_e->SetStats(kFALSE);
@@ -457,7 +456,7 @@ int MainTest(){
   h_good_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_good_energy_proton_e->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_proton_energies.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_proton_energies.root");
   c->Clear();
  
   time_t rawtime_end;

@@ -55,7 +55,7 @@ int MainTest(){
   ccpi0_signal_map.insert( std::make_pair( mu,  1 ) );
   ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
   
-  for( unsigned int i = 0; i < 398; ++i ){
+  for( unsigned int i = 0; i < 500; ++i ){
   
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -65,8 +65,7 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    
-    ss << "/hepstore/rjones/Samples/FNAL/analysis_trees/all/3486578_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318/5103689_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );

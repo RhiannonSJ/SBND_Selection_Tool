@@ -12,7 +12,22 @@ namespace selection{
     m_is_cc(is_cc),
     m_mc_vertex(mc_vertex),
     m_reco_vertex(reco_vertex), 
-    m_neutrino_energy(neutrino_energy) {}
+    m_neutrino_energy(neutrino_energy) {
+    
+      // Co-ordinate offset in cm
+      m_sbnd_half_length_x = 400;
+      m_sbnd_half_length_y = 400;
+      m_sbnd_half_length_z = 500;
+      
+      m_sbnd_offset_x = 200;
+      m_sbnd_offset_y = 200;
+      m_sbnd_offset_z = 0;
+
+      m_sbnd_border_x = 10;
+      m_sbnd_border_y = 20;
+      m_sbnd_border_z = 10;
+
+    }
 
 
   //------------------------------------------------------------------------------------------ 
@@ -109,6 +124,26 @@ namespace selection{
     return m_neutral_pi;
 
   }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  bool Event::IsSBNDTrueFiducial() const{
+       
+    // Check the neutrino interaction vertex is within the fiducial volume      
+     float nu_vertex_x = m_mc_vertex[0];                        
+     float nu_vertex_y = m_mc_vertex[1];                        
+     float nu_vertex_z = m_mc_vertex[2];                        
+                                                                                 
+     if (    (nu_vertex_x > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+          || (nu_vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
+          || (nu_vertex_y > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+          || (nu_vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+          || (nu_vertex_z > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+          || (nu_vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z))) return false; 
+
+     return true;
+  }
+
   //------------------------------------------------------------------------------------------ 
   
   int Event::GetPhysicalProcess() const{
@@ -211,103 +246,37 @@ namespace selection{
     return true;
 
   }
-  //----------------------------------------------------------------------------------------
-  void Event::SetTopologies( ) {
-    /*                                                               
-     * NC topology  ( Topology number 0 )                            
-     * TopologyMap signal_map_NC;                                    
-     */
-    std::vector< int > NC_mu;
-
-    NC_mu.push_back( 13 );
-    signal_map_NC.insert( std::make_pair( NC_mu, 0 ) );
-
-    /*                                                                 
-     * CC inclusive topology ( Topology number 1 )                     
-     * TopologyMap signal_map_cc_inclusive;                            
-     */
-    std::vector< int > cc_inclusive_mu;
-
-    cc_inclusive_mu.push_back( 13 );
-    signal_map_cc_inclusive.insert( std::make_pair( cc_inclusive_mu, 1 ) );
-
-    /*                                                                 
-     * CC0pi topology ( Topology number 2 )                            
-     * TopologyMap signal_map_cc_0pi;                                  
-     */
-    std::vector< int > cc_0pi_mu;
-    std::vector< int > cc_0pi_pi;
-
-    cc_0pi_mu.push_back( 13 );
-    cc_0pi_pi.push_back( 211 );
-    cc_0pi_pi.push_back(-211 );
-    cc_0pi_pi.push_back( 111 );
-
-    signal_map_cc_0pi.insert( std::make_pair( cc_0pi_mu, 1 ) );
-    signal_map_cc_0pi.insert( std::make_pair( cc_0pi_pi, 0 ) );
-
-    /*                                                                 
-     * CC1pi+/- topology  ( Topology number 3 )                        
-     * TopologyMap signal_map_cc_1pi;                                  
-     */
-    std::vector< int > cc_1pi_mu;
-    std::vector< int > cc_1pi_pi;
-
-    cc_1pi_mu.push_back( 13 );
-    cc_1pi_pi.push_back( 211 );
-    cc_1pi_pi.push_back(-211 );
-
-    signal_map_cc_1pi.insert( std::make_pair( cc_1pi_mu, 1 ) );
-    signal_map_cc_1pi.insert( std::make_pair( cc_1pi_pi, 1 ) );
-
-    /*                                                                 
-     * CC1pi0 topology ( Topology number 4 )                           
-     * TopologyMap signal_map_cc_pi0;                                  
-     */
-    std::vector< int > cc_pi0_mu;
-    std::vector< int > cc_pi0_pi;
-
-    cc_pi0_mu.push_back( 13 );
-    cc_pi0_pi.push_back( 111 );
-
-    signal_map_cc_pi0.insert( std::make_pair( cc_pi0_mu, 1 ) );
-    signal_map_cc_pi0.insert( std::make_pair( cc_pi0_pi, 1 ) );
-
-
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle Event::GetMCParticleCharge(const Particle &particle) const{
+    int charge_id = particle.GetMCParticleIdCharge();
+    return GetMCParticle(charge_id, m_mc_particles);
   }
   
-  //-------------------------------------------------------------------------------------------------
-  void Event::Count_per_Topology( const TopologyMap signal_map_topology, double & Count_MC, double & Count_TReco, double & Count_Reco ){
-
-    if( CheckMCTopology( signal_map_topology ) == 1 ) { Count_MC++; }
-    if( CheckRecoTopology( signal_map_topology ) == 1  && GetRecoCC0piNeutrinoEnergy()>0 &&  GetRecoCC1piNeutrinoEnergy()>0) { 
-       Count_Reco++; } 
-    if( CheckMCTopology( signal_map_topology ) == 1 && CheckRecoTopology( signal_map_topology ) == 1 && GetRecoCC0piNeutrinoEnergy()>0 &&  GetRecoCC1piNeutrinoEnergy()>0){
-       Count_TReco++ ;  }
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle Event::GetMCParticleEnergy(const Particle &particle) const{
+    int energy_id = particle.GetMCParticleIdEnergy();
+    return GetMCParticle(energy_id, m_mc_particles);
   }
-
-  //-------------------------------------------------------------------------------------------------
-  ParticleMatrix Event::TopologyMatrix( ParticleMatrix & Count_MC_Topology, ParticleMatrix & Count_TReco_Topology, ParticleMatrix & Count_Reco_Topology ) {
-
-    std::vector< TopologyMap > topology_vector (5);
-    topology_vector[0] = signal_map_NC;
-    topology_vector[1] = signal_map_cc_inclusive;
-    topology_vector[2] = signal_map_cc_0pi;
-    topology_vector[3] = signal_map_cc_1pi;
-    topology_vector[4] = signal_map_cc_pi0;
-
-    for( unsigned int i=0 ; i < 5 ; ++i ){
-      for(unsigned int j=0; j < 5 ; ++j ){
-
-	if ( CheckMCTopology( topology_vector[i] ) == 1 ){ Count_MC_Topology[i][j]++; }
-	if ( CheckRecoTopology( topology_vector[i] ) == 1 && GetRecoCC0piNeutrinoEnergy()>0 &&  GetRecoCC1piNeutrinoEnergy()>0){ 
-	  Count_Reco_Topology[i][j]++; }
-	if ( CheckMCTopology( topology_vector[i] ) == 1 && CheckRecoTopology( topology_vector[j] ) == 1 && GetRecoCC0piNeutrinoEnergy()>0 &&  GetRecoCC1piNeutrinoEnergy()>0 ){ 
-	  Count_TReco_Topology[i][j]++; }
-      }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle Event::GetMCParticleHits(const Particle &particle) const{
+    int hits_id = particle.GetMCParticleIdHits();
+    return GetMCParticle(hits_id, m_mc_particles);
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle Event::GetMCParticle(const int id, const ParticleList &particle_list ) const{
+    for(unsigned int i = 0; i < particle_list.size(); ++i) {
+      if(particle_list[i].GetMCId() == id) return particle_list[i];
     }
-    return Count_TReco_Topology;
+    throw 8;
   }
+  
  //------------------------------------------------------------------------------------------------
 
 
@@ -330,58 +299,7 @@ namespace selection{
     return 0.;
   }
 
- //-----------------------------------------------------------------------------------------------
-  ParticleMatrix Event::CountLength_topology( const TopologyMap & signal_map_topology , ParticleMatrix & Count_L , ParticleMatrix & Count_2L ) {
-
-    if( CheckMCTopology(signal_map_topology)==1 ){
-      //LONGEST
-      if( GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 2212 ) && GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 211 ) ) {Count_L[0][0]++ ;}
-      else if( GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 2212 ) && GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 13 ) ) { Count_L[0][1]++; } 
-      else if( GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 211 ) && GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 13 ) ) { Count_L[0][2]++;}
-
-      if( CheckRecoTopology(signal_map_cc_1pi) == 1 ){
-
-	if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 ) ){ Count_L[1][0]++ ;}
-	else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) ) { Count_L[1][1]++; } 
-	else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 ) ) { Count_L[1][2]++;}
-      }
-      if( CheckRecoTopology( signal_map_cc_1pi ) == 1 ) {
-	if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 ) ){ Count_L[2][0]++ ;}
-	else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) ) { Count_L[2][1]++; } 
-	else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 ) ) { Count_L[2][2]++;}
-
-	}
-      //SECOND LONGEST
-        if( GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 211 ) && GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 2212 ) ) {Count_2L[0][1]++ ;
-      } else if( GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 211 ) && GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 13 ) ) {Count_2L[0][1]++ ;
-      } else if( GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 13 ) && GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 2212 )  ) { Count_2L[0][0]++;
-      } else if( GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 13 ) && GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 211 )  ) { Count_2L[0][0]++; 
-	} else if( GetMCLengthWithPdg( 13 ) > GetMCLengthWithPdg( 2212 ) && GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 211 )  ) { Count_2L[0][2]++; std::cout<<"Hello"<<std::endl;
-	} else if( GetMCLengthWithPdg( 211 ) > GetMCLengthWithPdg( 2212 ) && GetMCLengthWithPdg( 2212 ) > GetMCLengthWithPdg( 13 )  ) { Count_2L[0][2]++; std::cout<<"Hello"<<std::endl; }
-	
-	if( CheckRecoTopology(signal_map_cc_1pi) == 1 ){
-	if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) ) {Count_2L[1][1]++ ;
-	} else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) ) {Count_2L[1][1]++ ;
-	} else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 )  ) { Count_2L[1][0]++;
-	} else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 )  ) { Count_2L[1][0]++; 
-	} else if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 )  ) { Count_2L[1][2]++; 
-	} else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 )  ) { Count_2L[1][2]++; }
-
-      }
-      if( CheckRecoTopology( signal_map_cc_1pi ) == 1 ) {
-	if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) ) {Count_2L[2][1]++ ;
-	} else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 ) && GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) ) {Count_2L[2][1]++ ;
-	} else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 13 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 )  ) { Count_2L[2][0]++;
-	} else if( GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 ) && GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 211 )  ) { Count_2L[2][0]++; 
-	} else if( GetRecoLengthWithPdg( 13 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 211 )  ) { Count_2L[2][2]++; 
-	} else if( GetRecoLengthWithPdg( 211 ) > GetRecoLengthWithPdg( 2212 ) && GetRecoLengthWithPdg( 2212 ) > GetRecoLengthWithPdg( 13 )  ) { Count_2L[2][2]++; } }
-	
-    }
-    return Count_L;
-  }
-
   //------------------------------------------------------------------------------------------------
-
 
   float Event::GetRecoCosThetaWithPdg(const int pdg) const{
     return this -> CosThetaWithPdg( pdg, m_reco_particles);
@@ -451,228 +369,25 @@ namespace selection{
   //------------------------------------------------------------------------------------------------
 
 
-  float Event::GetMCModuleMomentumWithPdg(const int pdg) const{
-    return this ->ModuleMomentumWithPdg( pdg, m_mc_particles);
+  float Event::GetMCModulusMomentumWithPdg(const int pdg) const{
+    return this ->ModulusMomentumWithPdg( pdg, m_mc_particles);
   }
 
   //------------------------------------------------------------------------------------------------
 
 
-  float Event::GetRecoModuleMomentumWithPdg(const int pdg) const{
-    return this -> ModuleMomentumWithPdg( pdg, m_reco_particles);
+  float Event::GetRecoModulusMomentumWithPdg(const int pdg) const{
+    return this -> ModulusMomentumWithPdg( pdg, m_reco_particles);
   }
 
   //-----------------------------------------------------------------------------------------------
 
-  float Event::ModuleMomentumWithPdg(const int pdg, const ParticleList &particle_list) const{
+  float Event::ModulusMomentumWithPdg(const int pdg, const ParticleList &particle_list) const{
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
-      if(particle_list[i].GetPdgCode() == pdg) return particle_list[i].GetModuleMomentum();
+      if(particle_list[i].GetPdgCode() == pdg) return particle_list[i].GetModulusMomentum();
     }
     return 0.;
  }
-
- //------------------------------------------------------------------------------------------------
-
-
-  float Event::GetMCQ2WithPdg_cc1pi(const int pdg) const{
-    return -( GetMCModuleMomentumWithPdg( 13 )-GetMCModuleMomentumWithPdg( 211 ))*(GetMCModuleMomentumWithPdg( 13 )-GetMCModuleMomentumWithPdg( 211 ));
-  }
-
-  //------------------------------------------------------------------------------------------------
-
-
-  float Event::GetRecoQ2WithPdg_cc1pi(const int pdg) const{
-    return -( GetRecoModuleMomentumWithPdg( 13 )-GetRecoModuleMomentumWithPdg( 211 ))*(GetRecoModuleMomentumWithPdg( 13 )-GetRecoModuleMomentumWithPdg( 211 ));
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetEnergyLongest_cc1pi( const ParticleList & particle_list) const {
- 
-    float MaxEnergy = 0.;
-    float MaxLength = 0.;
-    if( CheckMCTopology( signal_map_cc_1pi ) == 1  ){
-      for(unsigned int i = 0; i < particle_list.size(); ++i) {
-	if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	  MaxEnergy = particle_list[i].GetEnergy();
-	  MaxLength = particle_list[i].GetLength();
-	}
-      }
-    }
-    return MaxEnergy;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCEnergyLongest_cc1pi( ) const {
-    return this -> GetEnergyLongest_cc1pi( m_mc_particles );
-  }
-
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoEnergyLongest_cc1pi( ) const {
-    return this -> GetEnergyLongest_cc1pi( m_reco_particles );
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetEnergySecondLongest_cc1pi( const ParticleList & particle_list ) const {
- 
-  float SecondMaxEnergy = 0.;
-  float SecondMaxLength = 0;
-  float MaxLength = 0.;
-  if( CheckMCTopology( signal_map_cc_1pi ) == 1 ){
-    for(unsigned int i = 0; i < particle_list.size(); ++i) {
-      if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	MaxLength = particle_list[i].GetLength();
-      }else if ( MaxLength > particle_list[i].GetLength() && SecondMaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111  ){
-	SecondMaxEnergy = particle_list[i].GetEnergy();
-	SecondMaxLength = particle_list[i].GetLength();
-      }
-    }
-    return SecondMaxEnergy;
-  }
-  return 0.;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCEnergySecondLongest_cc1pi( ) const {
-    return this -> GetEnergySecondLongest_cc1pi( m_mc_particles );
-  }
-
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoEnergySecondLongest_cc1pi( ) const {
-    return this -> GetEnergySecondLongest_cc1pi( m_reco_particles );
-  }
-
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetKineticEnergyLongest_cc1pi( const ParticleList & particle_list) const {
- 
-    float MaxKineticEnergy = 0.;
-    float MaxLength = 0.;
-    if( CheckMCTopology( signal_map_cc_1pi ) == 1  ){
-      for(unsigned int i = 0; i < particle_list.size(); ++i) {
-	if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	  MaxKineticEnergy = particle_list[i].GetKineticEnergy();
-	  MaxLength = particle_list[i].GetLength();
-	}
-      }
-    }
-    return MaxKineticEnergy;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCKineticEnergyLongest_cc1pi( ) const {
-    return this -> GetKineticEnergyLongest_cc1pi( m_mc_particles );
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoKineticEnergyLongest_cc1pi( ) const {
-    return this -> GetKineticEnergyLongest_cc1pi( m_reco_particles );
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetKineticEnergySecondLongest_cc1pi( const ParticleList & particle_list ) const {
- 
-  float SecondMaxKineticEnergy = 0.;
-  float SecondMaxLength = 0;
-  float MaxLength = 0.;
-  if( CheckMCTopology( signal_map_cc_1pi ) == 1 ){
-    for(unsigned int i = 0; i < particle_list.size(); ++i) {
-      if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	MaxLength = particle_list[i].GetLength();
-      }else if ( MaxLength > particle_list[i].GetLength() && SecondMaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111  ){
-	SecondMaxKineticEnergy = particle_list[i].GetKineticEnergy();
-	SecondMaxLength = particle_list[i].GetLength();
-      }
-    }
-    return SecondMaxKineticEnergy;
-  }
-  return 0.;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCKineticEnergySecondLongest_cc1pi( ) const {
-    return this -> GetKineticEnergySecondLongest_cc1pi( m_mc_particles );
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoKineticEnergySecondLongest_cc1pi( ) const {
-    return this -> GetKineticEnergySecondLongest_cc1pi( m_reco_particles );
-  }
-  //--------------------------------------------------------
-  float Event::GetModuleMomentumLongest_cc1pi( const ParticleList & particle_list) const {
- 
-    float MaxMomentum = 0.;
-    float MaxLength = 0.;
-    if( CheckMCTopology( signal_map_cc_1pi ) == 1  ){
-      for(unsigned int i = 0; i < particle_list.size(); ++i) {
-	if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	  MaxMomentum = particle_list[i].GetModuleMomentum();
-	  MaxLength = particle_list[i].GetLength();
-	}
-      }
-    }
-    return MaxMomentum;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCModuleMomentumLongest_cc1pi( ) const {
-    return this -> GetModuleMomentumLongest_cc1pi( m_mc_particles );
-  }
-
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoModuleMomentumLongest_cc1pi( ) const {
-    return this -> GetModuleMomentumLongest_cc1pi( m_reco_particles );
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetModuleMomentumSecondLongest_cc1pi( const ParticleList & particle_list ) const {
- 
-  float SecondMaxModuleMomentum = 0.;
-  float SecondMaxLength = 0;
-  float MaxLength = 0.;
-  if( CheckMCTopology( signal_map_cc_1pi ) == 1 ){
-    for(unsigned int i = 0; i < particle_list.size(); ++i) {
-      if(MaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111 ){
-	MaxLength = particle_list[i].GetLength();
-      }else if ( MaxLength > particle_list[i].GetLength() && SecondMaxLength < particle_list[i].GetLength() && particle_list[i].GetPdgCode() != 111  ){
-	SecondMaxModuleMomentum = particle_list[i].GetModuleMomentum();
-	SecondMaxLength = particle_list[i].GetLength();
-      }
-    }
-    return SecondMaxModuleMomentum;
-  }
-  return 0.;
-  }
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetMCModuleMomentumSecondLongest_cc1pi( ) const {
-    return this -> GetModuleMomentumSecondLongest_cc1pi( m_mc_particles );
-  }
-
-
-  //-----------------------------------------------------------------------------------------------
-
-  float Event::GetRecoModuleMomentumSecondLongest_cc1pi( ) const {
-    return this -> GetModuleMomentumSecondLongest_cc1pi( m_reco_particles );
-  }
 
   //----------------------------------------------
   //---------------------------------------------------------------------------------------------
@@ -894,11 +609,11 @@ namespace selection{
     rfile << "__________________________________________________________"                                                     << "\n";
  }
 
-   if( topology == signal_map_NC ) return ( CountTReco[0] / CountMC[0] ) * 100 ;
-   if( topology == signal_map_cc_inclusive ) return ( CountTReco[1] / CountMC[1] ) * 100 ;
-   if( topology == signal_map_cc_0pi ) return ( CountTReco[2] / CountMC[2] ) * 100 ;
-   if( topology == signal_map_cc_1pi ) return ( CountTReco[3] / CountMC[3] ) * 100 ;
-   if( topology == signal_map_cc_pi0 ) return ( CountTReco[4] / CountMC[4] ) * 100 ;
+   if( topology == GeneralAnalysisHelper::GetNCTopologyMap() ) return ( CountTReco[0] / CountMC[0] ) * 100 ;
+   if( topology == GeneralAnalysisHelper::GetCCIncTopologyMap() ) return ( CountTReco[1] / CountMC[1] ) * 100 ;
+   if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() ) return ( CountTReco[2] / CountMC[2] ) * 100 ;
+   if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) return ( CountTReco[3] / CountMC[3] ) * 100 ;
+   if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() ) return ( CountTReco[4] / CountMC[4] ) * 100 ;
    return 0;
   }
 
@@ -938,11 +653,11 @@ namespace selection{
     efile << "-----------------------------------------------------------"                                 << "\n";
     efile << "TRUE TOPOLOGY    : "                                                                         << "\n";
     efile << "-----------------------------------------------------------"                                 << "\n";
-    if(CheckMCTopology(signal_map_NC))           efile << "   NC            : " << "TRUE"                  << "\n";
-    if(CheckMCTopology(signal_map_cc_inclusive)) efile << "   ccincl.       : " << "TRUE"                  << "\n";
-    if(CheckMCTopology(signal_map_cc_0pi))       efile << "   cc0pi         : " << "TRUE"                  << "\n";
-    if(CheckMCTopology(signal_map_cc_1pi))       efile << "   cc1pi+/-      : " << "TRUE"                  << "\n";
-    if(CheckMCTopology(signal_map_cc_pi0))       efile << "   cc1pi0        : " << "TRUE"                  << "\n";
+    if(CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()))     efile << "   NC            : " << "TRUE"                  << "\n";
+    if(CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE"                  << "\n";
+    if(CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE"                  << "\n";
+    if(CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE"                  << "\n";
+    if(CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE"                  << "\n";
     efile << "-----------------------------------------------------------"                                 << "\n";
     efile << " SELECTED EVENTS :                                         "                                 << "\n";
     efile << "-----------------------------------------------------------"                                 << "\n";
@@ -953,11 +668,11 @@ namespace selection{
     efile << "-----------------------------------------------------------"                                 << "\n";
     efile << "SELECTED TOPOLOGY: "                                                                         << "\n";
     efile << "-----------------------------------------------------------"                                 << "\n";
-    if(CheckRecoTopology(signal_map_NC))           efile << "   NC            : " << "TRUE"                << "\n";
-    if(CheckRecoTopology(signal_map_cc_inclusive)) efile << "   ccincl.       : " << "TRUE"                << "\n";
-    if(CheckRecoTopology(signal_map_cc_0pi))       efile << "   cc0pi         : " << "TRUE"                << "\n";
-    if(CheckRecoTopology(signal_map_cc_1pi))       efile << "   cc1pi+/-      : " << "TRUE"                << "\n";
-    if(CheckRecoTopology(signal_map_cc_pi0))       efile << "   cc1pi0        : " << "TRUE"                << "\n";
+    if(CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()))     efile << "   NC            : " << "TRUE"                << "\n";
+    if(CheckRecoTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE"                << "\n";
+    if(CheckRecoTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE"                << "\n";
+    if(CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE"                << "\n";
+    if(CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE"                << "\n";
     efile << "-----------------------------------------------------------"                                 << "\n";
 
 
@@ -1011,18 +726,18 @@ namespace selection{
 	 lfile << "-----------------------------------------------------------"                                 << "\n";
 	 lfile << "SIGNAL EVENTS     : "                                                                        << "\n";
 	 lfile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckMCTopology(signal_map_NC) )lfile << "Muon length          : " << GetRecoLengthWithPdg(  13  )  << "\n";
-	 if( CheckMCTopology(signal_map_cc_1pi) )lfile << "pi+/- length      : "  << GetRecoLengthWithPdg( 211  ) << "\n";
-	 if( CheckMCTopology(signal_map_cc_pi0) )lfile << "pi0   length      : "  << GetRecoLengthWithPdg( 111  ) << "\n";
+	 if( !CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) )lfile << "Muon length          : " << GetRecoLengthWithPdg(  13  )  << "\n";
+	 if( CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile << "pi+/- length      : "  << GetRecoLengthWithPdg( 211  ) << "\n";
+	 if( CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile << "pi0   length      : "  << GetRecoLengthWithPdg( 111  ) << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 )lfile << "p length            : " << GetRecoLengthWithPdg( 2212 )  << "\n";
 	 
 
 	 afile << "-----------------------------------------------------------"                                 << "\n";
 	 afile << "SIGNAL EVENTS      : "                                                                       << "\n"; 
 	 afile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckMCTopology(signal_map_NC)) afile << "Muon angle              : " << GetRecoCosThetaWithPdg(  13  )  << "\n";
-	 if( CheckMCTopology(signal_map_cc_1pi) )afile << "Pion angle         : " << GetRecoCosThetaWithPdg( 211  )  << "\n";
-	 if( CheckMCTopology(signal_map_cc_pi0) )afile << "pi0   angle        : " << GetRecoCosThetaWithPdg( 111  )  << "\n";
+	 if( !CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap())) afile << "Muon angle              : " << GetRecoCosThetaWithPdg(  13  )  << "\n";
+	 if( CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )afile << "Pion angle         : " << GetRecoCosThetaWithPdg( 211  )  << "\n";
+	 if( CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )afile << "pi0   angle        : " << GetRecoCosThetaWithPdg( 111  )  << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 ) afile << "Proton angle        : " << GetRecoCosThetaWithPdg( 2212 )  << "\n";
  	 
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
@@ -1030,8 +745,8 @@ namespace selection{
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
 	 Kfile << "TRUE EVENTS        : "                                                                       << "\n"; 
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckMCTopology(signal_map_NC) ) Kfile << "Muon Kenergy         : " << GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-	 if( CheckMCTopology(signal_map_cc_1pi) )Kfile << "Pion Kenergy       : " << GetRecoKineticEnergyWithPdg( 211  )  << "\n";
+	 if( !CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile << "Muon Kenergy         : " << GetRecoKineticEnergyWithPdg(  13  )  << "\n";
+	 if( CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )Kfile << "Pion Kenergy       : " << GetRecoKineticEnergyWithPdg( 211  )  << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 ) Kfile << "Proton Kenergy      : " << GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
        }
 
@@ -1041,17 +756,17 @@ namespace selection{
 	 lfile << "-----------------------------------------------------------"                                 << "\n";
 	 lfile << "SELECTED EVENTS   : "                                                                        << "\n";
 	 lfile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckRecoTopology(signal_map_NC) ) lfile << "Muon length       : " << GetRecoLengthWithPdg(  13  )         << "\n";
-	 if( CheckRecoTopology(signal_map_cc_1pi) )lfile << "pi+/- length      : " << GetRecoLengthWithPdg( 211  )  << "\n";
-	 if( CheckRecoTopology(signal_map_cc_pi0) )lfile << "pi0   length      : " << GetRecoLengthWithPdg( 111  )  << "\n";
+	 if( !CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) lfile << "Muon length       : " << GetRecoLengthWithPdg(  13  )         << "\n";
+	 if( CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile << "pi+/- length      : " << GetRecoLengthWithPdg( 211  )  << "\n";
+	 if( CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile << "pi0   length      : " << GetRecoLengthWithPdg( 111  )  << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 ) lfile << "p length          : " << GetRecoLengthWithPdg( 2212 ) << "\n";
 	 
 	 afile << "-----------------------------------------------------------"                                 << "\n";
 	 afile << "SELECTED EVENTS      : "                                                                     << "\n"; 
 	 afile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckRecoTopology(signal_map_NC) ) afile << "Muon angle         : " << GetRecoCosThetaWithPdg(  13  )  << "\n";
-	 if( CheckRecoTopology(signal_map_cc_1pi) )afile << "Pion angle         : " << GetRecoCosThetaWithPdg( 211  )  << "\n";
-	 if( CheckRecoTopology(signal_map_cc_pi0) )afile << "pi0   angle        : " << GetRecoCosThetaWithPdg( 111  )  << "\n";
+	 if( !CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) afile << "Muon angle         : " << GetRecoCosThetaWithPdg(  13  )  << "\n";
+	 if( CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )afile << "Pion angle         : " << GetRecoCosThetaWithPdg( 211  )  << "\n";
+	 if( CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )afile << "pi0   angle        : " << GetRecoCosThetaWithPdg( 111  )  << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 ) afile << "Proton angle       : " << GetRecoCosThetaWithPdg( 2212 )  << "\n";
 
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
@@ -1059,8 +774,8 @@ namespace selection{
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
 	 Kfile << "TRUE EVENTS        : "                                                                       << "\n"; 
 	 Kfile << "-----------------------------------------------------------"                                 << "\n";
-	 if( !CheckRecoTopology(signal_map_NC) ) Kfile << "Muon Kenergy       : " << GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-	 if( CheckRecoTopology(signal_map_cc_1pi) )Kfile << "Pion Kenergy       : " << GetRecoKineticEnergyWithPdg( 211  )  << "\n";
+	 if( !CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile << "Muon Kenergy       : " << GetRecoKineticEnergyWithPdg(  13  )  << "\n";
+	 if( CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )Kfile << "Pion Kenergy       : " << GetRecoKineticEnergyWithPdg( 211  )  << "\n";
 	 if( CountMCParticlesWithPdg(2212)!=0 ) Kfile << "Proton Kenergy     : " << GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
      }
 

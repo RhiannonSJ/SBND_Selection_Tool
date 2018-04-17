@@ -25,7 +25,6 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Start: Local time and date:  " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Running all files " << std::endl;
   
   // Counters
   unsigned int correctly_reconstructed_cc  = 0;
@@ -98,7 +97,7 @@ int MainTest(){
   ccpi0_signal_map.insert( std::make_pair( mu,  1 ) );
   ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
   
-  for( unsigned int i = 0; i < 398; ++i ){
+  for( unsigned int i = 0; i < 500; ++i ){
   
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -108,8 +107,7 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    
-    ss << "/hepstore/rjones/Samples/FNAL/analysis_trees/all/3486578_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
@@ -136,23 +134,23 @@ int MainTest(){
     // Do analysis
     Event &e(events[i]);
 
-    if(e.CheckMCTopology(cc_signal_map) && e.CheckRecoTopology(cc_signal_map)) correctly_reconstructed_cc++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc_signal_map) && e.CheckRecoTopology(cc_signal_map)) correctly_reconstructed_cc++;
     if(e.CheckRecoTopology(cc_signal_map)) reco_topology_cc++;
-    if(e.CheckMCTopology(cc_signal_map))   true_topology_cc++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc_signal_map))   true_topology_cc++;
 
-    if(e.CheckMCTopology(nc_signal_map) && e.CheckRecoTopology(nc_signal_map)) correctly_reconstructed_nc++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(nc_signal_map) && e.CheckRecoTopology(nc_signal_map)) correctly_reconstructed_nc++;
     if(e.CheckRecoTopology(nc_signal_map)) reco_topology_nc++;
-    if(e.CheckMCTopology(nc_signal_map))   true_topology_nc++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(nc_signal_map))   true_topology_nc++;
     
-    if(e.CheckMCTopology(cc1pi_signal_map) && e.CheckRecoTopology(cc1pi_signal_map)) correctly_reconstructed_1pi++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc1pi_signal_map) && e.CheckRecoTopology(cc1pi_signal_map)) correctly_reconstructed_1pi++;
     if(e.CheckRecoTopology(cc1pi_signal_map)) reco_topology_1pi++;
-    if(e.CheckMCTopology(cc1pi_signal_map))   true_topology_1pi++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc1pi_signal_map))   true_topology_1pi++;
     
-    if(e.CheckMCTopology(ccpi0_signal_map) && e.CheckRecoTopology(ccpi0_signal_map)) correctly_reconstructed_pi0++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(ccpi0_signal_map) && e.CheckRecoTopology(ccpi0_signal_map)) correctly_reconstructed_pi0++;
     if(e.CheckRecoTopology(ccpi0_signal_map)) reco_topology_pi0++;
-    if(e.CheckMCTopology(ccpi0_signal_map))   true_topology_pi0++;
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(ccpi0_signal_map))   true_topology_pi0++;
     
-    if(e.CheckMCTopology(cc0pi_signal_map) && e.CheckRecoTopology(cc0pi_signal_map)) {
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc0pi_signal_map) && e.CheckRecoTopology(cc0pi_signal_map)) {
       
       // Counter
       correctly_reconstructed_0pi++;
@@ -170,7 +168,7 @@ int MainTest(){
       
       // Get reconstructed energy
       for( unsigned int i = 0; i < n_particles; ++i ) if(parts[i].GetPdgCode() == 13) {
-        good_neutrino_energy.push_back(e.GetCC0piRecoNeutrinoEnergy(parts[i]));
+        good_neutrino_energy.push_back(e.GetRecoCC0piNeutrinoEnergy());
 
         TVector3 z;
         z[0] = 0;
@@ -212,7 +210,7 @@ int MainTest(){
       
       // Get reconstructed energy
       for( unsigned int i = 0; i < n_particles; ++i ) if(parts[i].GetPdgCode() == 13) {
-        reco_neutrino_energy.push_back(e.GetCC0piRecoNeutrinoEnergy(parts[i]));
+        reco_neutrino_energy.push_back(e.GetRecoCC0piNeutrinoEnergy());
         
         TVector3 z;
         z[0] = 0;
@@ -235,7 +233,7 @@ int MainTest(){
           
       }
     }
-    if(e.CheckMCTopology(cc0pi_signal_map)) {
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc0pi_signal_map)) {
      
       // Counter
       true_topology_0pi++;
@@ -275,16 +273,31 @@ int MainTest(){
   std::cout << " Purity of reconstructed NC events                   : " << (correctly_reconstructed_nc)/double(reco_topology_nc) * 100    << std::endl; 
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Percentage of correctly reconstructed CC events     : " << correctly_reconstructed_cc/double(true_topology_cc) * 100                         << std::endl;
-  std::cout << " Purity of reconstructed CC events                   : " << (correctly_reconstructed_cc)/double(reco_topology_cc) * 100    << std::endl; 
+  std::cout << " Purity of reconstructed CC events                   : " << (correctly_reconstructed_cc)/double(reco_topology_cc) * 100    << std::endl;
+  std::cout << " CC signal                                           : " << correctly_reconstructed_cc << std::endl;
+  std::cout << " CC selected                                         : " << reco_topology_cc           << std::endl;
+  std::cout << " CC true                                             : " << true_topology_cc           << std::endl;
+
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Percentage of correctly reconstructed CC 0Pi events : " << correctly_reconstructed_0pi/double(true_topology_0pi) * 100                       << std::endl;
   std::cout << " Purity of reconstructed CC 0Pi events               : " << (correctly_reconstructed_0pi)/double(reco_topology_0pi) * 100 << std::endl;
+  std::cout << " CC 0pi signal                                       : " << correctly_reconstructed_0pi << std::endl;
+  std::cout << " CC 0pi selected                                     : " << reco_topology_0pi           << std::endl;
+  std::cout << " CC 0pi true                                         : " << true_topology_0pi           << std::endl;
+
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Percentage of correctly reconstructed CC 1Pi events : " << correctly_reconstructed_1pi/double(true_topology_1pi) * 100                       << std::endl;
   std::cout << " Purity of reconstructed CC 1Pi events               : " << (correctly_reconstructed_1pi)/double(reco_topology_1pi) * 100 << std::endl; 
+  std::cout << " CC 1pi signal                                       : " << correctly_reconstructed_1pi << std::endl;
+  std::cout << " CC 1pi selected                                     : " << reco_topology_1pi           << std::endl;
+  std::cout << " CC 1pi true                                         : " << true_topology_1pi           << std::endl;
+
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Percentage of correctly reconstructed CC Pi0 events : " << correctly_reconstructed_pi0/double(true_topology_pi0) * 100                       << std::endl;
   std::cout << " Purity of reconstructed CC Pi0 events               : " << (correctly_reconstructed_pi0)/double(reco_topology_pi0) * 100 << std::endl; 
+  std::cout << " CC pi0 signal                                       : " << correctly_reconstructed_pi0 << std::endl;
+  std::cout << " CC pi0 selected                                     : " << reco_topology_pi0           << std::endl;
+  std::cout << " CC pi0 true                                         : " << true_topology_pi0           << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << "===========================================================" << std::endl;
 
@@ -312,7 +325,7 @@ int MainTest(){
   h_true_energy->Draw("same");
   l->Draw();
 
-  c->SaveAs("plots/cc0pi_nu_energy.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_nu_energy.root");
   c->Clear();
 
   h_reco_energy_cos->SetStats(kFALSE);
@@ -320,7 +333,7 @@ int MainTest(){
   h_reco_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_reco_energy_cos->Draw("colz");
 
-  c->SaveAs("plots/cc0pi_reco_energy_cos.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_cos.root");
   c->Clear();
   
   h_good_energy_cos->SetStats(kFALSE);
@@ -328,7 +341,7 @@ int MainTest(){
   h_good_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_good_energy_cos->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_energy_cos.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_cos.root");
   c->Clear();
   
   h_reco_energy_proton->SetStats(kFALSE);
@@ -336,7 +349,7 @@ int MainTest(){
   h_reco_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_reco_energy_proton->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_reco_energy_proton.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_proton.root");
   c->Clear();
   
   h_good_energy_proton->SetStats(kFALSE);
@@ -344,7 +357,7 @@ int MainTest(){
   h_good_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_good_energy_proton->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_energy_proton.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_proton.root");
   c->Clear();
   
   h_reco_energy_proton_e->SetStats(kFALSE);
@@ -352,7 +365,7 @@ int MainTest(){
   h_reco_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_reco_energy_proton_e->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_reco_proton_energies.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_proton_energies.root");
   c->Clear();
   
   h_good_energy_proton_e->SetStats(kFALSE);
@@ -360,13 +373,14 @@ int MainTest(){
   h_good_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_good_energy_proton_e->Draw("colz");
  
-  c->SaveAs("plots/cc0pi_good_proton_energies.root");
+  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_proton_energies.root");
   c->Clear();
  
   time_t rawtime_end;
   struct tm * timeinfo_end;
   time (&rawtime_end);
   timeinfo_end = localtime (&rawtime_end);
+  std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " End: Local time and date:  " << asctime(timeinfo_end) << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
 

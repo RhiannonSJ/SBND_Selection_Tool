@@ -17,6 +17,7 @@ namespace selection{
   typedef std::map< std::vector< int >, int > TopologyMap;
   typedef std::vector<Particle> ParticleList;
   typedef std::vector< vector<double> > ParticleMatrix ;
+
   /**
    * @brief  Event class
    */
@@ -104,6 +105,12 @@ namespace selection{
       int GetNNeutralPions() const;
       
       /**
+       * @brief  Get whether the true neutrino interaction happened within the SBND fiducial 
+       *         volume
+       */
+      bool IsSBNDTrueFiducial() const;
+      
+      /**
        * @brief  Get the physical process
        */
       int GetPhysicalProcess() const;
@@ -122,55 +129,58 @@ namespace selection{
        * @brief  Get the reconstructed neutrino vertex position
        */
       TVector3 GetRecoNuVertex() const;
-
-      /**                                                              
-       * @brief Define topologies (Event objects)                      
-       * @param signal_map_NC, signal_map_cc_inclusive_signal_map_cc_0pi, signal_map_cc_1pi, signal_map_cc_pi0;                              
+      
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via charge
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
        */
+      Particle GetMCParticleCharge(const Particle &particle) const;
 
-      TopologyMap signal_map_NC;
-      TopologyMap signal_map_cc_inclusive;
-      TopologyMap signal_map_cc_0pi;
-      TopologyMap signal_map_cc_1pi;
-      TopologyMap signal_map_cc_pi0;
-      void SetTopologies( );
-
-      /**                                                              
-       * @brief Gives the number of MC, Reco and Coincidences for a given topology                                                           
-       * @param signal_map_topology, Count_MC, Count_TReco, Count_Reco     
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via energy
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
        */
-      void Count_per_Topology ( const TopologyMap signal_map_topology, double & Count_MC, double & Count_TReco, double & Count_Reco ) ;
-      /**                                                              
-       * @brief Obtains the Topology matrix for a specific set of even\
-ts                                                                     
-       * @param Count_MC_Topology, Count_Reco_Topology, Count_Topology\
- matrix                                                                
-       */
+      Particle GetMCParticleEnergy(const Particle &particle) const;
 
-      ParticleMatrix TopologyMatrix( ParticleMatrix & Count_MC_Topology, ParticleMatrix & Count_TReco_Topology, ParticleMatrix & Count_Reco_Topology );
-  
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via hits
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticleHits(const Particle &particle) const;
+
+      //---------------------------------------------------------------------------------------
       /**                                                              
-       * @brief Returns the true track length for a given particle     
-       * @param pdg                                                    
+       * @brief  Get the longest track with a given pdg truth     
+       *
+       * @param  pdg                                                 
+       *
+       * @return length of longest truth track with pdg
        */
       float GetMCLengthWithPdg(const int pdg) const;
 
       /**                                                              
-       * @brief Returns the reconstructed track length for a given particle                                                                  
-       * @param pdg                                                    
+       * @brief  Get the longest track with a given pdg reconstructed    
+       *
+       * @param  pdg                                                    
+       *
+       * @return length of longest reco track with pdg
        */
       float GetRecoLengthWithPdg(const int pdg) const;
 
       /**                                                              
-       *  @brief Gives the number of times the Muon has the longest track and the pion or proton have                                         
-       *  the second longest trak.                                     
-       *  @param signal_map_topology                                   
-       */
-      ParticleMatrix CountLength_topology( const TopologyMap & signal_map_topology , ParticleMatrix & Count_L ,ParticleMatrix & Count_2L );
-
-
-      /**                                                              
-       * @brief Returns the cos(theta) for a MC event                  
+       * @brief s the cos(theta) for a MC event                  
        * @param pdg                                                    
        */
       float GetMCCosThetaWithPdg(const int pdg) const ;
@@ -209,69 +219,14 @@ ts
        * @brief Returns the momentum module of a given particle     
        * @param pdg                        
        */
-      float GetMCModuleMomentumWithPdg(const int pdg) const;
+      float GetMCModulusMomentumWithPdg(const int pdg) const;
 
       /**                                                              
        * @brief Returns the momentum module of a given particle     
        * @param pdg                        
        */
-      float GetRecoModuleMomentumWithPdg(const int pdg) const;
-      /**                                                              
-       * @brief Returns the MC momentum transfer for cc1pi     
-       * @param pdg                        
-       */
-      float GetMCQ2WithPdg_cc1pi(const int pdg) const;
-      /**                                                              
-       * @brief Returns the Reco momentum transfer for cc1pi     
-       * @param pdg                        
-       */
-      float GetRecoQ2WithPdg_cc1pi(const int pdg) const;
-      /**                                                              
-       * @brief Returns MC Energy of the particle with longest track for cc1p                         
-       */
-      float GetMCEnergyLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco Energy  of the particle with longest track for cc1p    
-       */
-      float GetRecoEnergyLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco Energy  of the particle with the second longest track for cc1p    
-       */
-      float GetMCEnergySecondLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco Energy  of the particle with the second longest track for cc1p    
-       */
-      float GetRecoEnergySecondLongest_cc1pi( ) const;
-
-      float GetMCKineticEnergyLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco Energy  of the particle with longest track for cc1p    
-       */
-      float GetRecoKineticEnergyLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns MC kinetic Energy  of the particle with the second longest track for cc1p    
-       */
-      float GetMCKineticEnergySecondLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco kinetic Energy  of the particle with the second longest track for cc1p    
-       */
-      float GetRecoKineticEnergySecondLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns MC momentum module  of the particle with longest track for cc1p    
-       */
-      float GetMCModuleMomentumLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns Reco momentum module  of the particle with longest track for cc1p    
-       */
-      float GetRecoModuleMomentumLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns momentum module  of the particle with the second longest track for cc1p    
-       */
-      float GetMCModuleMomentumSecondLongest_cc1pi( ) const;
-      /**                                                              
-       * @brief Returns momentum module of the particle with the second longest track for cc1p    
-       */
-      float GetRecoModuleMomentumSecondLongest_cc1pi( ) const;
+      float GetRecoModulusMomentumWithPdg(const int pdg) const;
+      
       /**                                                              
        * @brief Returns the energy of the delta particle produced in a resonance                                                     
        */
@@ -398,6 +353,17 @@ ts
        */
       bool CheckTopology(const TopologyMap &topology, const ParticleList &particle_list) const;
 
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle general
+       *
+       * @param  particle reconstructed (track-based) particle
+       * @param  mcparticle_list list of mcparticles to loop over
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticle(const int id, const ParticleList &particle_list ) const;
+
       /**                                                              
        * @brief Returns the track length for a given particle          
        * @param pdg, particle_list                                     
@@ -421,36 +387,6 @@ ts
       float KineticEnergyWithPdg(const int pdg, const ParticleList &particle_list) const;
 
       /**                                                              
-       * @brief Returns the energy of a particle with longest track lenght                        
-       * @param pdg, particle_list                                     
-       */
-      float GetEnergyLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
-       * @brief Returns the energy of a particle with the second longest track lenght                 
-       * @param pdg, particle_list                                     
-       */
-      float GetEnergySecondLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
-       * @brief Returns the kinetic energy of a particle with longest track lenght                        
-       * @param pdg, particle_list                                     
-       */
-      float GetKineticEnergyLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
-       * @brief Returns the kinetic energy of a particle with the second longest track lenght                 
-       * @param pdg, particle_list                                     
-       */
-      float GetKineticEnergySecondLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
-       * @brief Returns the momentum module of a particle with longest track lenght                        
-       * @param pdg, particle_list                                     
-       */
-      float GetModuleMomentumLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
-       * @brief Returns the momentum module of a particle with the second longest track lenght                 
-       * @param pdg, particle_list                                     
-       */
-      float GetModuleMomentumSecondLongest_cc1pi( const ParticleList & particle_list) const;
-      /**                                                              
        * @brief Returns the energy of the delta particle produced in a resonance                 
        * @param particle_list                                     
        */
@@ -464,7 +400,7 @@ ts
        * @brief Returns the momentum module of a particle given a pdg                        
        * @param pdg, particle_list                                     
        */
-      float ModuleMomentumWithPdg(const int pdg, const ParticleList &particle_list) const;
+      float ModulusMomentumWithPdg(const int pdg, const ParticleList &particle_list) const;
 
       /**
        * @brief  Get the most energetic particle
@@ -496,8 +432,16 @@ ts
       TVector3           m_reco_vertex;        ///< reconstructed neutrino vertex
       TVector3           m_mc_vertex;          ///< reconstructed neutrino vertex
       float              m_neutrino_energy;    ///< true neutrino energy
-
-
+      float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector
+      float              m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
+      float              m_sbnd_border_z;      ///< fiducial border in z for the sbnd detector
+      float              m_sbnd_offset_x;      ///< offset in x for the sbnd detector
+      float              m_sbnd_offset_y;      ///< offset in y for the sbnd detector
+      float              m_sbnd_offset_z;      ///< offset in z for the sbnd detector
+      float              m_sbnd_half_length_x; ///< detector half length in x
+      float              m_sbnd_half_length_y; ///< detector half length in y
+      float              m_sbnd_half_length_z; ///< detector half length in z
+                                                                               
 
   }; // Event
 } // selection

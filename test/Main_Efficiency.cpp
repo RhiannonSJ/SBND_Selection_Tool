@@ -1,3 +1,5 @@
+#include "../include/CC1piAnalysisHelper.h"
+#include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
 #include "../include/Event.h"
 #include "TH1.h"
@@ -161,128 +163,133 @@ int MainTest(){
   for(unsigned int i = 0; i < events.size(); ++i){
     //---------------------------- Do analysis---------------------------------------------
     Event &e(events[i]);
-    e.SetTopologies();
-    TopologyMap topology= e.signal_map_cc_1pi;//e.signal_map_cc_0pi;//
+    GeneralAnalysisHelper::SetTopologies();
+    TopologyMap topology = GeneralAnalysisHelper::GetCC1PiTopologyMap();
 
     // ----------------------------Save Event Information----------------------------------
     e.EventInformationParticles( "event_information.txt" , i );
     e.EventProperties( topology , "event_properties",  i );
     // ----------------------------Eficiency calculation values----------------------------
 
-    e.Count_per_Topology( e.signal_map_NC           , CountMC[0], CountTReco[0], CountReco[0] );
-    e.Count_per_Topology( e.signal_map_cc_inclusive , CountMC[1], CountTReco[1], CountReco[1] );
-    e.Count_per_Topology( e.signal_map_cc_0pi       , CountMC[2], CountTReco[2], CountReco[2] );
-    e.Count_per_Topology( e.signal_map_cc_1pi       , CountMC[3], CountTReco[3], CountReco[3] );
-    e.Count_per_Topology( e.signal_map_cc_pi0       , CountMC[4], CountTReco[4], CountReco[4] );
+    GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetNCTopologyMap(),    CountMC[0], CountTReco[0], CountReco[0]);
+    GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetCCIncTopologyMap(), CountMC[1], CountTReco[1], CountReco[1]);
+    GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetCC0PiTopologyMap(), CountMC[2], CountTReco[2], CountReco[2]);
+    GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetCC0PiTopologyMap(), CountMC[3], CountTReco[3], CountReco[3]);
+    GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetCCPi0TopologyMap(), CountMC[4], CountTReco[4], CountReco[4]);
     
     //--------------------- TOPOLOGY MIS IDENTIFICATION : TOPOLOGY MATRIX -----------------
-    e.TopologyMatrix( Count_MC_Topology, Count_TReco_Topology, Count_Reco_Topology );
+    GeneralAnalysisHelper::TopologyMatrix(e, Count_MC_Topology, Count_TReco_Topology, Count_Reco_Topology);
     
     //--------------------- Events vs Length, Angle and Kinetic Energy   ------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
 
-      if( topology != e.signal_map_NC     && e.GetMCLengthWithPdg( 13 )  != 0 )  h_mu_MC_L -> Fill( e.GetMCLengthWithPdg( 13 )  );
-      if( topology == e.signal_map_cc_1pi && e.GetMCLengthWithPdg( 211 ) != 0 )  h_pi_MC_L -> Fill( e.GetMCLengthWithPdg( 211 ) );
-      if( topology == e.signal_map_cc_pi0 && e.GetMCLengthWithPdg( 111 ) != 0 )  h_pi0_MC_L-> Fill( e.GetMCLengthWithPdg( 111 ) );
+      if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     && e.GetMCLengthWithPdg( 13 )  != 0 )  h_mu_MC_L -> Fill( e.GetMCLengthWithPdg( 13 )  );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetMCLengthWithPdg( 211 ) != 0 )  h_pi_MC_L -> Fill( e.GetMCLengthWithPdg( 211 ) );
+      if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() && e.GetMCLengthWithPdg( 111 ) != 0 )  h_pi0_MC_L-> Fill( e.GetMCLengthWithPdg( 111 ) );
       
-      if( topology != e.signal_map_NC     && e.GetMCCosThetaWithPdg( 13  ) !=0 ) h_mu_MC_T -> Fill( e.GetMCCosThetaWithPdg( 13 ) );
-      if( topology == e.signal_map_cc_1pi && e.GetMCCosThetaWithPdg( 211 ) !=0 ) h_pi_MC_T -> Fill( e.GetMCCosThetaWithPdg( 211 ) );
-      if( topology == e.signal_map_cc_pi0 && e.GetMCCosThetaWithPdg( 111 ) !=0 ) h_pi0_MC_T -> Fill( e.GetMCCosThetaWithPdg( 111 ) );
+      if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     && e.GetMCCosThetaWithPdg( 13  ) !=0 ) h_mu_MC_T -> Fill( e.GetMCCosThetaWithPdg( 13 ) );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetMCCosThetaWithPdg( 211 ) !=0 ) h_pi_MC_T -> Fill( e.GetMCCosThetaWithPdg( 211 ) );
+      if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() && e.GetMCCosThetaWithPdg( 111 ) !=0 ) h_pi0_MC_T -> Fill( e.GetMCCosThetaWithPdg( 111 ) );
       
-      if( topology != e.signal_map_NC     ) h_MC_E_mu  -> Fill( e.GetMCKineticEnergyWithPdg( 13 ) );
-      if( topology == e.signal_map_cc_1pi ) h_MC_E_pi  -> Fill( e.GetMCKineticEnergyWithPdg( 211 ) );
-      if( topology == e.signal_map_cc_1pi ) h_MC_Delta -> Fill( e.GetMCDeltaEnergy() );
+      if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     ) h_MC_E_mu  -> Fill( e.GetMCKineticEnergyWithPdg( 13 ) );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_E_pi  -> Fill( e.GetMCKineticEnergyWithPdg( 211 ) );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_Delta -> Fill( e.GetMCDeltaEnergy() );
 
-     if( e.CheckRecoTopology( topology ) == 1 ) {
-       if( e.CheckRecoTopology( e.signal_map_cc_pi0 ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0 ){}else if(e.CheckRecoTopology( e.signal_map_cc_1pi ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0 ){std::cout<<"cucu";} else{
-	 if( topology != e.signal_map_NC     && e.GetRecoLengthWithPdg( 13   ) != 0 ) h_mu_TReco_L -> Fill( e.GetRecoLengthWithPdg( 13 )   );
-	 if( topology == e.signal_map_cc_1pi && e.GetRecoLengthWithPdg( 211  ) != 0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_pi_TReco_L -> Fill( e.GetRecoLengthWithPdg( 211 )  );
-	 if( topology == e.signal_map_cc_pi0 && e.GetRecoLengthWithPdg( 111  ) != 0 ) h_pi0_TReco_L-> Fill( e.GetRecoLengthWithPdg( 111 )  );
-	 
-	 if( topology != e.signal_map_NC     && e.GetRecoCosThetaWithPdg( 13  ) != 0 ) h_mu_TReco_T  -> Fill( e.GetRecoCosThetaWithPdg( 13 )  );
-	 if( topology == e.signal_map_cc_1pi && e.GetRecoCosThetaWithPdg( 211 ) != 0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_pi_TReco_T  -> Fill( e.GetRecoCosThetaWithPdg( 211 ) );
-	 if( topology == e.signal_map_cc_pi0 && e.GetRecoCosThetaWithPdg( 111 ) != 0 ) h_pi0_TReco_T -> Fill( e.GetRecoCosThetaWithPdg( 111 ) );
-	 
-	 if( topology != e.signal_map_NC     && e.GetRecoKineticEnergyWithPdg( 13 ) !=0 ) h_TReco_E_mu-> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) );
-	 if( topology == e.signal_map_cc_1pi && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_TReco_E_pi-> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) );
-	 if( topology == e.signal_map_cc_1pi && e.GetRecoKineticEnergyWithPdg( 13 )!=0 && e.GetMCKineticEnergyWithPdg( 13 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0){
-	   h_R_E_mu->Fill( ( e.GetRecoKineticEnergyWithPdg( 13 )- e.GetMCKineticEnergyWithPdg( 211 )) / e.GetMCKineticEnergyWithPdg( 13 ) );	 }
-	 if( topology == e.signal_map_cc_1pi && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetMCKineticEnergyWithPdg( 211 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0 ){
-	   h_R_E_pi->Fill( ( e.GetRecoKineticEnergyWithPdg( 211 )- e.GetMCKineticEnergyWithPdg( 211 )) / e.GetMCKineticEnergyWithPdg( 211 ) );}
- 	  if( topology == e.signal_map_cc_1pi && e.GetRecoKineticEnergyWithPdg( 211 )!=0  && e.GetRecoCC1piNeutrinoEnergy()>0 ){
-	    h_Q_MC_TReco->Fill( e.GetMCQ2WithPdg_cc1pi( 13) ,  (e.GetRecoQ2WithPdg_cc1pi( 13)-e.GetMCQ2WithPdg_cc1pi( 13) )/  e.GetMCQ2WithPdg_cc1pi( 13) );}
-       }}
+      if( e.CheckRecoTopology( topology ) == 1 ) {
+        if( e.CheckRecoTopology( GeneralAnalysisHelper::GetCCPi0TopologyMap() ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0 ){}else if(e.CheckRecoTopology( GeneralAnalysisHelper::GetCC1PiTopologyMap() ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0 ){std::cout<<"cucu";} 
+        else{
+          if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     && e.GetRecoLengthWithPdg( 13   ) != 0 ) h_mu_TReco_L -> Fill( e.GetRecoLengthWithPdg( 13 )   );
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoLengthWithPdg( 211  ) != 0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_pi_TReco_L -> Fill( e.GetRecoLengthWithPdg( 211 )  );
+          if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() && e.GetRecoLengthWithPdg( 111  ) != 0 ) h_pi0_TReco_L-> Fill( e.GetRecoLengthWithPdg( 111 )  );
+          
+          if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     && e.GetRecoCosThetaWithPdg( 13  ) != 0 ) h_mu_TReco_T  -> Fill( e.GetRecoCosThetaWithPdg( 13 )  );
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCosThetaWithPdg( 211 ) != 0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_pi_TReco_T  -> Fill( e.GetRecoCosThetaWithPdg( 211 ) );
+          if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() && e.GetRecoCosThetaWithPdg( 111 ) != 0 ) h_pi0_TReco_T -> Fill( e.GetRecoCosThetaWithPdg( 111 ) );
+          
+          if( topology != GeneralAnalysisHelper::GetNCTopologyMap()     && e.GetRecoKineticEnergyWithPdg( 13 ) !=0 ) h_TReco_E_mu-> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) );
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_TReco_E_pi-> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) );
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoKineticEnergyWithPdg( 13 )!=0 && e.GetMCKineticEnergyWithPdg( 13 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0){
+            h_R_E_mu->Fill( ( e.GetRecoKineticEnergyWithPdg( 13 )- e.GetMCKineticEnergyWithPdg( 211 )) / e.GetMCKineticEnergyWithPdg( 13 ) );	 }
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetMCKineticEnergyWithPdg( 211 )!=0 && e.GetRecoCC1piNeutrinoEnergy()>0 ){
+            h_R_E_pi->Fill( ( e.GetRecoKineticEnergyWithPdg( 211 )- e.GetMCKineticEnergyWithPdg( 211 )) / e.GetMCKineticEnergyWithPdg( 211 ) );}
+          if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoKineticEnergyWithPdg( 211 )!=0  && e.GetRecoCC1piNeutrinoEnergy()>0 ){
+              h_Q_MC_TReco->Fill( e.GetMCQ2WithPdg_cc1pi( 13) ,  (e.GetRecoQ2WithPdg_cc1pi( 13)-e.GetMCQ2WithPdg_cc1pi( 13) )/  e.GetMCQ2WithPdg_cc1pi( 13) );}
+        }
+      }
     }
-
     if( e.CheckRecoTopology( topology ) == 1) { 
-      if( (e.CheckRecoTopology( e.signal_map_cc_pi0 ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0) || (e.CheckRecoTopology( e.signal_map_cc_1pi ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0) ){} else{
-	if( topology != e.signal_map_NC      && e.GetRecoLengthWithPdg( 13   ) != 0 ) h_mu_Reco_L -> Fill( e.GetRecoLengthWithPdg( 13   ) );
-	if( topology == e.signal_map_cc_1pi  && e.GetRecoLengthWithPdg( 211  ) != 0 ) h_pi_Reco_L -> Fill( e.GetRecoLengthWithPdg( 211  ) );
-	if( topology == e.signal_map_cc_pi0  && e.GetRecoLengthWithPdg( 111  ) != 0 ) h_pi0_Reco_L -> Fill( e.GetRecoLengthWithPdg( 111  ) );
-	
-	if( topology != e.signal_map_NC      && e.GetRecoCosThetaWithPdg( 13   ) != 0 )h_mu_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 13   ) );
-	if( topology == e.signal_map_cc_1pi  && e.GetRecoCosThetaWithPdg( 211  ) != 0 ) h_pi_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 211  ) );
-	if( topology == e.signal_map_cc_pi0  && e.GetRecoCosThetaWithPdg( 111  ) != 0 ) h_pi0_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 111  ) );
-	
-	if( topology != e.signal_map_NC      && e.GetRecoKineticEnergyWithPdg( 13   ) != 0 )h_Reco_E_mu-> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) );
-	if( topology == e.signal_map_cc_1pi  && e.GetRecoKineticEnergyWithPdg( 211  ) != 0 ) h_Reco_E_pi-> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) );
-	if( topology == e.signal_map_cc_1pi  && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetMCKineticEnergyWithPdg( 211 )!=0  ){
-	  h_R_E_pi->Fill( ( e.GetRecoKineticEnergyWithPdg( 211 )- e.GetMCKineticEnergyWithPdg( 211 ))/e.GetMCKineticEnergyWithPdg(211) );}
+      if( (e.CheckRecoTopology( GeneralAnalysisHelper::GetCCPi0TopologyMap() ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0) || (e.CheckRecoTopology( GeneralAnalysisHelper::GetCC1PiTopologyMap() ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0) ){} 
+      else{
+        if( topology != GeneralAnalysisHelper::GetNCTopologyMap()      && e.GetRecoLengthWithPdg( 13   ) != 0 ) h_mu_Reco_L -> Fill( e.GetRecoLengthWithPdg( 13   ) );
+        if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap()  && e.GetRecoLengthWithPdg( 211  ) != 0 ) h_pi_Reco_L -> Fill( e.GetRecoLengthWithPdg( 211  ) );
+        if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap()  && e.GetRecoLengthWithPdg( 111  ) != 0 ) h_pi0_Reco_L -> Fill( e.GetRecoLengthWithPdg( 111  ) );
+        
+        if( topology != GeneralAnalysisHelper::GetNCTopologyMap()      && e.GetRecoCosThetaWithPdg( 13   ) != 0 )h_mu_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 13   ) );
+        if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap()  && e.GetRecoCosThetaWithPdg( 211  ) != 0 ) h_pi_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 211  ) );
+        if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap()  && e.GetRecoCosThetaWithPdg( 111  ) != 0 ) h_pi0_Reco_T -> Fill( e.GetRecoCosThetaWithPdg( 111  ) );
+        
+        if( topology != GeneralAnalysisHelper::GetNCTopologyMap()      && e.GetRecoKineticEnergyWithPdg( 13   ) != 0 )h_Reco_E_mu-> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) );
+        if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap()  && e.GetRecoKineticEnergyWithPdg( 211  ) != 0 ) h_Reco_E_pi-> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) );
+        if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap()  && e.GetRecoKineticEnergyWithPdg( 211 )!=0 && e.GetMCKineticEnergyWithPdg( 211 )!=0  ){
+          h_R_E_pi->Fill( ( e.GetRecoKineticEnergyWithPdg( 211 )- e.GetMCKineticEnergyWithPdg( 211 ))/e.GetMCKineticEnergyWithPdg(211) );}
       } 
     }
 
     // ------------------------------------------ Background study ----------------------------------------------------
     if( e.CheckRecoTopology( topology ) == 1 ) { 
-      if( topology != e.signal_map_NC ){
-	if( (e.CheckRecoTopology( e.signal_map_cc_pi0 ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0) || (e.CheckRecoTopology( e.signal_map_cc_1pi ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0) ){} else{
-	  if( e.CheckMCTopology(e.signal_map_cc_0pi) == 1) {                                                              
-	    if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
-	    if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      );
-	    if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_cc0pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }		
-	  else if( e.CheckMCTopology(e.signal_map_cc_pi0) == 1) {                                                              
-	    if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
-	    if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      ); 
-	    if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_ccpi0_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }     
-	  else if( e.CheckMCTopology(e.signal_map_cc_1pi) == 1) {                                                              
-	    if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
-	    if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      ); 
-	    if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_cc1pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }     
-	else {                                                              
-	  if( e.GetRecoLengthWithPdg( 13 ) !=0       ) h_mu_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 13 )           );       
-	  if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )         ); 
-	  if ( e.GetRecoKineticEnergyWithPdg( 13 )!=0) h_mu_Reco_nc_E-> Fill( e.GetRecoKineticEnergyWithPdg( 13 )     ); }   
-	} }
-      if ( topology == e.signal_map_cc_1pi ){
-	if( e.CheckMCTopology(e.signal_map_cc_0pi) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
-             if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      );
-	     if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_cc0pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }		
-	else if( e.CheckMCTopology(e.signal_map_cc_pi0) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
-             if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      ); 
-	     if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_ccpi0_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }     
-	else if( e.CheckMCTopology(e.signal_map_cc_1pi) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
-             if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      ); 
-	     if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_cc1pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }     
-	else {           
-	     if( e.GetRecoLengthWithPdg( 211 ) !=0       ) h_pi_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 211 )           );       
-             if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )         ); 
-	     if( e.GetRecoKineticEnergyWithPdg( 211 ) !=0) h_pi_Reco_nc_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 )    ); }   
+      if( topology != GeneralAnalysisHelper::GetNCTopologyMap() ){
+	      if( (e.CheckRecoTopology( GeneralAnalysisHelper::GetCCPi0TopologyMap() ) == 1 && e.GetRecoCC0piNeutrinoEnergy()<0) || (e.CheckRecoTopology( GeneralAnalysisHelper::GetCC1PiTopologyMap() ) == 1 && e.GetRecoCC1piNeutrinoEnergy()<0) ){} 
+        else{
+	        if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap()) == 1) {                                                              
+            if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
+            if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      );
+            if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_cc0pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }		
+            else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) == 1) {                                                              
+            if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
+            if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      ); 
+            if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_ccpi0_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }     
+            else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) == 1) {                                                              
+            if( e.GetRecoLengthWithPdg( 13 )!=0        ) h_mu_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 13 )        );       
+            if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )      ); 
+            if( e.GetRecoKineticEnergyWithPdg( 13 )!=0 ) h_mu_Reco_cc1pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 13 ) ); }
+          else {                                                              
+            if( e.GetRecoLengthWithPdg( 13 ) !=0       ) h_mu_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 13 )           );       
+            if( e.GetRecoCosThetaWithPdg( 13 ) != 0    ) h_mu_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 13 )         ); 
+            if ( e.GetRecoKineticEnergyWithPdg( 13 )!=0) h_mu_Reco_nc_E-> Fill( e.GetRecoKineticEnergyWithPdg( 13 )     ); }   
+        } 
       }
-      if ( topology == e.signal_map_cc_pi0 ){
-	if( e.CheckMCTopology(e.signal_map_cc_0pi) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
-             if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); }
-	else if( e.CheckMCTopology(e.signal_map_cc_pi0) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
-             if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); } 
-	else if( e.CheckMCTopology(e.signal_map_cc_1pi) == 1) {                                                              
-	     if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
-             if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); }     
-	else {                                                              
-	     if( e.GetRecoLengthWithPdg( 111 ) !=0       ) h_pi0_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 111 )           );       
-             if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )         ); }   
+      if ( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ){
+        if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap()) == 1) {                                                              
+	        if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
+          if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      );
+	        if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_cc0pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }		
+	      else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) == 1) {                                                              
+	        if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
+          if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      ); 
+	        if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_ccpi0_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }     
+	      else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) == 1) {                                                              
+	        if( e.GetRecoLengthWithPdg( 211 )!=0        ) h_pi_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 211 )        );       
+          if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )      ); 
+	        if( e.GetRecoKineticEnergyWithPdg( 211 )!=0 ) h_pi_Reco_cc1pi_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 ) ); }     
+	      else {           
+	        if( e.GetRecoLengthWithPdg( 211 ) !=0       ) h_pi_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 211 )           );       
+          if( e.GetRecoCosThetaWithPdg( 211 ) != 0    ) h_pi_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 211 )         ); 
+	        if( e.GetRecoKineticEnergyWithPdg( 211 ) !=0) h_pi_Reco_nc_E -> Fill( e.GetRecoKineticEnergyWithPdg( 211 )    ); }   
+        
+      }
+      if ( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() ){
+	    if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap()) == 1) {                                                              
+	      if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_cc0pi_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
+        if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_cc0pi_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); }
+	    else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) == 1) {                                                              
+	      if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_ccpi0_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
+        if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_ccpi0_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); } 
+	    else if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) == 1) {                                                              
+	      if( e.GetRecoLengthWithPdg( 111 )!=0        ) h_pi0_Reco_cc1pi_L -> Fill( e.GetRecoLengthWithPdg( 111 )        );       
+        if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_cc1pi_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )      ); }     
+	    else {                                                              
+	      if( e.GetRecoLengthWithPdg( 111 ) !=0       ) h_pi0_Reco_nc_L -> Fill( e.GetRecoLengthWithPdg( 111 )           );       
+        if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )         ); }   
       }
     }
 
@@ -290,33 +297,32 @@ int MainTest(){
     if( i == events.size()-1 ) std::cout << "Efficiency for the selected topology" << e.Efficiency( CountMC, CountTReco, CountReco, topology ) << std::endl;
     // ------------------------------------------  Neutrino Energy  ----------------------------------------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
-      if( topology == e.signal_map_cc_0pi ) h_MC_energy_nu_cc0pi -> Fill( e.GetTrueNuEnergy() );
-      if( topology == e.signal_map_cc_1pi ) h_MC_energy_nu_cc1pi -> Fill( e.GetTrueNuEnergy() ); 
-            if( e.CheckRecoTopology( topology ) == 1 ) { 
-	      if( topology == e.signal_map_cc_0pi && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
-	      if( topology == e.signal_map_cc_1pi && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
-	      if( topology == e.signal_map_cc_1pi && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Enu_MC_TReco          -> Fill( e.GetMCCC1piNeutrinoEnergy(), (e.GetRecoCC1piNeutrinoEnergy()-e.GetMCCC1piNeutrinoEnergy())/e.GetMCCC1piNeutrinoEnergy() );
+      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() ) h_MC_energy_nu_cc0pi -> Fill( e.GetTrueNuEnergy() );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_energy_nu_cc1pi -> Fill( e.GetTrueNuEnergy() ); 
+      if( e.CheckRecoTopology( topology ) == 1 ) { 
+	      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Enu_MC_TReco          -> Fill( e.GetMCCC1piNeutrinoEnergy(), (e.GetRecoCC1piNeutrinoEnergy()-e.GetMCCC1piNeutrinoEnergy())/e.GetMCCC1piNeutrinoEnergy() );
 	    }
-     }
-     if( e.CheckRecoTopology( topology ) == 1 ) {
-       if( topology == e.signal_map_cc_0pi && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
-       if( topology == e.signal_map_cc_1pi && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
-     }
+    }
+    if( e.CheckRecoTopology( topology ) == 1 ) {
+      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
+    }
 
     // ------------------------------------------  Neutrino Energy method 2  ----------------------------------------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
-      if( topology == e.signal_map_cc_1pi ) h_MC_energy_nu_cc1pi_M2 -> Fill( e.GetTrueNuEnergy() );  
-            if( e.CheckRecoTopology( topology ) == 1 ) { 
-	      if( topology == e.signal_map_cc_1pi && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_TReco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_energy_nu_cc1pi_M2 -> Fill( e.GetTrueNuEnergy() );  
+      if( e.CheckRecoTopology( topology ) == 1 ) { 
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_TReco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
 	    }
-     }
-     if( e.CheckRecoTopology( topology ) == 1 ) {
-       if( topology == e.signal_map_cc_1pi && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_Reco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
-     }
-
+    }
+    if( e.CheckRecoTopology( topology ) == 1 ) {
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_Reco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
+    }
   } //endfor
   
-std::cout<<"END LOOP"<<std::endl;
+  std::cout<<"END LOOP"<<std::endl;
   time_t rawtime_end;
   struct tm * timeinfo_end;
   time (&rawtime_end);

@@ -17,6 +17,7 @@ namespace selection{
       /**
        * @brief  Constructor for MC particles 
        *
+       * @param  id of the particle
        * @param  pdg of the particle
        * @param  mass mass of the particle
        * @param  energy total energy of the particle
@@ -25,7 +26,7 @@ namespace selection{
        * @param  momentum momentum of the track
        *
        */
-      Particle(const int pdg, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
+      Particle(const int mc_id, const int pdg, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
 
       /**
        * @brief  Constructor for reconstructed tracks 
@@ -37,7 +38,7 @@ namespace selection{
        * @param  end end of the track
        *
        */
-      Particle(const int pdg, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end);
+      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end);
 
       /**
        * @brief  Constructor for reconstructed showers 
@@ -100,7 +101,27 @@ namespace selection{
       /**
        * @brief  Get the momentum module
        */
-      float GetModuleMomentum() const;
+      float GetModulusMomentum() const;
+
+      /**
+       * @brief  Get the MCParticle id
+       */
+      int GetMCId() const;
+
+      /**
+       * @brief  Get the MCParticle id corresponding to a reco track particle using charge
+       */
+      int GetMCParticleIdCharge() const;
+
+      /**
+       * @brief  Get the MCParticle id corresponding to a reco track particle using energy
+       */
+      int GetMCParticleIdEnergy() const;
+
+      /**
+       * @brief  Get the MCParticle id corresponding to a reco track particle using hits
+       */
+      int GetMCParticleIdHits() const;
 
       /**
        * @brief  Get whether the particle has calorimetry
@@ -108,17 +129,28 @@ namespace selection{
       bool GetHasCalorimetry() const;
 
       /**
+       * @brief  Get whether the particle is from a reconstructed track
+       */
+      bool GetFromRecoTrack() const;
+
+      /**
        * @brief  Get the cos(theta) of the particle regarding the z direction
        */
       float GetCosTheta() const;
+
     private : 
 
+      int      m_mc_id_charge;    ///< mc TrackID corresponding to MCParticle using charge
+      int      m_mc_id_energy;    ///< mc TrackID corresponding to MCParticle using energy
+      int      m_mc_id_hits;      ///< mc TrackID corresponding to MCParticle using hits
+      int      m_mc_id;           ///< mc TrackID 
       int      m_pdg;             ///< pdg code
       float    m_mass;            ///< mass of the particle
       float    m_energy;          ///< energy of the particle
       float    m_length;          ///< length of the particle track
       float    m_costheta;        ///< cos(theta) of the particle
       bool     m_has_calorimetry; ///< whether or not the particle has calorimetry
+      bool     m_from_reco_track; ///< whether the particle is from a reconstructed track
       TVector3 m_vertex;          ///< particle start position
       TVector3 m_end;             ///< particle end position
       TVector3 m_momentum;        ///< particle momentum

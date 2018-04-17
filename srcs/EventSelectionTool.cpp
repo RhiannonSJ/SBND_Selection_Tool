@@ -6,6 +6,7 @@
 #include "TVector3.h"
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 
 namespace selection{
  
@@ -66,10 +67,10 @@ namespace selection{
    
       std::pair<int,int> event_identification(event_id,time_now);
 
-      EventSelectionTool::GetTrackList(start_tracks,           t_track,    event_identification, tracks);
-      EventSelectionTool::GetShowerList(start_showers,         t_shower,   event_identification, showers);
+      EventSelectionTool::GetTrackList(start_tracks, t_track, event_identification, tracks);
+      EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
       EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
-      EventSelectionTool::GetRecoParticleFromTrack(tracks,             recoparticles);
+      EventSelectionTool::GetRecoParticleFromTrack(tracks, recoparticles);
       EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
       
       event_list.push_back(Event(mcparticles, recoparticles, nuance, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy));
@@ -121,6 +122,9 @@ namespace selection{
    
     TBranch *b_event_id       = track_tree->GetBranch("event_id");
     TBranch *b_time_now       = track_tree->GetBranch("time_now");
+    TBranch *b_id_charge      = track_tree->GetBranch("tr_id_charge");
+    TBranch *b_id_energy      = track_tree->GetBranch("tr_id_energy");
+    TBranch *b_id_hits        = track_tree->GetBranch("tr_id_hits");
     TBranch *b_vertex         = track_tree->GetBranch("tr_vertex");
     TBranch *b_end            = track_tree->GetBranch("tr_end");
     TBranch *b_pida           = track_tree->GetBranch("tr_pida");
@@ -145,6 +149,9 @@ namespace selection{
       double temp_vertex[3];
       double temp_end[3];
       
+      int id_charge        = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
+      int id_energy        = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
+      int id_hits          = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
       temp_vertex[0]       = b_vertex->GetLeaf("tr_vertex")->GetValue(0);
       temp_vertex[1]       = b_vertex->GetLeaf("tr_vertex")->GetValue(1);
       temp_vertex[2]       = b_vertex->GetLeaf("tr_vertex")->GetValue(2);
@@ -162,7 +169,7 @@ namespace selection{
       TVector3 vertex(temp_vertex);
       TVector3 end(temp_end);
 
-      track_list.push_back(Track(pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, vertex, end));
+      track_list.push_back(Track(id_charge, id_energy, id_hits, pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, vertex, end));
     
     } 
   }
@@ -176,6 +183,7 @@ namespace selection{
     TBranch *b_direction  = shower_tree->GetBranch("sh_direction");
     TBranch *b_open_angle = shower_tree->GetBranch("sh_open_angle");
     TBranch *b_length     = shower_tree->GetBranch("sh_length");
+    TBranch *b_energy     = shower_tree->GetBranch("sh_energy");
     
     unsigned int n_entries = shower_tree->GetEntries();
 
@@ -199,11 +207,12 @@ namespace selection{
       temp_direction[2] = b_direction->GetLeaf("sh_direction")->GetValue(2);
       float open_angle  = b_open_angle->GetLeaf("sh_open_angle")->GetValue();
       float length      = b_length->GetLeaf("sh_length")->GetValue();
+      float energy      = b_energy->GetLeaf("sh_energy")->GetValue();
  
       TVector3 vertex(temp_vertex);
       TVector3 direction(temp_direction);
 
-      shower_list.push_back(Shower(vertex, direction, open_angle, length));
+      shower_list.push_back(Shower(vertex, direction, open_angle, length, energy));
     } 
   }
 
@@ -213,6 +222,7 @@ namespace selection{
     
     TBranch *b_event_id = mcparticle_tree->GetBranch("event_id");
     TBranch *b_time_now = mcparticle_tree->GetBranch("time_now");
+    TBranch *b_id       = mcparticle_tree->GetBranch("p_id");
     TBranch *b_pdgcode  = mcparticle_tree->GetBranch("p_pdgcode");
     TBranch *b_mass     = mcparticle_tree->GetBranch("p_mass");
     TBranch *b_energy   = mcparticle_tree->GetBranch("p_energy");
@@ -235,6 +245,7 @@ namespace selection{
       double temp_end[3];
       double temp_momentum[3];
       
+      int id                = b_id->GetLeaf("p_id")->GetValue();
       int pdgcode           = b_pdgcode->GetLeaf("p_pdgcode")->GetValue();
       float mass            = b_mass->GetLeaf("p_mass")->GetValue();
       float energy          = b_energy->GetLeaf("p_energy")->GetValue();
@@ -252,7 +263,7 @@ namespace selection{
       TVector3 end(temp_end);
       TVector3 momentum(temp_momentum);
 
-      mcparticle_list.push_back(Particle(pdgcode, mass, energy, vertex, end, momentum));
+      mcparticle_list.push_back(Particle(id, pdgcode, mass, energy, vertex, end, momentum));
       
     }
   }
@@ -304,18 +315,18 @@ namespace selection{
         mu_candidates.push_back(id);
       }
       else if(track.m_length < 30) 
-        recoparticle_list.push_back(Particle(2212, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
+        recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
       else if(pida_pdg == 211 || pida_pdg == 321 || pida_pdg == 2212) 
-        recoparticle_list.push_back(Particle(pida_pdg, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
+        recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, pida_pdg, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
       else
-        recoparticle_list.push_back(Particle(EventSelectionTool::GetPdgByChi2(track), track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
+        recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
     }
 
     // If the muon was found by length, this will return
     if(mu_candidates.size() == 0) return;
     if(mu_candidates.size() == 1) {
       const Track &muon(track_list[mu_candidates[0]]);
-      recoparticle_list.push_back(Particle(13, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end));
+      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end));
       return;
     }
     
@@ -358,14 +369,14 @@ namespace selection{
     } 
     
     const Track &muon(track_list[muonID]);
-    recoparticle_list.push_back(Particle(13, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end));
+    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end));
 
     for(unsigned int id = 0; id < mu_candidates.size(); ++id){
       
       if(id == muonID) continue;
       
       const Track &track(track_list[id]);
-      recoparticle_list.push_back(Particle(EventSelectionTool::GetPdgByChi2(track), track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
+      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
     } 
   }
 
@@ -407,7 +418,7 @@ namespace selection{
 
         // If the photon has already been assigned to a pi0
         for(unsigned int k = 0; k < used_photon.size(); ++k) if(used_photon[k] == j) continue;
-    
+   
         // Get the distance of closest approach of the current two showers we are looking at
         TVector3 dir_1, dir_2, start_1, start_2, link;
 
@@ -424,6 +435,15 @@ namespace selection{
         float e = dir_2.Dot(link);
         float denomenator = a*c - b*b;
 
+        // Get the invariant mass of the current 2 showers
+        float energy_1  = shower_list[i].m_energy;
+        float energy_2  = shower_list[j].m_energy;
+
+        float cos_theta = (b / (std::sqrt(a)*std::sqrt(c)));  
+        float inv_mass  = std::sqrt(2*energy_1*energy_2*(1-cos_theta));
+
+        float pi0_mass       = 134.97; // MeV
+        
         // If the lines are parallel
         if(denomenator == 0) continue;
 
@@ -533,7 +553,10 @@ namespace selection{
   
   //------------------------------------------------------------------------------------------ 
   
-  EventSelectionTool::Track::Track(const float &pida, const float &chi2_mu, const float &chi2_pi, const float &chi2_pr, const float &chi2_ka, const float &length, const float &kinetic_energy, const TVector3 &vertex, const TVector3 &end) :
+  EventSelectionTool::Track::Track(const int &mc_id_charge, const int &mc_id_energy, const int &mc_id_hits, const float &pida, const float &chi2_mu, const float &chi2_pi, const float &chi2_pr, const float &chi2_ka, const float &length, const float &kinetic_energy, const TVector3 &vertex, const TVector3 &end) :
+    m_mc_id_charge(mc_id_charge),
+    m_mc_id_energy(mc_id_energy),
+    m_mc_id_hits(mc_id_hits),
     m_pida(pida),
     m_chi2_mu(chi2_mu),
     m_chi2_pi(chi2_pi),
@@ -546,10 +569,11 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  EventSelectionTool::Shower::Shower(const TVector3 &vertex, const TVector3 &direction, const float &open_angle, const float &length) :
+  EventSelectionTool::Shower::Shower(const TVector3 &vertex, const TVector3 &direction, const float &open_angle, const float &length, const float &energy) :
     m_vertex(vertex),
     m_direction(direction),
     m_open_angle(open_angle),
-    m_length(length) {}
+    m_length(length),
+    m_energy(energy/3.) {}
 
 } // namespace: selection
