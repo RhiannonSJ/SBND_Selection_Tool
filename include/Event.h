@@ -160,130 +160,11 @@ namespace selection{
        */
       Particle GetMCParticleHits(const Particle &particle) const;
 
-      //---------------------------------------------------------------------------------------
-      /**                                                              
-       * @brief  Get the longest track with a given pdg truth     
-       *
-       * @param  pdg                                                 
-       *
-       * @return length of longest truth track with pdg
-       */
-      float GetMCLengthWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief  Get the longest track with a given pdg reconstructed    
-       *
-       * @param  pdg                                                    
-       *
-       * @return length of longest reco track with pdg
-       */
-      float GetRecoLengthWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief s the cos(theta) for a MC event                  
-       * @param pdg                                                    
-       */
-      float GetMCCosThetaWithPdg(const int pdg) const ;
-
-      /**                                                              
-       * @brief Returns the cos(theta) for a reconstructed event       
-       * @param pdg                                                    
-       */
-      float GetRecoCosThetaWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns MC Energy of a given particle     
-       * @param pdg                        
-       */
-      float GetMCEnergyWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns MC Energy of a given particle     
-       * @param pdg                        
-       */
-      float GetRecoEnergyWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns MC Kinetic Energy of a given particle     
-       * @param pdg                        
-       */
-      float GetMCKineticEnergyWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns MC Kinetic Energy of a given particle     
-       * @param pdg                        
-       */
-      float GetRecoKineticEnergyWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns the momentum module of a given particle     
-       * @param pdg                        
-       */
-      float GetMCModulusMomentumWithPdg(const int pdg) const;
-
-      /**                                                              
-       * @brief Returns the momentum module of a given particle     
-       * @param pdg                        
-       */
-      float GetRecoModulusMomentumWithPdg(const int pdg) const;
-      
-      /**                                                              
-       * @brief Returns the energy of the delta particle produced in a resonance                                                     
-       */
-      float GetMCDeltaEnergy( ) const;
-
-      /**                                                              
-       * @brief Returns the energy of the delta particle produced in a resonance                                                     
-       */
-      float GetRecoDeltaEnergy( ) const;
-
       /**
        * @brief  Get the true neutrino energy
        */
       float GetTrueNuEnergy() const;
-      /**
-       * @brief  Get the true neutrino energy for CC 0pi interactions
-       *
-       * @param  track muon track to use in the calculation
-       *
-       * @return float reconstructed neutrino energy 
-       */
-      float GetMCCC0piNeutrinoEnergy() const;
-
-      /**
-       * @brief  Get the true neutrino energy for CC 1pi interactions
-       *
-       * @param  track muon track to use in the calculation
-       *
-       * @return float reconstructed neutrino energy 
-       */
-      float GetMCCC1piNeutrinoEnergy() const;
-
-      /**
-       * @brief  Get the reconstructed neutrino energy for CC 0pi interactions
-       *
-       * @param  track muon track to use in the calculation
-       *
-       * @return float reconstructed neutrino energy 
-       */
-      float GetRecoCC0piNeutrinoEnergy() const;
-
-      /**
-       * @brief  Get the reconstructed neutrino energy for CC 1pi interactions
-       *
-       * @param  track muon track to use in the calculation
-       *
-       * @return float reconstructed neutrino energy 
-       */
-      float GetRecoCC1piNeutrinoEnergy() const;
-      /**
-       * @brief  Get the reconstructed neutrino energy for CC 1pi interactions (METHOD 2)
-       *
-       * @param  track muon track to use in the calculation
-       *
-       * @return float reconstructed neutrino energy 
-       */
-      float GetRecoCC1piNeutrinoEnergyMethod2(  ) const;
+      
       /**
        * @brief  Get the most energetic reconstructed particle
        *
@@ -297,41 +178,6 @@ namespace selection{
        * @return Particle most energetic true
        */
       Particle GetMostEnergeticTrueParticle() const;
-
-      /**
-       * @brief Calculates the Efficiency, Purity, Background Rejection
-       * Parameters for Efficiency calculation ( MC, TReco and Reco ) for a given topology : 
-       * 0-> No muon , 
-       * 1 -> CCinclusive,
-       * 2-> CC0pi, 
-       * 3-> CC1pi+/-,
-       * 4-> CC1pi0
-       **/
-      double Efficiency( const std::vector< double > & CountMC, const std::vector< double > & CountTReco, const std::vector< double > & CountReco, const TopologyMap &topology  ) const;
-
-
-      /**
-       * @brief Save Topology Matrix into a file
-       * BackGround Study : topology mis identification table 
-       * 0-> No muon , 
-       * 1 -> CCinclusive,
-       * 2-> CC0pi, 
-       * 3-> CC1pi+/-,
-       * 4-> CC1pi0
-       **/
-      void SaveTopologyMatrix( const ParticleMatrix & Count_MC_Topology, const ParticleMatrix & Count_TReco_Topology, const ParticleMatrix & Count_Reco_Topology ) const ;
-
-      /**
-       * @brief Saves the event information in a file ( types of particles in the event 
-       * and topology for True and Selected
-       **/
-      void EventInformationParticles( const std::string name, const int event_number ) const;
-
-      /**
-       * @brief Saves the event characteristics in a file ( length , angle and kinetic energy ) 
-       * for the selected topology
-       **/
-      void EventProperties( const TopologyMap &topology, std::string event_file, const int event_number ) const;
 
     private : 
 
@@ -364,62 +210,12 @@ namespace selection{
        */
       Particle GetMCParticle(const int id, const ParticleList &particle_list ) const;
 
-      /**                                                              
-       * @brief Returns the track length for a given particle          
-       * @param pdg, particle_list                                     
-       */
-      float LengthWithPdg(const int pdg, const ParticleList &particle_list) const;
-
-      /**                                                              
-       * @brief Returns the cos(theta) of the track direction regarding u_z                          
-       * @param pdg, particle_list                                     
-       */
-      float CosThetaWithPdg(const int pdg, const ParticleList &particle_list) const;
-      /**                                                              
-       * @brief Returns the energy of a particle given a pdg                        
-       * @param pdg, particle_list                                     
-       */
-      float EnergyWithPdg(const int pdg, const ParticleList &particle_list) const;
-      /**                                                              
-       * @brief Returns the Kinetic energy of a particle given a pdg                        
-       * @param pdg, particle_list                                     
-       */
-      float KineticEnergyWithPdg(const int pdg, const ParticleList &particle_list) const;
-
-      /**                                                              
-       * @brief Returns the energy of the delta particle produced in a resonance                 
-       * @param particle_list                                     
-       */
-      float GetDeltaEnergy( const ParticleList & particle_list ) const;
-      /**                                                                                                                                                   * @brief Returns the energy of the delta particle produced in a resonance with a proton in the final state
-       * @param particle_list                                                                                                                    
-       */
-      float GetDeltaEnergy_p( const ParticleList & particle_list ) const;
-
-      /**                                                              
-       * @brief Returns the momentum module of a particle given a pdg                        
-       * @param pdg, particle_list                                     
-       */
-      float ModulusMomentumWithPdg(const int pdg, const ParticleList &particle_list) const;
-
       /**
        * @brief  Get the most energetic particle
        *
        * @return Particle most energetic
        */
       Particle GetMostEnergeticParticle(const ParticleList &particle_list) const;
-      /**
-       * @brief  Get the neutrino energy for CC0pi
-       */      
-      float GetCC0piNeutrinoEnergy( const ParticleList & particle_list ) const;
-      /**
-       * @brief  Get the neutrino energy for CC1pi
-       */
-      float GetCC1piNeutrinoEnergy( const ParticleList & particle_list ) const;
-      /**
-       * @brief  Get the neutrino energy for CC1pi (METHOD 2)
-       */
-      float GetCC1piNeutrinoEnergyMethod2( const ParticleList & particle_list ) const;
 
       // Member variables
       ParticleList       m_mc_particles;       ///< vector of Monte Carlo particles

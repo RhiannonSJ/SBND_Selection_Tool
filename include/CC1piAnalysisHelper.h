@@ -40,59 +40,92 @@ namespace selection{
        * @brief Returns the MC momentum transfer for cc1pi     
        * @param pdg                        
        */
-      float GetMCQ2WithPdg(const Event &e, const int pdg) const;
+      static float GetMCQ2WithPdg(const Event &e, const int pdg);
       /**                                                              
        * @brief Returns the Reco momentum transfer for cc1pi     
        * @param pdg                        
        */
-      float GetRecoQ2WithPdg(const Event &e, const int pdg) const;
+      static float GetRecoQ2WithPdg(const Event &e, const int pdg);
 
       /**                                                              
        * @brief Returns MC Energy of the particle with longest track for cc1p                         
        */
-      float GetMCEnergyLongest(const Event &e) const;
+      static float GetMCEnergyLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco Energy  of the particle with longest track for cc1p    
        */
-      float GetRecoEnergyLongest(const Event &e) const;
+      static float GetRecoEnergyLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco Energy  of the particle with the second longest track for cc1p    
        */
-      float GetMCEnergySecondLongest(const Event &e) const;
+      static float GetMCEnergySecondLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco Energy  of the particle with the second longest track for cc1p    
        */
-      float GetRecoEnergySecondLongest(const Event &e) const;
-
-      float GetMCKineticEnergyLongest(const Event &e) const;
+      static float GetRecoEnergySecondLongest(const Event &e);
+      /**                                                              
+       * @brief Returns MC Energy  of the particle with longest track for cc1p    
+       */
+      static float GetMCKineticEnergyLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco Energy  of the particle with longest track for cc1p    
        */
-      float GetRecoKineticEnergyLongest(const Event &e) const;
+      static float GetRecoKineticEnergyLongest(const Event &e);
       /**                                                              
        * @brief Returns MC kinetic Energy  of the particle with the second longest track for cc1p    
        */
-      float GetMCKineticEnergySecondLongest(const Event &e) const;
+      static float GetMCKineticEnergySecondLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco kinetic Energy  of the particle with the second longest track for cc1p    
        */
-      float GetRecoKineticEnergySecondLongest(const Event &e) const;
+      static float GetRecoKineticEnergySecondLongest(const Event &e);
       /**                                                              
        * @brief Returns MC momentum module  of the particle with longest track for cc1p    
        */
-      float GetMCModulusMomentumLongest(const Event &e) const;
+      static float GetMCModulusMomentumLongest(const Event &e);
       /**                                                              
        * @brief Returns Reco momentum module  of the particle with longest track for cc1p    
        */
-      float GetRecoModulusMomentumLongest(const Event &e) const;
+      static float GetRecoModulusMomentumLongest(const Event &e);
       /**                                                              
        * @brief Returns momentum module  of the particle with the second longest track for cc1p    
        */
-      float GetMCModulusMomentumSecondLongest(const Event &e) const;
+      static float GetMCModulusMomentumSecondLongest(const Event &e);
       /**                                                              
        * @brief Returns momentum module of the particle with the second longest track for cc1p    
        */
-      float GetRecoModulusMomentumSecondLongest(const Event &e) const;
+      static float GetRecoModulusMomentumSecondLongest(const Event &e);
+      /**                                                              
+       * @brief Returns the energy of the delta particle produced in a resonance                                                     
+       */
+      static float GetMCDeltaEnergy(const Event &e);
+      
+      /**
+       * @brief  Get the true neutrino energy for CC 1pi interactions
+       *
+       * @param  track muon track to use in the calculation
+       *
+       * @return float reconstructed neutrino energy 
+       */
+      static float GetMCCC1piNeutrinoEnergy(const Event &e);
+      
+      /**
+       * @brief  Get the reconstructed neutrino energy for CC 1pi interactions
+       *
+       * @param  event
+       *
+       * @return float reconstructed neutrino energy 
+       */
+      static float GetRecoCC1piNeutrinoEnergy(const Event &e);
+      
+      /**
+       * @brief  Get the reconstructed neutrino energy for CC 1pi interactions (METHOD 2)
+       *
+       * @param  event
+       *
+       * @return float reconstructed neutrino energy 
+       */
+      static float GetRecoCC1piNeutrinoEnergyMethod2(const Event &e);
 
     private : 
 
@@ -100,32 +133,70 @@ namespace selection{
        * @brief Returns the energy of a particle with longest track lenght                        
        * @param pdg, particle_list                                     
        */
-      static float GetEnergyLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetEnergyLongest(const Event &e, const ParticleList &particle_list);
       /**                                                              
        * @brief Returns the energy of a particle with the second longest track lenght                 
        * @param pdg, particle_list                                     
        */
-      static float GetEnergySecondLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetEnergySecondLongest(const Event &e, const ParticleList &particle_list);
       /**                                                              
        * @brief Returns the kinetic energy of a particle with longest track lenght                        
        * @param pdg, particle_list                                     
        */
-      static float GetKineticEnergyLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetKineticEnergyLongest(const Event &e, const ParticleList &particle_list);
       /**                                                              
        * @brief Returns the kinetic energy of a particle with the second longest track lenght                 
        * @param pdg, particle_list                                     
        */
-      static float GetKineticEnergySecondLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetKineticEnergySecondLongest(const Event &e, const ParticleList &particle_list);
       /**                                                              
        * @brief Returns the momentum module of a particle with longest track lenght                        
        * @param pdg, particle_list                                     
        */
-      static float GetModulusMomentumLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetModulusMomentumLongest(const Event &e, const ParticleList &particle_list);
       /**                                                              
        * @brief Returns the momentum module of a particle with the second longest track lenght                 
        * @param pdg, particle_list                                     
        */
-      static float GetModulusMomentumSecondLongest(const Event &e, const ParticleList &particle_list) const;
+      static float GetModulusMomentumSecondLongest(const Event &e, const ParticleList &particle_list);
+      
+      /**                                                              
+       * @brief  Get the energy of the delta particle produced in a resonance
+       *
+       * @param  event
+       * @param  particle_list                                     
+       *
+       * @return delta energy
+       */
+      static float GetDeltaEnergy(const Event &e, const ParticleList &particle_list);
+      
+      /**                                                              
+       * @brief  Get the energy of the delta particle produced in a resonance with a proton in the final state
+       *
+       * @param  event
+       * @param  particle_list                                     
+       *
+       * @return delta energy
+       */
+      static float GetDeltaEnergy_p(const ParticleList &particle_list);
+      
+      /**
+       * @brief  Get the neutrino energy for CC1pi
+       *
+       * @param  particle list
+       *
+       * @return neutrino energy
+       */
+
+      static float GetCC1piNeutrinoEnergy(const ParticleList &particle_list);
+      /**
+       * @brief  Get the neutrino energy for CC1pi (METHOD 2)
+       *
+       * @param  particle list
+       *
+       * @return neutrino energy
+       */
+      static float GetCC1piNeutrinoEnergyMethod2(const ParticleList &particle_list);
 
   }; // CC1piAnalysisHelper
 } // namespace: selection
