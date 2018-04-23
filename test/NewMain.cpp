@@ -1,3 +1,5 @@
+#include "../include/CC0piAnalysisHelper.h"
+#include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
 #include "../include/Event.h"
 #include <iostream>
@@ -25,7 +27,10 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Start: Local time and date:  " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
-  
+ 
+  // Output file location
+  std::string file_location = "../Output_Selection_Tool/plots/";
+
   // Counters
   unsigned int correctly_reconstructed_cc  = 0;
   unsigned int true_topology_cc            = 0;
@@ -69,34 +74,12 @@ int MainTest(){
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
   
-  TopologyMap cc_signal_map;
-  TopologyMap nc_signal_map;
-  TopologyMap cc0pi_signal_map;
-  TopologyMap cc1pi_signal_map;
-  TopologyMap ccpi0_signal_map;
+  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
+  TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
+  TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  std::vector< int > mu;
-  std::vector< int > pi;
-  std::vector< int > pi0;
-  
-  mu.push_back( 13 );
-  pi.push_back( 211 );
-  pi.push_back(-211 );
-  pi0.push_back( 111 );
-  
-  cc_signal_map.insert( std::make_pair( mu,  1 ) );
-  nc_signal_map.insert( std::make_pair( mu,  0 ) );
-  
-  cc0pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi,  0 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi0, 0 ) );
-
-  cc1pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc1pi_signal_map.insert( std::make_pair( pi,  1 ) );
-  
-  ccpi0_signal_map.insert( std::make_pair( mu,  1 ) );
-  ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
-  
   for( unsigned int i = 0; i < 500; ++i ){
   
     // Get the filename for each 2D histogram
@@ -114,6 +97,14 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
   }
+  
+  time_t rawtime_afterload;
+  struct tm * timeinfo_afterload;
+  time (&rawtime_afterload);
+  timeinfo_afterload = localtime (&rawtime_afterload);
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  std::cout << " After loading events: Local time and date:  " << asctime(timeinfo_afterload) << std::endl;
+  std::cout << "-----------------------------------------------------------" << std::endl;
 
   // Neutrino energy histograms
   TH1F *h_reco_energy           = new TH1F("h_reco_energy",          "#nu_{#mu} CC 0#pi neutrino energy",100,0, 3);
@@ -168,7 +159,7 @@ int MainTest(){
       
       // Get reconstructed energy
       for( unsigned int i = 0; i < n_particles; ++i ) if(parts[i].GetPdgCode() == 13) {
-        good_neutrino_energy.push_back(e.GetRecoCC0piNeutrinoEnergy());
+        good_neutrino_energy.push_back(CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e));
 
         TVector3 z;
         z[0] = 0;
@@ -210,7 +201,7 @@ int MainTest(){
       
       // Get reconstructed energy
       for( unsigned int i = 0; i < n_particles; ++i ) if(parts[i].GetPdgCode() == 13) {
-        reco_neutrino_energy.push_back(e.GetRecoCC0piNeutrinoEnergy());
+        reco_neutrino_energy.push_back(CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e));
         
         TVector3 z;
         z[0] = 0;
@@ -325,7 +316,7 @@ int MainTest(){
   h_true_energy->Draw("same");
   l->Draw();
 
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_nu_energy.root");
+  c->SaveAs((file_location+"cc0pi_nu_energy.root").c_str());
   c->Clear();
 
   h_reco_energy_cos->SetStats(kFALSE);
@@ -333,7 +324,7 @@ int MainTest(){
   h_reco_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_reco_energy_cos->Draw("colz");
 
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_cos.root");
+  c->SaveAs((file_location+"cc0pi_reco_energy_cos.root").c_str());
   c->Clear();
   
   h_good_energy_cos->SetStats(kFALSE);
@@ -341,7 +332,7 @@ int MainTest(){
   h_good_energy_cos->GetYaxis()->SetTitle("cos#theta_{#mu}");
   h_good_energy_cos->Draw("colz");
  
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_cos.root");
+  c->SaveAs((file_location+"cc0pi_good_energy_cos.root").c_str());
   c->Clear();
   
   h_reco_energy_proton->SetStats(kFALSE);
@@ -349,7 +340,7 @@ int MainTest(){
   h_reco_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_reco_energy_proton->Draw("colz");
  
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_energy_proton.root");
+  c->SaveAs((file_location+"cc0pi_reco_energy_proton.root").c_str());
   c->Clear();
   
   h_good_energy_proton->SetStats(kFALSE);
@@ -357,7 +348,7 @@ int MainTest(){
   h_good_energy_proton->GetYaxis()->SetTitle("Proton multiplicity");
   h_good_energy_proton->Draw("colz");
  
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_energy_proton.root");
+  c->SaveAs((file_location+"cc0pi_good_energy_proton.root").c_str());
   c->Clear();
   
   h_reco_energy_proton_e->SetStats(kFALSE);
@@ -365,7 +356,7 @@ int MainTest(){
   h_reco_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_reco_energy_proton_e->Draw("colz");
  
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_reco_proton_energies.root");
+  c->SaveAs((file_location+"cc0pi_reco_proton_energies.root").c_str());
   c->Clear();
   
   h_good_energy_proton_e->SetStats(kFALSE);
@@ -373,7 +364,7 @@ int MainTest(){
   h_good_energy_proton_e->GetYaxis()->SetTitle("Proton energy sum [GeV]");
   h_good_energy_proton_e->Draw("colz");
  
-  c->SaveAs("../Output_Selection_Tool/plots/cc0pi_good_proton_energies.root");
+  c->SaveAs((file_location+"cc0pi_good_proton_energies.root").c_str());
   c->Clear();
  
   time_t rawtime_end;

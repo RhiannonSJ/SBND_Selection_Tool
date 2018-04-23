@@ -63,7 +63,37 @@ namespace selection{
     }
     return count_signal_topology;
   }
- 
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle GeneralAnalysisHelper::GetMCParticleCharge(const Event &e, const Particle &particle) const{
+    int charge_id = particle.GetMCParticleIdCharge();
+    return GetMCParticle(charge_id, e.GetMCParticleList());
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle GeneralAnalysisHelper::GetMCParticleEnergy(const Event &e, const Particle &particle) const{
+    int energy_id = particle.GetMCParticleIdEnergy();
+    return GetMCParticle(energy_id, e.GetMCParticleList());
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle GeneralAnalysisHelper::GetMCParticleHits(const Event &e, const Particle &particle) const{
+    int hits_id = particle.GetMCParticleIdHits();
+    return GetMCParticle(hits_id, e.GetMCParticleList());
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  Particle GeneralAnalysisHelper::GetMCParticle(const int id, const ParticleList &particle_list ) const{
+    for(unsigned int i = 0; i < particle_list.size(); ++i) {
+      if(particle_list[i].GetMCId() == id) return particle_list[i];
+    }
+    throw 8;
+  }
+  
   //----------------------------------------------------------------------------------------
 
   void GeneralAnalysisHelper::GetRecoLengthWithPdg(const Event &e, const int pdg, std::vector<float> &lengths) {

@@ -247,36 +247,6 @@ namespace selection{
 
   }
   
-  //------------------------------------------------------------------------------------------ 
-  
-  Particle Event::GetMCParticleCharge(const Particle &particle) const{
-    int charge_id = particle.GetMCParticleIdCharge();
-    return GetMCParticle(charge_id, m_mc_particles);
-  }
-  
-  //------------------------------------------------------------------------------------------ 
-  
-  Particle Event::GetMCParticleEnergy(const Particle &particle) const{
-    int energy_id = particle.GetMCParticleIdEnergy();
-    return GetMCParticle(energy_id, m_mc_particles);
-  }
-  
-  //------------------------------------------------------------------------------------------ 
-  
-  Particle Event::GetMCParticleHits(const Particle &particle) const{
-    int hits_id = particle.GetMCParticleIdHits();
-    return GetMCParticle(hits_id, m_mc_particles);
-  }
-  
-  //------------------------------------------------------------------------------------------ 
-  
-  Particle Event::GetMCParticle(const int id, const ParticleList &particle_list ) const{
-    for(unsigned int i = 0; i < particle_list.size(); ++i) {
-      if(particle_list[i].GetMCId() == id) return particle_list[i];
-    }
-    throw 8;
-  }
-  
   //------------------------------------------------------------------------------------------
  
   Particle Event::GetMostEnergeticParticle(const ParticleList &particle_list) const{

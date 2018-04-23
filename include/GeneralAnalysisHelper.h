@@ -64,7 +64,17 @@ namespace selection{
        * @param  momentum_mod
        */
       static void ModulusMomentumWithPdg(const int pdg, const ParticleList &particle_list, std::vector<float> &momentum_mod);
-
+      
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle general
+       *
+       * @param  particle reconstructed (track-based) particle
+       * @param  mcparticle_list list of mcparticles to loop over
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticle(const int id, const ParticleList &particle_list ) const;
       
     public : 
 
@@ -250,6 +260,36 @@ namespace selection{
        * for the selected topology
        **/
       static void EventProperties(const Event &e, const TopologyMap &topology, std::string event_file, const int event_number);
+      
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via charge
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticleCharge(const Event &e, const Particle &particle) const;
+
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via energy
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticleEnergy(const Event &e, const Particle &particle) const;
+
+      /**
+       * @brief  get the MCParticle corresponding to the reco particle via hits
+       *
+       * @param  particle reconstructed (track-based) particle
+       *
+       * @return mcparticle
+       *
+       */
+      Particle GetMCParticleHits(const Event &e, const Particle &particle) const;
 
   }; // GeneralAnalysisHelper
 } // namespace: selection

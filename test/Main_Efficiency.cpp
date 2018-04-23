@@ -1,3 +1,4 @@
+#include "../include/CC0piAnalysisHelper.h"
 #include "../include/CC1piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
@@ -18,6 +19,14 @@ using namespace selection;
 
 int MainTest(){
 
+  time_t rawtime;
+  struct tm * timeinfo;
+  time (&rawtime);
+  timeinfo = localtime (&rawtime);
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  std::cout << " Start: Local time and date:  " << asctime(timeinfo)         << std::endl;
+  std::cout << "-----------------------------------------------------------" << std::endl;
+ 
   std::vector< double > CountMC    ( 5 ) ;
   std::vector< double > CountTReco ( 5 ) ;
   std::vector< double > CountReco  ( 5 ) ;
@@ -129,7 +138,7 @@ int MainTest(){
   TH1 * h_R_E_mu        = new TH1D ( "h_MC_E_mu_R"    , " T((Signal - True )/True)   "    , 20,  -1., 1. );   
   TH1 * h_R_E_pi        = new TH1D ( "h_MC_E_pi_R"    , " T((Signal - True )/True)   "    , 20,  -1., 1. ); 
   //
-
+  
   ofstream efile, lfile, afile ;
   efile.open( "event_information.txt" ) ;
   lfile.open( "length_information_per_event.txt" ) ;
@@ -137,10 +146,10 @@ int MainTest(){
   float RecoEPi = 0;
   double count_mis_E_Reco=0, count_mis_E_TReco=0;
   //Initialise event list and the topology maps
-  
+ 
   EventSelectionTool::EventList events;
-  for( unsigned int i = 0; i < 398; ++i ){
-  
+  for( unsigned int i = 0; i < 500; ++i ){
+
     // Get the filename for each 2D histogram
     std::stringstream ss;
     ss.clear();
@@ -150,25 +159,34 @@ int MainTest(){
     
     char file_name[1024];
     
-    ss << "/hepstore/rjones/Samples/FNAL/analysis_trees/all/3486578_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
       
     EventSelectionTool::LoadEventList(file_name, events);
     }
+  
+  time_t rawtime_afterload;
+  struct tm * timeinfo_afterload;
+  time (&rawtime_afterload);
+  timeinfo_afterload = localtime (&rawtime_afterload);
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  std::cout << " After loading events: Local time and date:  " << asctime(timeinfo_afterload) << std::endl;
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
   // Histograms directory :
-    std::string filepath = "~/Desktop/SBND_Selection_Tool/plots/";//"~/Desktop/SBND_Selection_Tool/plots_cc0pi/";//
+  std::string filepath = "../Output_Selection_Tool/plots/cc1pi_test/";
 
   for(unsigned int i = 0; i < events.size(); ++i){
     //---------------------------- Do analysis---------------------------------------------
     Event &e(events[i]);
-    GeneralAnalysisHelper::SetTopologies();
     TopologyMap topology = GeneralAnalysisHelper::GetCC1PiTopologyMap();
 
     // ----------------------------Save Event Information----------------------------------
-    e.EventInformationParticles( "event_information.txt" , i );
-    e.EventProperties( topology , "event_properties",  i );
+    GeneralAnalysisHelper::EventInformationParticles( e, "event_information.txt" , i );
+    //GeneralAnalysisHelper::EventProperties( e, topology , "event_properties",  i );
+    
     // ----------------------------Eficiency calculation values----------------------------
 
     GeneralAnalysisHelper::TopologyStatistics(e, GeneralAnalysisHelper::GetNCTopologyMap(),    CountMC[0], CountTReco[0], CountReco[0]);
@@ -179,7 +197,13 @@ int MainTest(){
     
     //--------------------- TOPOLOGY MIS IDENTIFICATION : TOPOLOGY MATRIX -----------------
     GeneralAnalysisHelper::TopologyMatrix(e, Count_MC_Topology, Count_TReco_Topology, Count_Reco_Topology);
-    
+   
+    /*************************************************************************************
+     *    
+     *    Commented out while we decide how to implement the new (fixed) functions
+     *
+     *************************************************************************************
+     *
     //--------------------- Events vs Length, Angle and Kinetic Energy   ------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
 
@@ -292,33 +316,33 @@ int MainTest(){
         if( e.GetRecoCosThetaWithPdg( 111 ) != 0    ) h_pi0_Reco_nc_T -> Fill( e.GetRecoCosThetaWithPdg( 111 )         ); }   
       }
     }
-
+    */
     // ------------------------------------------    Efficiency     ----------------------------------------------------
-    if( i == events.size()-1 ) std::cout << "Efficiency for the selected topology" << e.Efficiency( CountMC, CountTReco, CountReco, topology ) << std::endl;
+    if( i == events.size()-1 ) std::cout << "Efficiency for the selected topology" << GeneralAnalysisHelper::Efficiency( CountMC, CountTReco, CountReco, topology ) << std::endl;
     // ------------------------------------------  Neutrino Energy  ----------------------------------------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
       if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() ) h_MC_energy_nu_cc0pi -> Fill( e.GetTrueNuEnergy() );
       if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_energy_nu_cc1pi -> Fill( e.GetTrueNuEnergy() ); 
       if( e.CheckRecoTopology( topology ) == 1 ) { 
-	      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
-	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_TReco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
-	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Enu_MC_TReco          -> Fill( e.GetMCCC1piNeutrinoEnergy(), (e.GetRecoCC1piNeutrinoEnergy()-e.GetMCCC1piNeutrinoEnergy())/e.GetMCCC1piNeutrinoEnergy() );
+	      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e)>0 ) h_TReco_energy_nu_cc0pi -> Fill( CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e) );
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e)>0 ) h_TReco_energy_nu_cc1pi -> Fill( CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e) );
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e)>0 ) h_Enu_MC_TReco          -> Fill( CC1piAnalysisHelper::GetMCCC1piNeutrinoEnergy(e), (CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e)-CC1piAnalysisHelper::GetMCCC1piNeutrinoEnergy(e))/CC1piAnalysisHelper::GetMCCC1piNeutrinoEnergy(e) );
 	    }
     }
     if( e.CheckRecoTopology( topology ) == 1 ) {
-      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && e.GetRecoCC0piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc0pi -> Fill( e.GetRecoCC0piNeutrinoEnergy() );
-      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergy()>0 ) h_Reco_energy_nu_cc1pi -> Fill( e.GetRecoCC1piNeutrinoEnergy() );
+      if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() && CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e)>0 ) h_Reco_energy_nu_cc0pi -> Fill( CC0piAnalysisHelper::GetRecoCC0piNeutrinoEnergy(e) );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e)>0 ) h_Reco_energy_nu_cc1pi -> Fill( CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergy(e) );
     }
 
     // ------------------------------------------  Neutrino Energy method 2  ----------------------------------------------------
     if( e.CheckMCTopology( topology ) == 1 ) { 
       if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) h_MC_energy_nu_cc1pi_M2 -> Fill( e.GetTrueNuEnergy() );  
       if( e.CheckRecoTopology( topology ) == 1 ) { 
-	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_TReco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
+	      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergyMethod2(e)>0 ) h_TReco_energy_nu_cc1pi_M2 -> Fill( CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergyMethod2(e) );
 	    }
     }
     if( e.CheckRecoTopology( topology ) == 1 ) {
-      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && e.GetRecoCC1piNeutrinoEnergyMethod2()>0 ) h_Reco_energy_nu_cc1pi_M2 -> Fill( e.GetRecoCC1piNeutrinoEnergyMethod2() );
+      if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() && CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergyMethod2(e)>0 ) h_Reco_energy_nu_cc1pi_M2 -> Fill( CC1piAnalysisHelper::GetRecoCC1piNeutrinoEnergyMethod2(e) );
     }
   } //endfor
   
@@ -504,7 +528,7 @@ int MainTest(){
   h_pi_TReco_T-> Draw("same");
   leg -> Draw();
   c->Print( (filepath+"h_pi_ALL_T.pdf").c_str() );
-  c->SaveAs( (filepath+"~/Desktop/Event_Selection_Tool/hist_output/test/h_pi_ALL_T.root").c_str() );
+  c->SaveAs( (filepath+"h_pi_ALL_T.root").c_str() );
   c->Clear();
   leg->Clear();
   //---------------------------HISTO 5  
@@ -1013,6 +1037,7 @@ int MainTest(){
   
   c->Clear();
   leg->Clear();
+
   return 0;
 } // MainTest()
 

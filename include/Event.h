@@ -16,7 +16,7 @@ namespace selection{
   // Typedef for the map
   typedef std::map< std::vector< int >, int > TopologyMap;
   typedef std::vector<Particle> ParticleList;
-  typedef std::vector< vector<double> > ParticleMatrix ;
+  typedef std::vector< vector<double> > ParticleMatrix;
 
   /**
    * @brief  Event class
@@ -131,36 +131,6 @@ namespace selection{
       TVector3 GetRecoNuVertex() const;
       
       /**
-       * @brief  get the MCParticle corresponding to the reco particle via charge
-       *
-       * @param  particle reconstructed (track-based) particle
-       *
-       * @return mcparticle
-       *
-       */
-      Particle GetMCParticleCharge(const Particle &particle) const;
-
-      /**
-       * @brief  get the MCParticle corresponding to the reco particle via energy
-       *
-       * @param  particle reconstructed (track-based) particle
-       *
-       * @return mcparticle
-       *
-       */
-      Particle GetMCParticleEnergy(const Particle &particle) const;
-
-      /**
-       * @brief  get the MCParticle corresponding to the reco particle via hits
-       *
-       * @param  particle reconstructed (track-based) particle
-       *
-       * @return mcparticle
-       *
-       */
-      Particle GetMCParticleHits(const Particle &particle) const;
-
-      /**
        * @brief  Get the true neutrino energy
        */
       float GetTrueNuEnergy() const;
@@ -198,17 +168,6 @@ namespace selection{
        * @return boolean as to whether the event has the desired topology
        */
       bool CheckTopology(const TopologyMap &topology, const ParticleList &particle_list) const;
-
-      /**
-       * @brief  get the MCParticle corresponding to the reco particle general
-       *
-       * @param  particle reconstructed (track-based) particle
-       * @param  mcparticle_list list of mcparticles to loop over
-       *
-       * @return mcparticle
-       *
-       */
-      Particle GetMCParticle(const int id, const ParticleList &particle_list ) const;
 
       /**
        * @brief  Get the most energetic particle
