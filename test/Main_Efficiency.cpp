@@ -184,8 +184,8 @@ int MainTest(){
     TopologyMap topology = GeneralAnalysisHelper::GetCC1PiTopologyMap();
 
     // ----------------------------Save Event Information----------------------------------
-    GeneralAnalysisHelper::EventInformationParticles( e, "event_information.txt" , i );
-    //GeneralAnalysisHelper::EventProperties( e, topology , "event_properties",  i );
+    GeneralAnalysisHelper::EventInformationParticles( e, "../Output_Selection_Tool/statistics/event_information.txt" , i );
+    //GeneralAnalysisHelper::EventProperties( e, topology, "../Output_Selection_Tool/statistics/event_properties",  i );
     
     // ----------------------------Eficiency calculation values----------------------------
 

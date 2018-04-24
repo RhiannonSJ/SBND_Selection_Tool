@@ -125,7 +125,7 @@ namespace selection{
     if(m_has_calorimetry && !m_from_reco_track){
       return m_mc_id;
     }
-    else throw 5;
+    throw 5;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -135,7 +135,7 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_charge;
     }
-    else throw 6;
+    throw 6;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -145,7 +145,7 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_energy;
     }
-    else throw 6;
+    throw 6;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -155,7 +155,7 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_hits;
     }
-    else throw 6;
+    throw 6;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -174,5 +174,5 @@ namespace selection{
   }
   
   //------------------------------------------------------------------------------------------ 
-    
+
 } // Selection

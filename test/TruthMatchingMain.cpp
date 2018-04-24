@@ -29,12 +29,8 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string tables_location = "../Output_Selection_Tool/tables/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/";
   std::string plots_location  = "../Output_Selection_Tool/plots/";
-
-  //------------------------------------------------------------------------------------------
-  //                                        Counters
-  //------------------------------------------------------------------------------------------
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -50,7 +46,7 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   // Load the events into the event list
-  for( unsigned int i = 0; i < 500; ++i ){
+  for( unsigned int i = 0; i < 50; ++i ){
   
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -76,34 +72,16 @@ int MainTest(){
   std::cout << " After loading events local time and date:  " << asctime(timeinfo_afterload) << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
 
-  for(unsigned int i = 0; i < events.size(); ++i){
+  // Files to hold particle statistics
+  ofstream all_file;
+  all_file.open(stats_location+"all_topologies_particle_stats.txt");
 
-    // Do analysis
-    Event &e(events[i]);
-
-    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc_signal_map) && e.CheckRecoTopology(cc_signal_map)) correctly_reconstructed_cc++;
-    if(e.CheckRecoTopology(cc_signal_map)) reco_topology_cc++;
-    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(cc_signal_map))   true_topology_cc++;
-
-  }
-  
-  std::cout << "===========================================================" << std::endl;
-  std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << "===========================================================" << std::endl;
-
-  /*
-  gStyle->SetPalette(55);
-  gStyle->SetNumberContours(250);
-
-  TCanvas *c = new TCanvas();
-  TLegend *l = new TLegend( 0.58, 0.68, 0.88, 0.88 );
-  l->SetBorderSize(0);
-
-  l->AddEntry( h_true_energy,      " True Monte Carlo",    "l" );
-  l->AddEntry( h_reco_energy,      " Selected ",           "l" );
-  l->AddEntry( h_good_energy,      " Correctly selected ", "l" );
-  */
+  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc_signal_map, "CC Inclusive",  all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc0pi_signal_map, "CC 0 Pi",    all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc1pi_signal_map, "CC 1 Pi+/-", all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, ccpi0_signal_map, "CC 1 Pi0",   all_file);
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

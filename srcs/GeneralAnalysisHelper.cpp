@@ -39,9 +39,9 @@ namespace selection{
   //----------------------------------------------------------------------------------------
   
   void GeneralAnalysisHelper::TopologyStatistics(const Event &e, const TopologyMap signal_map_topology, double & count_true, double & count_signal, double & count_selected){
-    if(e.CheckMCTopology(signal_map_topology) == 1) count_true++;
-    if(e.CheckRecoTopology(signal_map_topology) == 1) count_selected++;
-    if(e.CheckMCTopology(signal_map_topology) == 1) count_signal++;
+    if(e.CheckMCTopology(signal_map_topology)) count_true++;
+    if(e.CheckRecoTopology(signal_map_topology)) count_selected++;
+    if(e.CheckMCTopology(signal_map_topology) && e.CheckRecoTopology(signal_map_topology)) count_signal++;
   }
 
   //----------------------------------------------------------------------------------------
@@ -56,38 +56,50 @@ namespace selection{
 
     for(unsigned int i=0; i < topology_vector.size(); ++i ){
       for(unsigned int j=0; j < topology_vector.size(); ++j ){
-        if (e.CheckMCTopology(topology_vector[i]) == 1) count_true_topology[i][j]++;
-        if (e.CheckRecoTopology(topology_vector[i]) == 1) count_selected_topology[i][j]++;
-        if (e.CheckMCTopology(topology_vector[i]) == 1) count_signal_topology[i][j]++;
+        if (e.CheckMCTopology(topology_vector[i])) count_true_topology[i][j]++;
+        if (e.CheckRecoTopology(topology_vector[i])) count_selected_topology[i][j]++;
+        if (e.CheckMCTopology(topology_vector[i]) && e.CheckRecoTopology(topology_vector[i])) count_signal_topology[i][j]++;
       }
     }
     return count_signal_topology;
   }
+  //------------------------------------------------------------------------------------------ 
+  
+  int GeneralAnalysisHelper::ParticleHasAMatch(const Event &e, const Particle &p){
+    // Starting from hits (since this is the chosen best method) find out if there is a match
+    ParticleList particles = e.GetMCParticleList();
+    for(const Particle &part : particles){
+      if(part.GetMCId() == p.GetMCParticleIdHits()) return 0;
+      else if(part.GetMCId() == p.GetMCParticleIdCharge()) return 1;
+      else if(part.GetMCId() == p.GetMCParticleIdEnergy()) return 2;
+    }
+    return -1;
+  }
   
   //------------------------------------------------------------------------------------------ 
   
-  Particle GeneralAnalysisHelper::GetMCParticleCharge(const Event &e, const Particle &particle) const{
+  Particle GeneralAnalysisHelper::GetMCParticleCharge(const Event &e, const Particle &particle) {
     int charge_id = particle.GetMCParticleIdCharge();
     return GetMCParticle(charge_id, e.GetMCParticleList());
   }
   
   //------------------------------------------------------------------------------------------ 
   
-  Particle GeneralAnalysisHelper::GetMCParticleEnergy(const Event &e, const Particle &particle) const{
+  Particle GeneralAnalysisHelper::GetMCParticleEnergy(const Event &e, const Particle &particle) {
     int energy_id = particle.GetMCParticleIdEnergy();
     return GetMCParticle(energy_id, e.GetMCParticleList());
   }
   
   //------------------------------------------------------------------------------------------ 
   
-  Particle GeneralAnalysisHelper::GetMCParticleHits(const Event &e, const Particle &particle) const{
+  Particle GeneralAnalysisHelper::GetMCParticleHits(const Event &e, const Particle &particle) {
     int hits_id = particle.GetMCParticleIdHits();
     return GetMCParticle(hits_id, e.GetMCParticleList());
   }
   
   //------------------------------------------------------------------------------------------ 
   
-  Particle GeneralAnalysisHelper::GetMCParticle(const int id, const ParticleList &particle_list ) const{
+  Particle GeneralAnalysisHelper::GetMCParticle(const int id, const ParticleList &particle_list) {
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
       if(particle_list[i].GetMCId() == id) return particle_list[i];
     }
@@ -96,6 +108,169 @@ namespace selection{
   
   //----------------------------------------------------------------------------------------
 
+  unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologyTrue(const Event &e, const TopologyMap &topology, const int pdg){
+    // Check if the event is a true event
+    if(e.IsSBNDTrueFiducial() && e.CheckMCTopology(topology)){
+      return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
+    }
+    else return 0;  
+  }
+      
+  //----------------------------------------------------------------------------------------
+
+  unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
+    // Check if the event is a selected event
+    if(e.CheckRecoTopology(topology)){
+      return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
+    }
+    else return 0;  
+  }
+      
+  //----------------------------------------------------------------------------------------
+
+  unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
+    // Check if the event is a signal event
+    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology) && e.CheckMCTopology(topology)){
+      return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
+    }
+    else return 0;
+  }
+      
+  //----------------------------------------------------------------------------------------
+
+  unsigned int GeneralAnalysisHelper::CountMatchedParticlesAll(const Event &e, const int pdg){
+    return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
+  }
+      
+  //----------------------------------------------------------------------------------------
+  
+  unsigned int GeneralAnalysisHelper::CountMatchedParticles(const Event &e, const ParticleList &particle_list, const int pdg){
+    unsigned int matched_particles = 0;
+    // Loop over given particle list, if MatchedParticle, add to counter
+    for(unsigned int i = 0; i < particle_list.size(); ++i){
+      if(particle_list[i].GetPdgCode() == abs(pdg)){
+        if(GeneralAnalysisHelper::MatchedParticle(e,particle_list[i])) matched_particles++;
+      }
+    }
+    return matched_particles;
+  }
+  
+  //----------------------------------------------------------------------------------------
+  
+  bool GeneralAnalysisHelper::MatchedParticle(const Event &e, const Particle &p){
+    if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 0      && abs(GeneralAnalysisHelper::GetMCParticleHits(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+    else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 1 && abs(GeneralAnalysisHelper::GetMCParticleCharge(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+    else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 2 && abs(GeneralAnalysisHelper::GetMCParticleEnergy(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+    else return false;
+  }
+  
+  //----------------------------------------------------------------------------------------
+  
+  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
+
+    // Counters for each particle type
+    unsigned int total_true_muons         = 0;
+    unsigned int total_true_protons       = 0;
+    unsigned int total_true_charged_pions = 0;
+    unsigned int total_reco_muons         = 0;
+    unsigned int total_reco_protons       = 0;
+    unsigned int total_reco_charged_pions = 0;
+    unsigned int true_muons               = 0;
+    unsigned int true_protons             = 0;
+    unsigned int true_charged_pions       = 0;
+    unsigned int selected_muons           = 0;
+    unsigned int selected_protons         = 0;
+    unsigned int selected_charged_pions   = 0;
+    unsigned int signal_muons             = 0;
+    unsigned int signal_protons           = 0;
+    unsigned int signal_charged_pions     = 0;
+
+    for(unsigned int i = 0; i < ev_list.size(); ++i){                                                                                                           
+      Event e(ev_list[i]);
+
+      total_true_muons         += e.CountMCParticlesWithPdg(13);
+      total_true_charged_pions += e.CountMCParticlesWithPdg(211);
+      total_true_charged_pions += e.CountMCParticlesWithPdg(-211);
+      total_true_protons       += e.CountMCParticlesWithPdg(2212);
+
+      total_reco_muons         += e.CountRecoParticlesWithPdg(13);
+      total_reco_charged_pions += e.CountRecoParticlesWithPdg(211);
+      total_reco_charged_pions += e.CountRecoParticlesWithPdg(-211);
+      total_reco_protons       += e.CountRecoParticlesWithPdg(2212);
+
+      true_muons               += GeneralAnalysisHelper::CountMatchedParticlesByTopologyTrue(e, topology, 13);
+      true_charged_pions       += GeneralAnalysisHelper::CountMatchedParticlesByTopologyTrue(e, topology, 211);
+      true_charged_pions       += GeneralAnalysisHelper::CountMatchedParticlesByTopologyTrue(e, topology, -211);
+      true_protons             += GeneralAnalysisHelper::CountMatchedParticlesByTopologyTrue(e, topology, 2212);
+      
+      selected_muons           += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 13);
+      selected_charged_pions   += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 211);
+      selected_charged_pions   += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, -211);
+      selected_protons         += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 2212);
+      
+      signal_muons             += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 13);
+      signal_charged_pions     += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 211);
+      signal_charged_pions     += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, -211);
+      signal_protons           += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 2212);
+    }
+
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << "    " << topology_name                                                                                                                           << std::endl;  
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "Truth event";
+    os << std::setw(16) << true_muons;
+    os << std::setw(16) << true_charged_pions;
+    os << std::setw(16) << true_protons;
+    os << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "Selected event";
+    os << std::setw(16) << selected_muons;
+    os << std::setw(16) << selected_charged_pions;
+    os << std::setw(16) << selected_protons;
+    os << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "Signal event";
+    os << std::setw(16) << signal_muons;
+    os << std::setw(16) << signal_charged_pions;
+    os << std::setw(16) << signal_protons;
+    os << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+  }
+
+  //----------------------------------------------------------------------------------------
+  
+  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os){
+    
+    unsigned int muons         = 0;
+    unsigned int protons       = 0;
+    unsigned int charged_pions = 0;
+    unsigned int neutral_pions = 0;
+    
+    for(unsigned int i = 0; i < ev_list.size(); ++i){                                                                                                           
+      Event e(ev_list[i]);
+      muons         += GeneralAnalysisHelper::CountMatchedParticlesAll(e, 13);
+      charged_pions += GeneralAnalysisHelper::CountMatchedParticlesAll(e, 211) + GeneralAnalysisHelper::CountMatchedParticlesAll(e, -211);
+      protons       += GeneralAnalysisHelper::CountMatchedParticlesAll(e, 2212);
+    }
+
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << "    All events"                                                                                                                                  << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << "Proton" << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+    os << std::setw(16) << "";
+    os << std::setw(16) << muons;
+    os << std::setw(16) << charged_pions;
+    os << std::setw(16) << protons;
+    os << std::endl;
+    os << "---------------------------------------------------------------------------------"                                                               << std::endl;
+  
+  }
+  
+  //----------------------------------------------------------------------------------------
+  
   void GeneralAnalysisHelper::GetRecoLengthWithPdg(const Event &e, const int pdg, std::vector<float> &lengths) {
     LengthWithPdg(pdg, e.GetRecoParticleList(), lengths);
   }
@@ -198,7 +373,7 @@ namespace selection{
  
   double GeneralAnalysisHelper::Efficiency(const std::vector< double > & count_mc, const std::vector< double > & count_signal, const std::vector< double > & count_selected, const TopologyMap &topology) {
     ofstream rfile;
-    rfile.open( "results.txt" );
+    rfile.open( "../Output_Selection_Tool/statistics/results.txt" );
 
     for( int i = 0; i<5; ++i ){
       rfile << "__________________________________________________________"                                                             << "\n";
@@ -227,7 +402,7 @@ namespace selection{
   
   void GeneralAnalysisHelper::SaveTopologyMatrix(const ParticleMatrix &count_mc_topology, const ParticleMatrix &count_signal_topology, const ParticleMatrix &count_selected_topology) {
    ofstream TMfile ;
-   TMfile.open( "TopologyMatrix.txt" ) ;
+   TMfile.open( "../Output_Selection_Tool/statistics/TopologyMatrix.txt" ) ;
     TMfile                                                                   << "\n";
     TMfile << "____________________________________________________________" << "\n";
     TMfile                                                                   << "\n";

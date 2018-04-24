@@ -2,7 +2,11 @@
 #define GENERAL_ANALYSIS_HELPER_H
 
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 #include <vector>
+#include <cmath>
 #include <utility>
 #include "TTree.h"
 #include "TFile.h"
@@ -74,8 +78,30 @@ namespace selection{
        * @return mcparticle
        *
        */
-      Particle GetMCParticle(const int id, const ParticleList &particle_list ) const;
+      static Particle GetMCParticle(const int id, const ParticleList &particle_list );
+     
+      /**
+       * @brief  determine whether the given reconstructed particle's pdg matches the true 
+       *
+       * @param  particle reconstructed particle to check
+       *
+       * @return true or false: Matched or not
+       *
+       */
+      static bool MatchedParticle(const Event &e, const Particle &p);
       
+      /**
+       * @brief  count the number of matched particles with a given pdg code for given particle list
+       *
+       * @param  event
+       * @param  reconstructed particle list
+       * @param  pdgcode
+       *
+       * @return number of matched particles with given pdgcode
+       *
+       */
+      static unsigned int CountMatchedParticles(const Event &e, const ParticleList &particle_list, const int pdg);
+
     public : 
 
       typedef std::vector<Particle> ParticleList;
@@ -269,7 +295,7 @@ namespace selection{
        * @return mcparticle
        *
        */
-      Particle GetMCParticleCharge(const Event &e, const Particle &particle) const;
+      static Particle GetMCParticleCharge(const Event &e, const Particle &particle);
 
       /**
        * @brief  get the MCParticle corresponding to the reco particle via energy
@@ -279,7 +305,7 @@ namespace selection{
        * @return mcparticle
        *
        */
-      Particle GetMCParticleEnergy(const Event &e, const Particle &particle) const;
+      static Particle GetMCParticleEnergy(const Event &e, const Particle &particle);
 
       /**
        * @brief  get the MCParticle corresponding to the reco particle via hits
@@ -289,7 +315,88 @@ namespace selection{
        * @return mcparticle
        *
        */
-      Particle GetMCParticleHits(const Event &e, const Particle &particle) const;
+      static Particle GetMCParticleHits(const Event &e, const Particle &particle);
+
+      /**
+       * @brief  from a true event of a given topology, count the number of matched particles
+       * with a given pdg code
+       *
+       * @param  event
+       * @param  topology
+       * @param  pdgcode
+       *
+       * @return number of matched particles for truth event of a given pdgcode
+       */
+      static unsigned int CountMatchedParticlesByTopologyTrue(const Event &e, const TopologyMap &topology, const int pdg);
+
+      /**
+       * @brief  from a selected event with a given topology, count the number of matched particles
+       * with a given pdg code
+       *
+       * @param  event
+       * @param  topology
+       * @param  pdgcode
+       *
+       * @return number of matched particles for selected event of a given pdgcode
+       */
+      static unsigned int CountMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg);
+
+      /**
+       * @brief  from a signal event with a given topology, count the number of matched particles
+       * with a given pdg code
+       *
+       * @param  event
+       * @param  topology
+       * @param  pdgcode
+       *
+       * @return number of matched particles for signal event of a given pdgcode
+       */
+      static unsigned int CountMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg);
+      
+      /**
+       * @brief  count the number of matched particles with a given pdg code for whole event
+       *
+       * @param  event
+       * @param  pdgcode
+       *
+       * @return number of matched particles with given pdgcode
+       */
+      static unsigned int CountMatchedParticlesAll(const Event &e, const int pdg);
+
+      /**
+       * @brief  for all events, count all matched particles by topology and fill file
+       *
+       * @param  event list
+       * @param  topology
+       * @param  topology name
+       * @param  file to append
+       *
+       */
+      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os);
+
+      /**
+       * @brief  for all events, count all matched particles and fill file
+       *
+       * @param  event list
+       * @param  file name
+       *
+       */
+      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os);
+
+      /**
+       * @brief  find out if a reconstructed particle has a matching truth particle
+       *          first check using hits, return 0 if true
+       *          second check using charge, return 1 if true
+       *          third check using energy, return 2 if true
+       *          if no match, return -1
+       *
+       * @param  current event
+       * @param  reconstructed particle
+       *
+       * @return enumerated result
+       *
+       */
+      static int ParticleHasAMatch(const Event &e, const Particle &p);
 
   }; // GeneralAnalysisHelper
 } // namespace: selection
