@@ -125,6 +125,9 @@ namespace selection{
     if(m_has_calorimetry && !m_from_reco_track){
       return m_mc_id;
     }
+    
+    std::cout << "GetMCId" << std::endl;
+
     throw 5;
   }
 
@@ -135,6 +138,9 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_charge;
     }
+    
+    std::cout << "GetMCIdCharge" << std::endl;
+
     throw 6;
   }
 
@@ -145,6 +151,9 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_energy;
     }
+    
+    std::cout << "GetMCIdEnergy" << std::endl;
+
     throw 6;
   }
 
@@ -155,6 +164,9 @@ namespace selection{
     if(m_has_calorimetry && m_from_reco_track){
       return m_mc_id_hits;
     }
+    
+    std::cout << "GetMCIdHits" << std::endl;
+
     throw 6;
   }
 
