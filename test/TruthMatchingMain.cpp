@@ -63,7 +63,7 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
     
-    std::cout << "Loaded file " << setw(4) << i << '\r' << flush;
+    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
 
   }
 
