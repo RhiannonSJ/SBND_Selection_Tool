@@ -1,4 +1,4 @@
-# SBND_Selection_Tool
+# SBND Selection Tool
 Takes in trees containing information about reconstructed and true SBND events, generated in LArSoft and written to a single root file. Performs PID and identifies true and reconstructed topologies and true interactions
 
 
@@ -11,3 +11,8 @@ Once this has compiled and you are within ROOT, type the name of the main functi
 
 # Notes
 Everything must be contained within a namespace in order to link correctly
+
+# Documentation
+Documentation is located at
+
+<http://hep.ph.liv.ac.uk/~rjones/selection_tool_doxygen/index.html>
