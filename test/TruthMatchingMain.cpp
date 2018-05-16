@@ -56,7 +56,8 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );

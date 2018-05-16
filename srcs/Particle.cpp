@@ -6,9 +6,10 @@
 
 namespace selection{
 
-  Particle::Particle(const int mc_id, const int pdg, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
+  Particle::Particle(const int mc_id, const int pdg, const int n_hits,  const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
     m_mc_id(mc_id), 
-    m_pdg(pdg), 
+    m_pdg(pdg),
+    m_n_hits(n_hits),
     m_mass(mass),
     m_energy(energy),
     m_has_calorimetry(true),
@@ -21,11 +22,12 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end) :
+  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
     m_pdg(pdg),
+    m_n_hits(n_hits),
     m_length(length),
     m_has_calorimetry(true),
     m_from_reco_track(true),
@@ -42,8 +44,9 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
 
-  Particle::Particle(const int pdg, const TVector3 &vertex, const TVector3 &end) :
+  Particle::Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end) :
     m_pdg(pdg),
+    m_n_hits(n_hits),
     m_mass(this->GetMassFromPdg(pdg)),
     m_has_calorimetry(false),
     m_from_reco_track(false),
@@ -75,6 +78,10 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   int Particle::GetPdgCode() const{return m_pdg;}
+
+  //------------------------------------------------------------------------------------------ 
+  
+  int Particle::GetNumberOfHits() const{return m_n_hits;}
 
   //------------------------------------------------------------------------------------------ 
   

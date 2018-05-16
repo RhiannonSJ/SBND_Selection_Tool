@@ -153,12 +153,13 @@ namespace selection{
          * @param  end end point of the track
          *
          */
-          Track(const int &mc_id_charge, const int &mc_id_energy, const int &mc_id_hits, const float &pida, const float &chi2_mu, const float &chi2_pi, const float &chi2_pr, const float &chi_ka, const float &length, const float &kinetic_energy, const TVector3 &vertex, const TVector3 &end);
+          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end);
 
           // Member variables
           int      m_mc_id_charge;   ///< mc TrackID corresponding to MCParticle using charge
           int      m_mc_id_energy;   ///< mc TrackID corresponding to MCParticle using energy
           int      m_mc_id_hits;     ///< mc TrackID corresponding to MCParticle using hits
+          int      m_n_hits;         ///< number of hits in the track
           float    m_pida;           ///< pida value
           float    m_chi2_mu;        ///< chi squared fit to the muon expected dEdx
           float    m_chi2_pi;        ///< chi squared fit to the pion expected dEdx
@@ -187,9 +188,10 @@ namespace selection{
            * @param  length length of the shower
            *
            */
-          Shower(const TVector3 &vertex, const TVector3 &direction, const float &open_angle, const float &length, const float &energy);
+          Shower(const int n_hits, const TVector3 &vertex, const TVector3 &direction, const float open_angle, const float length, const float energy);
 
           // Member variables
+          int      m_n_hits;     ///< number of hits in the shower
           TVector3 m_vertex;     ///< vertex of the shower 
           TVector3 m_direction;  ///< direction of the shower
           float    m_open_angle; ///< opening angle at the vertex of the shower

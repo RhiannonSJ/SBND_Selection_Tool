@@ -20,6 +20,7 @@ namespace selection{
        *
        * @param  id of the particle
        * @param  pdg of the particle
+       * @param  n_hits number of hits the particle has
        * @param  mass mass of the particle
        * @param  energy total energy of the particle
        * @param  vertex start point of the track
@@ -27,29 +28,34 @@ namespace selection{
        * @param  momentum momentum of the track
        *
        */
-      Particle(const int mc_id, const int pdg, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
+      Particle(const int mc_id, const int pdg, const int n_hits, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
 
       /**
        * @brief  Constructor for reconstructed tracks 
        *
+       * @param  mc_id_charge MC ID using the charge method
+       * @param  mc_id_energy MC ID using the energy method
+       * @param  mc_id_hits MC ID using the hits method
        * @param  pdg of the particle
+       * @param  n_hits number of hits the particle has
        * @param  kinetic_energy total energy of the particle
        * @param  length length of the particle
        * @param  vertex start point of the track
        * @param  end end of the track
        *
        */
-      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end);
+      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end);
 
       /**
        * @brief  Constructor for reconstructed showers 
        *
        * @param  pdg of the particle
+       * @param  n_hits number of hits the particle has
        * @param  vertex start point of the track
        * @param  end end of the track
        *
        */
-      Particle(const int pdg, const TVector3 &vertex, const TVector3 &end);
+      Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end);
 
       /**
        * @brief  Get the mass from the pdg code
@@ -64,6 +70,10 @@ namespace selection{
        */
       int GetPdgCode() const;
 
+      /**
+       * @brief  Get the number of hits
+       */
+      int GetNumberOfHits() const;
       /**
        * @brief  Get the mass
        */
@@ -145,6 +155,7 @@ namespace selection{
       int      m_mc_id_energy;    ///< mc TrackID corresponding to MCParticle using energy
       int      m_mc_id_hits;      ///< mc TrackID corresponding to MCParticle using hits
       int      m_mc_id;           ///< mc TrackID 
+      int      m_n_hits;          ///< number of hits 
       int      m_pdg;             ///< pdg code
       float    m_mass;            ///< mass of the particle
       float    m_energy;          ///< energy of the particle

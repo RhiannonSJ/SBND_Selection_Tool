@@ -507,6 +507,17 @@ namespace selection{
        */
       static int ParticleHasAMatch(const Event &e, const Particle &p);
 
+      /**
+       * @brief  Find out if an MC particle has a corresponding reconstructed particle
+       *
+       * @param  event
+       * @param  mc particle
+       *
+       * @return true or false: true == has reconstructed particle, false == hasn't
+       *
+       */
+      static bool HasBeenReconstructed(const Event &e, const Particle &p);
+
   }; // GeneralAnalysisHelper
 } // namespace: selection
 #endif

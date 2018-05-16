@@ -63,6 +63,25 @@ namespace selection{
     }
     return count_signal_topology;
   }
+      
+  //------------------------------------------------------------------------------------------ 
+  
+  bool GeneralAnalysisHelper::HasBeenReconstructed(const Event &e, const Particle &p){
+    // Check if a true particle has a corresponding reconstructed particle
+    // Only needs to happen once, may happen more than once but this is so that the user
+    // can quickly check if the mc particle has been reconstructed
+    //
+    // Check that we are looking at an MC particle
+    int true_id = p.GetMCId();
+    ParticleList reco_particles = e.GetRecoParticleList();
+    for(Particle &p_reco : reco_particles){
+      if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
+        if(GeneralAnalysisHelper::GetBestMCParticle(e,p_reco).GetMCId() == true_id) return true;
+      }
+    }
+    return false;
+  }
+  
   //------------------------------------------------------------------------------------------ 
   
   int GeneralAnalysisHelper::ParticleHasAMatch(const Event &e, const Particle &p){
@@ -266,56 +285,56 @@ namespace selection{
   void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
 
     // Counters for each particle type
-    unsigned int mc_selected_muons           = 0;
-    unsigned int mc_selected_protons         = 0;
-    unsigned int mc_selected_charged_pions   = 0;
-    unsigned int mc_signal_muons             = 0;
-    unsigned int mc_signal_protons           = 0;
-    unsigned int mc_signal_charged_pions     = 0;
-    unsigned int reco_selected_muons         = 0;
-    unsigned int reco_selected_protons       = 0;
-    unsigned int reco_selected_charged_pions = 0;
-    unsigned int reco_signal_muons           = 0;
-    unsigned int reco_signal_protons         = 0;
-    unsigned int reco_signal_charged_pions   = 0;
-    unsigned int selected_muons              = 0;
-    unsigned int selected_protons            = 0;
-    unsigned int selected_charged_pions      = 0;
-    unsigned int signal_muons                = 0;
-    unsigned int signal_protons              = 0;
-    unsigned int signal_charged_pions        = 0;
+    unsigned int mc_selected_muons     = 0;
+    unsigned int mc_selected_protons   = 0;
+    unsigned int mc_selected_pions     = 0;
+    unsigned int mc_signal_muons       = 0;
+    unsigned int mc_signal_protons     = 0;
+    unsigned int mc_signal_pions       = 0;
+    unsigned int reco_selected_muons   = 0;
+    unsigned int reco_selected_protons = 0;
+    unsigned int reco_selected_pions   = 0;
+    unsigned int reco_signal_muons     = 0;
+    unsigned int reco_signal_protons   = 0;
+    unsigned int reco_signal_pions     = 0;
+    unsigned int selected_muons        = 0;
+    unsigned int selected_protons      = 0;
+    unsigned int selected_pions        = 0;
+    unsigned int signal_muons          = 0;
+    unsigned int signal_protons        = 0;
+    unsigned int signal_pions          = 0;
 
     for(const Event &e : ev_list){
       
-      mc_selected_muons           += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
-      mc_selected_charged_pions   += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
-      mc_selected_charged_pions   += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, -211);
-      mc_selected_protons         += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 2212);
+      mc_selected_muons     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
+      mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
+      mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, -211);
+      mc_selected_protons   += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 2212);
       
-      mc_signal_muons             += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 13);
-      mc_signal_charged_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 211);
-      mc_signal_charged_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, -211);
-      mc_signal_protons           += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 2212);
+      mc_signal_muons       += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 13);
+      mc_signal_pions       += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 211);
+      mc_signal_pions       += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, -211);
+      mc_signal_protons     += GeneralAnalysisHelper::CountMCParticlesByTopologySignal(e, topology, 2212);
 
-      reco_selected_muons         += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 13);
-      reco_selected_charged_pions += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 211);
-      reco_selected_charged_pions += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, -211);
-      reco_selected_protons       += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 2212);
+      reco_selected_muons   += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 13);
+      reco_selected_pions   += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 211);
+      reco_selected_pions   += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, -211);
+      reco_selected_protons += GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(e, topology, 2212);
       
-      reco_signal_muons           += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 13);
-      reco_signal_charged_pions   += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 211);
-      reco_signal_charged_pions   += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, -211);
-      reco_signal_protons         += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 2212);
+      reco_signal_muons     += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 13);
+      reco_signal_pions     += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 211);
+      reco_signal_pions     += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, -211);
+      reco_signal_protons   += GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(e, topology, 2212);
 
-      selected_muons              += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 13);
-      selected_charged_pions      += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 211);
-      selected_charged_pions      += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, -211);
-      selected_protons            += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 2212);
-                                  
-      signal_muons                += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 13);
-      signal_charged_pions        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 211);
-      signal_charged_pions        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, -211);
-      signal_protons              += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 2212);
+      selected_muons        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 13);
+      selected_pions        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 211);
+      selected_pions        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, -211);
+      selected_protons      += GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(e, topology, 2212);
+                            
+      signal_muons          += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 13);
+      signal_pions          += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 211);
+      signal_pions          += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, -211);
+      signal_protons        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 2212);
     }
 
     os << "    " << topology_name                                                                                               << std::endl;  
@@ -324,58 +343,58 @@ namespace selection{
     os << "-------------------------------------------------------------------------------------"           << std::endl;
     os << std::setw(35) << "Selected event, MC particles";
     os << std::setw(16) << mc_selected_muons;
-    os << std::setw(16) << mc_selected_charged_pions;
+    os << std::setw(16) << mc_selected_pions;
     os << std::setw(16) << mc_selected_protons;
     os << std::endl;
     os << std::setw(35) << "Selected event, Reco particles";
     os << std::setw(16) << reco_selected_muons;
-    os << std::setw(16) << reco_selected_charged_pions;
+    os << std::setw(16) << reco_selected_pions;
     os << std::setw(16) << reco_selected_protons;
     os << std::endl;
     os << std::setw(35) << "Selected event, Matched particles";
     os << std::setw(16) << selected_muons;
-    os << std::setw(16) << selected_charged_pions;
+    os << std::setw(16) << selected_pions;
     os << std::setw(16) << selected_protons;
     os << std::endl;
     os << "-------------------------------------------------------------------------------------"           << std::endl;
     os << std::setw(35) << "Signal event, MC particles";
     os << std::setw(16) << mc_signal_muons;
-    os << std::setw(16) << mc_signal_charged_pions;
+    os << std::setw(16) << mc_signal_pions;
     os << std::setw(16) << mc_signal_protons;
     os << std::endl;
     os << std::setw(35) << "Signal event, Reco particles";
     os << std::setw(16) << reco_signal_muons;
-    os << std::setw(16) << reco_signal_charged_pions;
+    os << std::setw(16) << reco_signal_pions;
     os << std::setw(16) << reco_signal_protons;
     os << std::endl;
     os << std::setw(35) << "Signal event, Matched particles";
     os << std::setw(16) << signal_muons;
-    os << std::setw(16) << signal_charged_pions;
+    os << std::setw(16) << signal_pions;
     os << std::setw(16) << signal_protons;
     os << std::endl;
     os << "-------------------------------------------------------------------------------------"           << std::endl;
     os << std::setw(35) << "Selected, Efficiency";
     os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(mc_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_charged_pions/double(mc_selected_charged_pions);
+    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(mc_selected_pions);
     os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(mc_selected_protons);
     os << std::endl;
     os << std::setw(35) << "Selected, Purity";
     os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(reco_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_charged_pions/double(reco_selected_charged_pions);
+    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(reco_selected_pions);
     os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(reco_selected_protons);
     os << std::endl;
     os << "-------------------------------------------------------------------------------------"           << std::endl;
     os << std::setw(35) << "Signal, Efficiency";
     os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(mc_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_charged_pions/double(mc_signal_charged_pions);
+    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(mc_signal_pions);
     os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(mc_signal_protons);
     os << std::endl;
     os << std::setw(35) << "Signal, Purity";
     os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(reco_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_charged_pions/double(reco_signal_charged_pions);
+    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(reco_signal_pions);
     os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(reco_signal_protons);
     os << std::endl;
-    os << "-------------------------------------------------------------------------------------"          << std::endl;
+    os << "-------------------------------------------------------------------------------------"           << std::endl;
   }
   
   //----------------------------------------------------------------------------------------
