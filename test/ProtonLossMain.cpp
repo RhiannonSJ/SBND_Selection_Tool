@@ -56,7 +56,8 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
@@ -90,6 +91,9 @@ int MainTest(){
    */
 
   std::vector<float> signal_energy, signal_length, background_energy, background_length, missed_energy, missed_length;
+  std::vector<int>   signal_hits, background_hits, missed_hits;
+  unsigned int missed = 0;
+  unsigned int missed_below_25 = 0;
 
   for(const Event &e : events){
 
@@ -105,11 +109,13 @@ int MainTest(){
             // True and reconstructed proton: signal
             signal_energy.push_back(p_match.GetKineticEnergy());
             signal_length.push_back(p_match.GetLength());
+            signal_hits.push_back(p_match.GetNumberOfHits());
           }
           else if(p_reco.GetPdgCode() != 2212){
             // True and mis-indentified proton
             background_energy.push_back(p_match.GetKineticEnergy());
             background_length.push_back(p_match.GetLength());
+            background_hits.push_back(p_match.GetNumberOfHits());
           }
         }
       }
@@ -119,6 +125,9 @@ int MainTest(){
         // True proton, not reconstructed
         missed_energy.push_back(p_true.GetKineticEnergy());
         missed_length.push_back(p_true.GetLength());
+        missed_hits.push_back(p_true.GetNumberOfHits());
+        missed++;
+        if(p_true.GetNumberOfHits() < 25) missed_below_25++;
       }
     }
   }
@@ -128,26 +137,32 @@ int MainTest(){
    * Fill
    *
    */
-  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",100,0,2);
-  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton kinetic lengths",100,0,100);
+  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",30,0,0.6);
+  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,40);
+  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",40,0,40);
 
-  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",100,0,2);
-  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton kinetic energies",100,0,100);
+  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",30,0,0.6);
+  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,40);
+  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",40,0,40);
 
-  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",100,0,2);
-  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton kinetic energies",100,0,100);
+  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",30,0,0.6);
+  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,40);
+  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",40,0,40);
 
   for(unsigned int i = 0; i < signal_energy.size(); ++i){
     h_signal_energy->Fill(signal_energy[i]);
     h_signal_length->Fill(signal_length[i]);
+    h_signal_hits->Fill(signal_hits[i]);
   }
   for(unsigned int i = 0; i < background_energy.size(); ++i){
     h_background_energy->Fill(background_energy[i]);
     h_background_length->Fill(background_length[i]);
+    h_background_hits->Fill(background_hits[i]);
   }
   for(unsigned int i = 0; i < missed_energy.size(); ++i){
     h_missed_energy->Fill(missed_energy[i]);
     h_missed_length->Fill(missed_length[i]);
+    h_missed_hits->Fill(missed_hits[i]);
   }
 
   /*
@@ -159,7 +174,7 @@ int MainTest(){
   gStyle->SetNumberContours(250);
 
   TCanvas *c = new TCanvas();
-  TLegend *l = new TLegend( 0.58, 0.68, 0.88, 0.88 );
+  TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
   l->SetBorderSize(0);
 
   l->AddEntry( h_signal_energy,     " True, reconstructed proton", "l" );
@@ -173,16 +188,10 @@ int MainTest(){
   h_background_energy->SetStats(kFALSE);
   h_background_energy->GetXaxis()->SetTitle("Proton Kinetic Energy [GeV]");
   h_background_energy->Scale(1/double(background_energy.size()));
-  h_missed_energy->SetLineColor(6);
+  h_missed_energy->SetLineColor(8);
   h_missed_energy->SetStats(kFALSE);
   h_missed_energy->Scale(1/double(missed_energy.size()));
 
-  /*
-  auto max_signal_e = std::max_element(signal_energy.begin(),signal_energy.end());
-  auto max_background_e = std::max_element(background_energy.begin(),background_energy.end());
-  auto max_missed_e = std::max_element(missed_energy.begin(),missed_energy.end());
-  */
-  
   float max_y_e = std::max(h_background_energy->GetMaximum(), std::max(h_signal_energy->GetMaximum(),h_missed_energy->GetMaximum()));
   
   h_background_energy->GetYaxis()->SetRangeUser(0,max_y_e*1.1);
@@ -206,15 +215,9 @@ int MainTest(){
   h_background_length->SetStats(kFALSE);
   h_background_length->GetXaxis()->SetTitle("Proton Length [cm]");
   h_background_length->Scale(1/double(background_length.size()));
-  h_missed_length->SetLineColor(6);
+  h_missed_length->SetLineColor(8);
   h_missed_length->SetStats(kFALSE);
   h_missed_length->Scale(1/double(missed_length.size()));
-
-  /*
-  auto max_signal_l = std::max_element(signal_length.begin(),signal_length.end());
-  auto max_background_l = std::max_element(background_length.begin(),background_length.end());
-  auto max_missed_l = std::max_element(missed_length.begin(),missed_length.end());
-  */
 
   float max_y_l = std::max(h_background_length->GetMaximum(), std::max(h_signal_length->GetMaximum(),h_missed_length->GetMaximum()));
   h_background_length->GetYaxis()->SetRangeUser(0,max_y_l*1.1);
@@ -225,6 +228,38 @@ int MainTest(){
 
   c->SaveAs((plots+"proton_length.root").c_str());
   c->Clear();
+
+  l->Clear();
+  l->AddEntry( h_signal_hits,     " True, reconstructed proton", "l" );
+  l->AddEntry( h_background_hits, " True, misidentified proton", "l" );
+  l->AddEntry( h_missed_hits,     " True, missed proton", "l" );
+  
+  h_signal_hits->SetLineColor(2);
+  h_signal_hits->SetStats(kFALSE);
+  h_signal_hits->Scale(1/double(signal_hits.size()));
+  h_background_hits->SetLineColor(4);
+  h_background_hits->SetStats(kFALSE);
+  h_background_hits->GetXaxis()->SetTitle("Proton Hits [GeV]");
+  h_background_hits->Scale(1/double(background_hits.size()));
+  h_missed_hits->SetLineColor(8);
+  h_missed_hits->SetStats(kFALSE);
+  h_missed_hits->Scale(1/double(missed_hits.size()));
+
+  float max_y_h = std::max(h_background_hits->GetMaximum(), std::max(h_signal_hits->GetMaximum(),h_missed_hits->GetMaximum()));
+  
+  h_background_hits->GetYaxis()->SetRangeUser(0,max_y_h*1.1);
+  h_background_hits->Draw("hist");
+  h_missed_hits->Draw("hist same");
+  h_signal_hits->Draw("hist same");
+  l->Draw();
+
+  c->SaveAs((plots+"proton_hits.root").c_str());
+  c->Clear();
+
+
+  std::cout << " Missed protons :                                      " << missed << std::endl;
+  std::cout << " Missed protons with less than 25 hits :               " << missed_below_25 << std::endl;
+  std::cout << " Percentage of missed protons with less than 25 hits : " << missed_below_25 / double(missed) << std::endl;
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

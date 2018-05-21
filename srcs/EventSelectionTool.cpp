@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
+#include <ctime>
+#include <cstdlib>
 
 namespace selection{
  
@@ -36,7 +38,7 @@ namespace selection{
     unsigned int start_mcparticles = 0;
 
     for(unsigned int j = 0; j < n_events; ++j){
-    
+
       ParticleList mcparticles;
       ParticleList recoparticles;
       TrackList    tracks;
@@ -149,7 +151,7 @@ namespace selection{
       
       double temp_vertex[3];
       double temp_end[3];
-      
+
       int id_charge        = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
       int id_energy        = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
       int id_hits          = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
@@ -320,9 +322,11 @@ namespace selection{
       if(pida_pdg == 13 || (id == longest_track_id && always_longest) || (track.m_chi2_mu >= 0.25 && track.m_chi2_mu <= 4)) { 
         mu_candidates.push_back(id);
       }
+      else if(pida_pdg == 2212) 
+        recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
       else if(track.m_length < 25) 
         recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
-      else if(pida_pdg == 211 || pida_pdg == 321 || pida_pdg == 2212) 
+      else if(pida_pdg == 211 || pida_pdg == 321) 
         recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, pida_pdg, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
       else
         recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 

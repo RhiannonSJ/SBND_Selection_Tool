@@ -46,7 +46,7 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   // Load the events into the event list
-  for( unsigned int i = 0; i < 500; ++i ){
+  for( unsigned int i = 0; i < 10; ++i ){
  
     // Get the filename for each 2D histogram
     std::stringstream ss;
