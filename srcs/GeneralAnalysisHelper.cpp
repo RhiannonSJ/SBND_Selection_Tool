@@ -3,6 +3,12 @@
 namespace selection{
 
   //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuMuTopologyMap() {
+    TopologyMap signal_map_numu;
+    signal_map_numu.insert(TopologyMap::value_type({14},1));
+    return signal_map_numu;
+  } 
+  //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNCTopologyMap() {
     TopologyMap signal_map_nc;
     signal_map_nc.insert(TopologyMap::value_type({13},0));

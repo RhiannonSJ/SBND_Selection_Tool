@@ -108,6 +108,11 @@ namespace selection{
       typedef std::vector<Event>    EventList;
 
       /**
+       * @brief  Get NuMu topology map
+       */
+      static TopologyMap GetNuMuTopologyMap();
+
+      /**
        * @brief  Get NC topology map
        */
       static TopologyMap GetNCTopologyMap();

@@ -74,38 +74,15 @@ int MainTest(){
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
   
-  TopologyMap cc_signal_map;
-  TopologyMap nc_signal_map;
-  TopologyMap cc0pi_signal_map;
-  TopologyMap cc1pi_signal_map;
-  TopologyMap ccpi0_signal_map;
+  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
+  TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
+  TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  std::vector< int > mu;
-  std::vector< int > pi;
-  std::vector< int > pi0;
-  
-  mu.push_back( 13 );
-  pi.push_back( 211 );
-  pi.push_back(-211 );
-  pi0.push_back( 111 );
-  
-  cc_signal_map.insert( std::make_pair( mu,  1 ) );
-  nc_signal_map.insert( std::make_pair( mu,  0 ) );
-  
-  cc0pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi,  0 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi0, 0 ) );
+  // Load the events into the event list
+  for( unsigned int i = 0; i < 200; ++i ){
 
-  cc1pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc1pi_signal_map.insert( std::make_pair( pi,  1 ) );
-  cc1pi_signal_map.insert( std::make_pair( pi0, 0 ) );
-  
-  ccpi0_signal_map.insert( std::make_pair( mu,  1 ) );
-  ccpi0_signal_map.insert( std::make_pair( pi,  0 ) );
-  ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
-  
-  for( unsigned int i = 0; i < 500; ++i ){
-  
     // Get the filename for each 2D histogram
     std::stringstream ss;
     ss.clear();
@@ -114,12 +91,17 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318/5103689_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
       
-    EventSelectionTool::LoadEventList(file_name, events, i);
+    EventSelectionTool::LoadEventList(file_name, events);
+    
+    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+
   }
 
   // Neutrino energy histograms

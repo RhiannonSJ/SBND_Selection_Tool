@@ -279,7 +279,7 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   void EventSelectionTool::GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list){
- 
+
     // Assign ridiculously short length to initiate the longest track length
     float longest_track_length      = -std::numeric_limits<float>::max();
     unsigned int longest_track_id   =  std::numeric_limits<unsigned int>::max();
@@ -319,7 +319,7 @@ namespace selection{
 
       // If the muon has not been found by length and its PIDA value is 13
       // Call the track a candidate muon
-      if(pida_pdg == 13 || (id == longest_track_id && always_longest) || (track.m_chi2_mu >= 0.25 && track.m_chi2_mu <= 4)) { 
+      if(pida_pdg == 13 || (id == longest_track_id) || (track.m_chi2_mu >= 0.25 && track.m_chi2_mu <= 4)) { 
         mu_candidates.push_back(id);
       }
       else if(pida_pdg == 2212) 
@@ -341,23 +341,23 @@ namespace selection{
     }
     
     // If more than one muon candidate exists
-    bool foundOneMuon(false);
+    bool foundTheMuon(false);
     unsigned int muonID = std::numeric_limits<unsigned int>::max();
 
     for(unsigned int i = 0; i < mu_candidates.size(); ++i){
-    
+      
       unsigned int id = mu_candidates[i];
       const Track &candidate(track_list[id]);
 
       if(longest_track_id == id && always_longest) {
         
         muonID = id;
-        foundOneMuon = true;
+        foundTheMuon = true;
         break;
       
       }
     }
-    if(!foundOneMuon) {
+    if(!foundTheMuon) {
     
       for(unsigned int i = 0; i < mu_candidates.size(); ++i){
 
@@ -366,37 +366,38 @@ namespace selection{
 
         if(candidate.m_chi2_mu >= 0.25 && candidate.m_chi2_mu <= 4){
           muonID = id;
-          foundOneMuon = true;
+          foundTheMuon = true;
           break;
-        
         }
       }
-      if(!foundOneMuon) {
+      if(!foundTheMuon) {
         
         for(unsigned int i = 0; i < mu_candidates.size(); ++i){
-          
+  
           unsigned int id = mu_candidates[i];
         
           if(id == longest_track_id){
           
             muonID = id;
-            foundOneMuon = true;
+            foundTheMuon = true;
             break;
      
           }
         }
       }
-    } 
-    
+    }
+
     const Track &muon(track_list[muonID]);
     recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end));
-
+    
     for(unsigned int id = 0; id < mu_candidates.size(); ++id){
       
       if(id == muonID) continue;
       
       const Track &track(track_list[id]);
+            
       recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
+      
     } 
   }
 

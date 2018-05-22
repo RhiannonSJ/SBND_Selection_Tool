@@ -30,7 +30,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/muon_pion/";
+  std::string plots = "../Output_Selection_Tool/plots/muon_pion/10/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -44,10 +44,9 @@ int MainTest(){
   TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
- 
-  // Load the events into the event list
-  for( unsigned int i = 0; i < 500; ++i ){
- 
+  
+  for( unsigned int i = 0; i < 200; ++i ){
+
     // Get the filename for each 2D histogram
     std::stringstream ss;
     ss.clear();
@@ -56,7 +55,8 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
     //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
@@ -67,6 +67,32 @@ int MainTest(){
     std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
 
   }
+  
+  // Load the events into the event list
+  for( unsigned int i = 0; i < 300; ++i ){
+
+    // Get the filename for each 2D histogram
+    std::stringstream ss;
+    ss.clear();
+    
+    std::string name;
+    name.clear();
+    
+    char file_name[1024];
+    //ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7726975_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    name = ss.str();
+            
+    strcpy( file_name, name.c_str() );
+      
+    EventSelectionTool::LoadEventList(file_name, events);
+    
+    std::cout << "Loaded file " << std::setw(4) << 200 + i << '\r' << flush;
+
+  }
+
 
   std::cout << std::endl;
  
@@ -155,29 +181,29 @@ int MainTest(){
    * Fill
    *
    */
-  TH1D *h_signal_energy_mu = new TH1D("h_signal_energy_mu","Correctly reconstructed muon kinetic energies",50,0,1.5);
-  TH1D *h_signal_length_mu = new TH1D("h_signal_length_mu","Correctly reconstructed muon lengths",50,0,500);
-  TH1D *h_signal_hits_mu   = new TH1D("h_signal_hits_mu",  "Correctly reconstructed muon hits",50,0,500);
+  TH1D *h_signal_energy_mu = new TH1D("h_signal_energy_mu","Correctly reconstructed muon kinetic energies",40,0,1.5);
+  TH1D *h_signal_length_mu = new TH1D("h_signal_length_mu","Correctly reconstructed muon lengths",40,0,500);
+  TH1D *h_signal_hits_mu   = new TH1D("h_signal_hits_mu",  "Correctly reconstructed muon hits",40,0,500);
 
-  TH1D *h_missed_energy_mu = new TH1D("h_missed_energy_mu","Missed muon kinetic energies",50,0,1.5);
-  TH1D *h_missed_length_mu = new TH1D("h_missed_length_mu","Missed muon lengths",50,0,500);
-  TH1D *h_missed_hits_mu   = new TH1D("h_missed_hits_mu",  "Missed muon hits",50,0,500);
+  TH1D *h_missed_energy_mu = new TH1D("h_missed_energy_mu","Missed muon kinetic energies",40,0,1.5);
+  TH1D *h_missed_length_mu = new TH1D("h_missed_length_mu","Missed muon lengths",40,0,500);
+  TH1D *h_missed_hits_mu   = new TH1D("h_missed_hits_mu",  "Missed muon hits",40,0,500);
 
-  TH1D *h_background_energy_mu = new TH1D("h_background_energy_mu","Mis-identified muon kinetic energies",50,0,1.5);
-  TH1D *h_background_length_mu = new TH1D("h_background_length_mu","Mis-identified muon lengths",50,0,500);
-  TH1D *h_background_hits_mu   = new TH1D("h_background_hits_mu",  "Mis-identified muon hits",50,0,500);
+  TH1D *h_background_energy_mu = new TH1D("h_background_energy_mu","Mis-identified muon kinetic energies",40,0,1.5);
+  TH1D *h_background_length_mu = new TH1D("h_background_length_mu","Mis-identified muon lengths",40,0,500);
+  TH1D *h_background_hits_mu   = new TH1D("h_background_hits_mu",  "Mis-identified muon hits",40,0,500);
 
-  TH1D *h_signal_energy_pi = new TH1D("h_signal_energy_pi","Correctly reconstructed pion kinetic energies",40,0,0.8);
-  TH1D *h_signal_length_pi = new TH1D("h_signal_length_pi","Correctly reconstructed pion lengths",50,0,150);
-  TH1D *h_signal_hits_pi   = new TH1D("h_signal_hits_pi",  "Correctly reconstructed pion hits",40,0,200);
+  TH1D *h_signal_energy_pi = new TH1D("h_signal_energy_pi","Correctly reconstructed pion kinetic energies",30,0,0.8);
+  TH1D *h_signal_length_pi = new TH1D("h_signal_length_pi","Correctly reconstructed pion lengths",40,0,150);
+  TH1D *h_signal_hits_pi   = new TH1D("h_signal_hits_pi",  "Correctly reconstructed pion hits",30,0,200);
 
-  TH1D *h_missed_energy_pi = new TH1D("h_missed_energy_pi","Missed pion kinetic energies",40,0,0.8);
-  TH1D *h_missed_length_pi = new TH1D("h_missed_length_pi","Missed pion lengths",50,0,150);
-  TH1D *h_missed_hits_pi   = new TH1D("h_missed_hits_pi",  "Missed pion hits",40,0,200);
+  TH1D *h_missed_energy_pi = new TH1D("h_missed_energy_pi","Missed pion kinetic energies",30,0,0.8);
+  TH1D *h_missed_length_pi = new TH1D("h_missed_length_pi","Missed pion lengths",40,0,150);
+  TH1D *h_missed_hits_pi   = new TH1D("h_missed_hits_pi",  "Missed pion hits",30,0,200);
 
-  TH1D *h_background_energy_pi = new TH1D("h_background_energy_pi","Mis-identified pion kinetic energies",40,0,0.8);
-  TH1D *h_background_length_pi = new TH1D("h_background_length_pi","Mis-identified pion lengths",50,0,150);
-  TH1D *h_background_hits_pi   = new TH1D("h_background_hits_pi",  "Mis-identified pion hits",40,0,200);
+  TH1D *h_background_energy_pi = new TH1D("h_background_energy_pi","Mis-identified pion kinetic energies",30,0,0.8);
+  TH1D *h_background_length_pi = new TH1D("h_background_length_pi","Mis-identified pion lengths",40,0,150);
+  TH1D *h_background_hits_pi   = new TH1D("h_background_hits_pi",  "Mis-identified pion hits",30,0,200);
 
   for(unsigned int i = 0; i < signal_energy_mu.size(); ++i){
     h_signal_energy_mu->Fill(signal_energy_mu[i]);

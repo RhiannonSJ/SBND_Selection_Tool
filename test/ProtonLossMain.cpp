@@ -30,7 +30,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/";
+  std::string plots = "../Output_Selection_Tool/plots/proton_loss/25";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -45,9 +45,8 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  // Load the events into the event list
-  for( unsigned int i = 0; i < 500; ++i ){
- 
+  for( unsigned int i = 0; i < 200; ++i ){
+
     // Get the filename for each 2D histogram
     std::stringstream ss;
     ss.clear();
@@ -56,7 +55,8 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
     //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
     name = ss.str();
             
@@ -67,6 +67,32 @@ int MainTest(){
     std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
 
   }
+  
+  // Load the events into the event list
+  for( unsigned int i = 0; i < 300; ++i ){
+
+    // Get the filename for each 2D histogram
+    std::stringstream ss;
+    ss.clear();
+    
+    std::string name;
+    name.clear();
+    
+    char file_name[1024];
+    //ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7726975_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
+    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    name = ss.str();
+            
+    strcpy( file_name, name.c_str() );
+      
+    EventSelectionTool::LoadEventList(file_name, events);
+    
+    std::cout << "Loaded file " << std::setw(4) << 200 + i << '\r' << flush;
+
+  }
+
 
   std::cout << std::endl;
  
@@ -137,17 +163,17 @@ int MainTest(){
    * Fill
    *
    */
-  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",30,0,0.6);
-  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,40);
-  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",40,0,40);
+  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",25,0,0.6);
+  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",30,0,40);
+  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",30,0,40);
 
   TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",30,0,0.6);
-  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,40);
-  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",40,0,40);
+  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",30,0,40);
+  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",30,0,40);
 
   TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",30,0,0.6);
-  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,40);
-  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",40,0,40);
+  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",30,0,40);
+  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",30,0,40);
 
   for(unsigned int i = 0; i < signal_energy.size(); ++i){
     h_signal_energy->Fill(signal_energy[i]);
