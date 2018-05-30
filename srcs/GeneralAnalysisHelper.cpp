@@ -15,6 +15,27 @@ namespace selection{
     return signal_map_nc;
   } 
   //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNC0PiTopologyMap() {
+    TopologyMap signal_map_nc0pi;
+    signal_map_nc0pi.insert(TopologyMap::value_type({13},0));
+    signal_map_nc0pi.insert(TopologyMap::value_type({211, -211},0));
+    return signal_map_nc0pi;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNC1PiTopologyMap() {
+    TopologyMap signal_map_nc1pi;
+    signal_map_nc1pi.insert(TopologyMap::value_type({13},0));
+    signal_map_nc1pi.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map_nc1pi;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNC2PiTopologyMap() {
+    TopologyMap signal_map_nc2pi;
+    signal_map_nc2pi.insert(TopologyMap::value_type({13},0));
+    signal_map_nc2pi.insert(TopologyMap::value_type({211, -211},2));
+    return signal_map_nc2pi;
+  } 
+  //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCIncTopologyMap() {
     TopologyMap signal_map_cc_inc;
     signal_map_cc_inc.insert(TopologyMap::value_type({13},1));
@@ -33,6 +54,13 @@ namespace selection{
     signal_map_cc_1pi.insert(TopologyMap::value_type({13},1));
     signal_map_cc_1pi.insert(TopologyMap::value_type({211, -211},1));
     return signal_map_cc_1pi;
+  }
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC2PiTopologyMap() { 
+    TopologyMap signal_map_cc_2pi;
+    signal_map_cc_2pi.insert(TopologyMap::value_type({13},1));
+    signal_map_cc_2pi.insert(TopologyMap::value_type({211, -211},2));
+    return signal_map_cc_2pi;
   }
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCPi0TopologyMap() {
@@ -159,7 +187,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
     // Check if the event is a selected event
-    if(e.CheckRecoTopology(topology)){
+    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
       return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
     }
     else return 0;  
@@ -214,7 +242,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMCParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology)){
+    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountMCParticlesWithPdg(pdg);
     }
     return 0;
@@ -232,7 +260,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology)){
+    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountRecoParticlesWithPdg(pdg);
     }
     return 0;
@@ -250,7 +278,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
-    if(e.CheckRecoTopology(topology)){
+    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
       return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
     }
     return 0;

@@ -119,7 +119,9 @@ int MainTest(){
   unsigned int tru_outside_numu_cc_1pi       = 0;
 
   // Load the events into the event list and get statistics from cut_tree
-  for( unsigned int i = 0; i < 200; ++i ){
+  for( unsigned int i = 0; i < 500; ++i ){
+  
+    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -129,9 +131,7 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_" << i << "/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
@@ -139,61 +139,23 @@ int MainTest(){
     EventSelectionTool::LoadEventList(file_name, events);
     
     std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-
-    TFile f(file_name);
-    TTree *t_cut                = (TTree*) f.Get("cut_tree");
-    t_cut->GetEntry(0);
-    TBranch *b_total            = t_cut->GetBranch("c_total");
-    TBranch *b_contained_vertex = t_cut->GetBranch("c_contained");
-    TBranch *b_contained_tracks = t_cut->GetBranch("c_contained_tracks");
-    TBranch *b_min_one          = t_cut->GetBranch("c_min_one");
-
-    total            += b_total->GetLeaf("c_total")->GetValue();
-    contained_vertex += b_contained_vertex->GetLeaf("c_contained")->GetValue();
-    contained_tracks += b_contained_tracks->GetLeaf("c_contained_tracks")->GetValue();
-    min_one          += b_min_one->GetLeaf("c_min_one")->GetValue();
-    
-  }
-  // Load the events into the event list
-  for( unsigned int i = 0; i < 300; ++i ){
-
-    // Get the filename for each 2D histogram
-    std::stringstream ss;
-    ss.clear();
-    
-    std::string name;
-    name.clear();
-    
-    char file_name[1024];
-    //ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
-    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7726975_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
-    name = ss.str();
-            
-    strcpy( file_name, name.c_str() );
-      
-    EventSelectionTool::LoadEventList(file_name, events);
-    
-    std::cout << "Loaded file " << std::setw(4) << 200 + i << '\r' << flush;
     
     TFile f(file_name);
-    TTree *t_cut                = (TTree*) f.Get("cut_tree");
-    t_cut->GetEntry(0);
-    TBranch *b_total            = t_cut->GetBranch("c_total");
-    TBranch *b_contained_vertex = t_cut->GetBranch("c_contained");
-    TBranch *b_contained_tracks = t_cut->GetBranch("c_contained_tracks");
-    TBranch *b_min_one          = t_cut->GetBranch("c_min_one");
+    TTree *cut = (TTree*) f.Get("cut_tree");
+
+    TBranch *b_total = cut->GetBranch("c_total");
+    TBranch *b_contained = cut->GetBranch("c_contained");
+    TBranch *b_tracks = cut->GetBranch("c_contained_tracks");
+    TBranch *b_minone = cut->GetBranch("c_min_one");
+    
+    cut->GetEntry(0);
 
     total            += b_total->GetLeaf("c_total")->GetValue();
-    contained_vertex += b_contained_vertex->GetLeaf("c_contained")->GetValue();
-    contained_tracks += b_contained_tracks->GetLeaf("c_contained_tracks")->GetValue();
-    min_one          += b_min_one->GetLeaf("c_min_one")->GetValue();
-    
+    contained_vertex += b_contained->GetLeaf("c_contained")->GetValue();
+    contained_tracks += b_tracks->GetLeaf("c_contained_tracks")->GetValue();
+    min_one          += b_minone->GetLeaf("c_min_one")->GetValue();
 
   }
-
-
   std::cout << std::endl;
   /*
    *

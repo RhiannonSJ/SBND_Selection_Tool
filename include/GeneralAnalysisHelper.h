@@ -118,6 +118,21 @@ namespace selection{
       static TopologyMap GetNCTopologyMap();
 
       /**
+       * @brief  Get NC 0Pi topology map
+       */
+      static TopologyMap GetNC0PiTopologyMap();
+
+      /**
+       * @brief  Get NC 1Pi topology map
+       */
+      static TopologyMap GetNC1PiTopologyMap();
+
+      /**
+       * @brief  Get NC 2Pi topology map
+       */
+      static TopologyMap GetNC2PiTopologyMap();
+
+      /**
        * @brief  Get CC inclusive topology map
        */
       static TopologyMap GetCCIncTopologyMap();
@@ -131,6 +146,11 @@ namespace selection{
        * @brief  Get CC 1Pi topology map
        */
       static TopologyMap GetCC1PiTopologyMap();
+
+      /**
+       * @brief  Get CC 2Pi topology map
+       */
+      static TopologyMap GetCC2PiTopologyMap();
 
       /**
        * @brief  Get CC 1Pi0 topology map

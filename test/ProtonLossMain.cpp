@@ -45,7 +45,10 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  for( unsigned int i = 0; i < 200; ++i ){
+  // Load the events into the event list and get statistics from cut_tree
+  for( unsigned int i = 0; i < 500; ++i ){
+  
+    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
     std::stringstream ss;
@@ -55,9 +58,7 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_" << i << "/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
@@ -67,33 +68,6 @@ int MainTest(){
     std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
 
   }
-  
-  // Load the events into the event list
-  for( unsigned int i = 0; i < 300; ++i ){
-
-    // Get the filename for each 2D histogram
-    std::stringstream ss;
-    ss.clear();
-    
-    std::string name;
-    name.clear();
-    
-    char file_name[1024];
-    //ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7700210_" << i << "/output_file.root";
-    ss << "/hepstore/rjones/Samples/FNAL/210518_analysis_sample_200/7726975_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/150518_analysis_sample/7864704_" << i << "/output_file.root";
-    //ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
-    name = ss.str();
-            
-    strcpy( file_name, name.c_str() );
-      
-    EventSelectionTool::LoadEventList(file_name, events);
-    
-    std::cout << "Loaded file " << std::setw(4) << 200 + i << '\r' << flush;
-
-  }
-
-
   std::cout << std::endl;
  
   /*

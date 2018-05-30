@@ -80,6 +80,15 @@ namespace selection{
       static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list);
 
       /**
+       * @brief  get a list of reconstructed particles from track objects, new
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       *
+       */
+      static void GetRecoParticleFromTrackNew(const TrackList &track_list, ParticleList &recoparticle_list);
+      
+      /**
        * @brief  get a list of reconstructed particles from track objects
        *
        * @param  track_list list of tracks in the event
@@ -106,6 +115,26 @@ namespace selection{
        *
        */
       static int GetPdgByChi2(const Track &track);
+      
+      /**
+       * @brief  get the whether the particle is a proton under the chi^2 proton hypothesis
+       *
+       * @param  track the track to find the pdg of
+       *
+       * @return pdg
+       *
+       */
+      static int GetPdgByChi2Proton(const Track &track);
+      
+      /**
+       * @brief  get the whether the particle is a muon candidate under the chi^2 muon hypothesis
+       *
+       * @param  track the track to find the pdg of
+       *
+       * @return pdg
+       *
+       */
+      static int GetPdgByChi2MuonCandidate(const Track &track);
       
       /**
        * @brief  get the particle id based on its PIDA value
