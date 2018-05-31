@@ -39,15 +39,12 @@ int MainTest(){
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
   
-  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
-  TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
-  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
-  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
-  TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
- 
-  // Load the events into the event list and get statistics from cut_tree
-  for( unsigned int i = 0; i < 500; ++i ){
-  
+  int start = static_cast<int>(time(NULL));
+  unsigned int total = 500;
+
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total; ++i ){
+
     if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
@@ -65,8 +62,8 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
     
-    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
   std::cout << std::endl;
  
@@ -89,6 +86,11 @@ int MainTest(){
    *            Get length of true
    *  
    */
+  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
+  TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
+  TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
 
   std::vector<float> signal_energy, signal_length, background_energy, background_length, missed_energy, missed_length;
   std::vector<int>   signal_hits, background_hits, missed_hits;

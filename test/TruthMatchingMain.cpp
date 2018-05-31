@@ -27,6 +27,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
+  std::cout << endl;
  
   // Output file location
   std::string stats_location = "../Output_Selection_Tool/statistics/";
@@ -45,9 +46,12 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
+  int start = static_cast<int>(time(NULL));
+  unsigned int total = 500;
+
   // Load the events into the event list
-  for( unsigned int i = 0; i < 500; ++i ){
-  
+  for( unsigned int i = 0; i < total; ++i ){
+
     if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
@@ -65,8 +69,8 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
     
-    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
 
   std::cout << std::endl;

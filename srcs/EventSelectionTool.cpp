@@ -12,6 +12,29 @@
 
 namespace selection{
  
+  void EventSelectionTool::GetTimeLeft(const int start_time, const int total, const unsigned int i){
+    
+    int now = static_cast<int>(time(NULL));
+    int diff = now - start_time;
+    int n_left = total - (i+1);
+    int time_left = std::round(diff/double(i+1) * n_left);
+    int seconds_per_minute = 60; 
+    int seconds_per_hour = 3600; 
+    int seconds_per_day = 86400;
+    int days_left = time_left / (seconds_per_day);
+    int hours_left = (time_left - (days_left * seconds_per_day)) / (seconds_per_hour);
+    int minutes_left = (time_left - (days_left * seconds_per_day) - (hours_left * seconds_per_hour)) / (seconds_per_minute);
+    int seconds_left = time_left - (days_left * seconds_per_day) - (hours_left * seconds_per_hour) - (minutes_left * seconds_per_minute);
+    if(i%2){
+      std::cout << " Estimated time left: " << std::setw(5) << days_left << " days, ";
+      std::cout                             << std::setw(5) << hours_left << " hours, ";
+      std::cout                             << std::setw(5) << minutes_left << " minutes, ";
+      std::cout                             << std::setw(5) << seconds_left << " seconds." << '\r' << flush;
+    }
+  }
+
+  //------------------------------------------------------------------------------------------ 
+ 
   void EventSelectionTool::LoadEventList(const std::string &file_name, EventList &event_list){
  
     TFile f(file_name.c_str());
@@ -444,7 +467,7 @@ namespace selection{
 
       if(EventSelectionTool::GetPdgByChi2Proton(track) == 2212)
         recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end));
-      else if(EventSelectionTool::GetPdgByChi2MuonCandidate(track) == 13 || id == longest_track_id)
+      else if(EventSelectionTool::GetPdgByChi2MuonCandidate(track) == 13 || (id == longest_track_id && always_longest))
         mu_candidates.push_back(id);
       else
         recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end)); 
@@ -473,25 +496,10 @@ namespace selection{
       }
     }
     if(!foundTheMuon) {
-      for(unsigned int i = 0; i < mu_candidates.size(); ++i){
-        unsigned int id = mu_candidates[i];
-        const Track &candidate(track_list[id]);
-        if(EventSelectionTool::GetPdgByChi2MuonCandidate(candidate) == 13){
-          muonID = id;
-          foundTheMuon = true;
-          break;
-        }
-      }
-      if(!foundTheMuon) {
-        for(unsigned int i = 0; i < mu_candidates.size(); ++i){
-          unsigned int id = mu_candidates[i];
-          if(id == longest_track_id){
-            muonID = id;
-            foundTheMuon = true;
-            break;
-          }
-        }
-      }
+      // Find the smallest chi^2 under the muon hypothesis
+      muonID = EventSelectionTool::GetMuonByChi2(track_list, mu_candidates);
+      if(muonID != std::numeric_limits<unsigned int>::max()) foundTheMuon = true;
+      else throw 10;
     }
 
     const Track &muon(track_list[muonID]);
@@ -636,6 +644,26 @@ namespace selection{
       }
     } 
     return best_pdg;
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  int EventSelectionTool::GetMuonByChi2(const TrackList &tracks, const std::vector<unsigned int> &mu_candidates){
+
+    // Loop over muon candidates and find smallest corresponding chi2_mu
+    float min_chi2_mu = std::numeric_limits<float>::max();
+    unsigned int min_chi2_id = std::numeric_limits<unsigned int>::max();
+
+    // Find the smallest chi^2 under the muon hypothesis
+    for(unsigned int i = 0; i < mu_candidates.size(); ++i){
+      unsigned int id = mu_candidates[i];
+      const Track &candidate(tracks[id]);
+      if(candidate.m_chi2_mu < min_chi2_mu) {
+        min_chi2_mu = candidate.m_chi2_mu; 
+        min_chi2_id = id;
+      }
+    }
+    return min_chi2_id;
   }
   
   //------------------------------------------------------------------------------------------ 

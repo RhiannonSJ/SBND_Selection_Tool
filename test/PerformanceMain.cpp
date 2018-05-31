@@ -29,9 +29,9 @@ int MainTest(){
   time (&rawtime);
   timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
+  std::cout << " Start local time and date: " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
- 
+
   // Output file location
   std::string stats_location = "../Output_Selection_Tool/statistics/";
 
@@ -42,9 +42,12 @@ int MainTest(){
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
   
-  // Load the events into the event list and get statistics from cut_tree
-  for( unsigned int i = 0; i < 500; ++i ){
-  
+  int start = static_cast<int>(time(NULL));
+  unsigned int total = 500;
+
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total; ++i ){
+
     if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
@@ -62,8 +65,8 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
     
-    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-    
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
   std::cout << std::endl;
  

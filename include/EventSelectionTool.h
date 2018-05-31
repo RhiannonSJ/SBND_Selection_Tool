@@ -1,6 +1,8 @@
 #ifndef EVENT_SELECTION_TOOL_H
 #define EVENT_SELECTION_TOOL_H
 
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <utility>
@@ -37,6 +39,16 @@ namespace selection{
        *
        */
       static void LoadEventList(const std::string &file_name, EventList &event_list);
+
+      /**
+       * @brief  Output the length of time left in the running
+       *
+       * @param  start_time time at the start of the run
+       * @param  total number of events
+       * @param  iteration
+       *
+       */
+      static void GetTimeLeft(const int start_time, const int total, const unsigned int i);
 
     private : 
 
@@ -115,7 +127,18 @@ namespace selection{
        *
        */
       static int GetPdgByChi2(const Track &track);
-      
+  
+      /**
+       * @brief  get the best muon candidate based on the smalleset chi2_mu value
+       *
+       * @param  tracks the track list to loop over
+       * @param  mu_candidates the ids of the muon candidates from the track list
+       *
+       * @return best_id
+       *
+       */
+      static int GetMuonByChi2(const TrackList &tracks, const std::vector<unsigned int> &mu_candidates);
+
       /**
        * @brief  get the whether the particle is a proton under the chi^2 proton hypothesis
        *

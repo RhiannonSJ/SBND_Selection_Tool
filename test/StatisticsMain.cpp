@@ -118,9 +118,12 @@ int MainTest(){
   unsigned int tru_outside_numu_cc_0pi       = 0;
   unsigned int tru_outside_numu_cc_1pi       = 0;
 
-  // Load the events into the event list and get statistics from cut_tree
-  for( unsigned int i = 0; i < 500; ++i ){
-  
+  int start = static_cast<int>(time(NULL));
+  unsigned int total_files = 500;
+
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total_files; ++i ){
+
     if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filename for each 2D histogram
@@ -138,7 +141,8 @@ int MainTest(){
       
     EventSelectionTool::LoadEventList(file_name, events);
     
-    std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
     
     TFile f(file_name);
     TTree *cut = (TTree*) f.Get("cut_tree");

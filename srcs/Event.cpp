@@ -212,7 +212,7 @@ namespace selection{
 
   unsigned int Event::CountParticlesWithPdg(const int pdg, const ParticleList &particle_list) const{
     unsigned int particle_counter = 0;
-    for(unsigned int i = 0; i < particle_list.size(); ++i) if(particle_list[i].GetPdgCode() == pdg) particle_counter++;
+    for(unsigned int i = 0; i < particle_list.size(); ++i) if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() > 5) particle_counter++;
     return particle_counter;
   }
 

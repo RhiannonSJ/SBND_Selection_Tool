@@ -101,6 +101,7 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   bool GeneralAnalysisHelper::HasBeenReconstructed(const Event &e, const Particle &p){
+    
     // Check if a true particle has a corresponding reconstructed particle
     // Only needs to happen once, may happen more than once but this is so that the user
     // can quickly check if the mc particle has been reconstructed
@@ -226,16 +227,21 @@ namespace selection{
   
   bool GeneralAnalysisHelper::MatchedParticle(const Event &e, const Particle &p){
     /**
-    * If the reconstructed particle has been matched by
-    *    0 == hits
-    *    1 == charge
-    *    2 == energy
-    * and the reconstructed pdgcode is the same at the truth pdgcode
-    *    MATCHED PARTICLE == TRUE
-    */
-    if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 0      && abs(GeneralAnalysisHelper::GetMCParticleHits(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
-    else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 1 && abs(GeneralAnalysisHelper::GetMCParticleCharge(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
-    else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 2 && abs(GeneralAnalysisHelper::GetMCParticleEnergy(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+     *
+     * If the reconstructed particle has more than 5 hits and 
+     *  If the reconstructed particle has been matched by
+     *    0 == hits
+     *    1 == charge
+     *    2 == energy
+     *    and the reconstructed pdgcode is the same at the truth pdgcode
+     *    MATCHED PARTICLE == TRUE
+     */
+    if(p.GetNumberOfHits() > 5){
+      if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 0      && abs(GeneralAnalysisHelper::GetMCParticleHits(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+      else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 1 && abs(GeneralAnalysisHelper::GetMCParticleCharge(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+      else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 2 && abs(GeneralAnalysisHelper::GetMCParticleEnergy(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
+      else return false;
+    }
     else return false;
   }
   
@@ -308,7 +314,7 @@ namespace selection{
     ParticleList particles = e.GetRecoParticleList();
     for(const Particle &p : particles){
       if(p.GetPdgCode() == reco_pdg && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
-        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg) mismatched_particles++;
+        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() > 5 && p.GetNumberOfHits() > 5) mismatched_particles++;
       }
     }
     return mismatched_particles;
