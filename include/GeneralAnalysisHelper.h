@@ -157,6 +157,24 @@ namespace selection{
        */
       static TopologyMap GetCCPi0TopologyMap();
 
+      /**
+       * @brief  Get the number of escaping reconstructed tracks or MCParticles
+       *
+       * @param  e Current event
+       *
+       * @return Number of escaping reconstructed tracks or MCParticles
+       */
+      static unsigned int NumberEscapingTracks(const Event &e);
+      
+      /**
+       * @brief  Finds if there is more than one escaping track in an event
+       *
+       * @param  e Current event
+       *
+       * @return True if there is a maximum of one, false if there are more than one
+       */
+      static bool MaxOneEscapingTrack(const Event &e);
+      
       /**                                                              
        * @brief  Gives the number of MC, Reco and Coincidences for a given topology                                                           
        *
@@ -542,6 +560,7 @@ namespace selection{
        *
        */
       static bool HasBeenReconstructed(const Event &e, const Particle &p);
+      
 
   }; // GeneralAnalysisHelper
 } // namespace: selection

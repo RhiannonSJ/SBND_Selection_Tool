@@ -149,6 +149,12 @@ namespace selection{
        */
       float GetCosTheta() const;
 
+      /**
+       *
+       * @brief Get whether a track is within the SBND fiducial volume
+       */
+      bool GetTrackContained() const;
+
     private : 
 
       int      m_mc_id_charge;    ///< mc TrackID corresponding to MCParticle using charge
@@ -166,6 +172,15 @@ namespace selection{
       TVector3 m_vertex;          ///< particle start position
       TVector3 m_end;             ///< particle end position
       TVector3 m_momentum;        ///< particle momentum
+      float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector
+      float              m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
+      float              m_sbnd_border_z;      ///< fiducial border in z for the sbnd detector
+      float              m_sbnd_offset_x;      ///< offset in x for the sbnd detector
+      float              m_sbnd_offset_y;      ///< offset in y for the sbnd detector
+      float              m_sbnd_offset_z;      ///< offset in z for the sbnd detector
+      float              m_sbnd_half_length_x; ///< detector half length in x
+      float              m_sbnd_half_length_y; ///< detector half length in y
+      float              m_sbnd_half_length_z; ///< detector half length in z
 
 
   }; // Particle

@@ -80,8 +80,14 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  for( unsigned int i = 0; i < 500; ++i ){
-  
+  int start = static_cast<int>(time(NULL));
+  unsigned int total = 500;
+
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total; ++i ){
+
+    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+
     // Get the filename for each 2D histogram
     std::stringstream ss;
     ss.clear();
@@ -90,14 +96,17 @@ int MainTest(){
     name.clear();
     
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318_new/4883618_" << i <<"/output_file.root";
+    ss << "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_" << i << "/output_file.root";
     name = ss.str();
             
     strcpy( file_name, name.c_str() );
       
     EventSelectionTool::LoadEventList(file_name, events);
+    
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
-  
+
   time_t rawtime_afterload;
   struct tm * timeinfo_afterload;
   time (&rawtime_afterload);

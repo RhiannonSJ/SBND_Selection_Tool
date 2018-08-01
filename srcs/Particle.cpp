@@ -18,6 +18,20 @@ namespace selection{
     m_end(end),
     m_momentum(momentum){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
+      
+      // Co-ordinate offset in cm
+      m_sbnd_half_length_x = 400;
+      m_sbnd_half_length_y = 400;
+      m_sbnd_half_length_z = 500;
+      
+      m_sbnd_offset_x = 200;
+      m_sbnd_offset_y = 200;
+      m_sbnd_offset_z = 0;
+
+      m_sbnd_border_x = 10;
+      m_sbnd_border_y = 20;
+      m_sbnd_border_z = 10;
+
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -40,6 +54,20 @@ namespace selection{
       // Get the magnitude of the momentum
       double momentum_magnitude = sqrt(pow(m_energy,2) - pow(m_mass,2));
       m_momentum = momentum_magnitude * (m_end - m_vertex)*(1/double((m_end-m_vertex).Mag()));
+      
+      // Co-ordinate offset in cm
+      m_sbnd_half_length_x = 400;
+      m_sbnd_half_length_y = 400;
+      m_sbnd_half_length_z = 500;
+      
+      m_sbnd_offset_x = 200;
+      m_sbnd_offset_y = 200;
+      m_sbnd_offset_z = 0;
+
+      m_sbnd_border_x = 10;
+      m_sbnd_border_y = 20;
+      m_sbnd_border_z = 10;
+
     }
 
   //------------------------------------------------------------------------------------------ 
@@ -53,6 +81,20 @@ namespace selection{
     m_vertex(vertex),
     m_end(end){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
+      
+      // Co-ordinate offset in cm
+      m_sbnd_half_length_x = 400;
+      m_sbnd_half_length_y = 400;
+      m_sbnd_half_length_z = 500;
+      
+      m_sbnd_offset_x = 200;
+      m_sbnd_offset_y = 200;
+      m_sbnd_offset_z = 0;
+
+      m_sbnd_border_x = 10;
+      m_sbnd_border_y = 20;
+      m_sbnd_border_z = 10;
+
     }
 
   
@@ -191,7 +233,35 @@ namespace selection{
     TVector3 u_z(0,0,1);
     return (m_end - m_vertex).Dot( u_z )/((m_end - m_vertex).Mag());
   }
-  
-  //------------------------------------------------------------------------------------------ 
 
+  //------------------------------------------------------------------------------------------ 
+ 
+  bool Particle::GetTrackContained() const{
+
+    if(!m_from_reco_track || !m_has_calorimetry) 
+      std::cerr << "Containment can only be checked for reconstructed tracks or MCParticles" << std::endl;
+
+    // Check the neutrino interaction vertex is within the fiducial volume
+    float vertex_x = m_vertex[0];                        
+    float vertex_y = m_vertex[1];                        
+    float vertex_z = m_vertex[2];                        
+    float end_x    = m_end[0];                        
+    float end_y    = m_end[1];                        
+    float end_z    = m_end[2];                        
+                                                                                 
+    if (    (vertex_x > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (vertex_y > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (vertex_z > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z))
+         || (end_x    > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (end_y    > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (end_z    > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z))) return false; 
+
+    return true;
+  }
 } // Selection

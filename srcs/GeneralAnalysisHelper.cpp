@@ -69,7 +69,30 @@ namespace selection{
     signal_map_cc_pi0.insert(TopologyMap::value_type({111},1));
     return signal_map_cc_pi0;
   } 
- 
+
+  //----------------------------------------------------------------------------------------
+
+  unsigned int GeneralAnalysisHelper::NumberEscapingTracks(const Event &e){
+    unsigned int escaping_tracks = 0;
+    for(const Particle &p : e.GetRecoParticleList()){
+      // Make sure the particle is a reconstructed track and check if it escapes
+     if(p.GetFromRecoTrack() && !p.GetTrackContained()) escaping_tracks++;
+    }
+    return escaping_tracks;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::MaxOneEscapingTrack(const Event &e){
+    unsigned int escaping_tracks = 0;
+    for(const Particle &p : e.GetRecoParticleList()){
+      // Make sure the particle is a reconstructed track and check if it escapes
+     if(p.GetFromRecoTrack() && !p.GetTrackContained()) escaping_tracks++;
+    }
+    if(escaping_tracks > 1) return false;
+    return true;
+  }
+
   //----------------------------------------------------------------------------------------
   
   void GeneralAnalysisHelper::TopologyStatistics(const Event &e, const TopologyMap signal_map_topology, double & count_true, double & count_signal, double & count_selected){
