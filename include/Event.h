@@ -111,6 +111,11 @@ namespace selection{
       bool IsSBNDTrueFiducial() const;
       
       /**
+       * @brief  Get whether all the reconstructed tracks in an event are contained
+       */
+      bool AllContained() const;
+      
+      /**
        * @brief  Get the physical process
        */
       int GetPhysicalProcess() const;
@@ -148,6 +153,20 @@ namespace selection{
        * @return Particle most energetic true
        */
       Particle GetMostEnergeticTrueParticle() const;
+
+      /**
+       * @brief  Get the minimum x,y,z positions of the SBND fiducial volume
+       *
+       * @return Vector of lowest x,y,z positions
+       */
+      TVector3 GetMinimumFiducialDimensions() const;
+
+      /**
+       * @brief  Get the maximum x,y,z positions of the SBND fiducial volume
+       *
+       * @return Vector of highest x,y,z positions
+       */
+      TVector3 GetMaximumFiducialDimensions() const;
 
     private : 
 

@@ -127,23 +127,53 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
+  TVector3 Event::GetMinimumFiducialDimensions() const{
+    return TVector3((-m_sbnd_offset_x + m_sbnd_border_x), 
+                    (-m_sbnd_offset_y + m_sbnd_border_y), 
+                    (-m_sbnd_offset_z + m_sbnd_border_z));
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  TVector3 Event::GetMaximumFiducialDimensions() const{
+    return TVector3((m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x), 
+                    (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y), 
+                    (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z));
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
   bool Event::IsSBNDTrueFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
      float nu_vertex_x = m_mc_vertex[0];                        
      float nu_vertex_y = m_mc_vertex[1];                        
-     float nu_vertex_z = m_mc_vertex[2];                        
+     float nu_vertex_z = m_mc_vertex[2];                
+     float min_fid_x = Event::GetMinimumFiducialDimensions()[0];
+     float min_fid_y = Event::GetMinimumFiducialDimensions()[1];
+     float min_fid_z = Event::GetMinimumFiducialDimensions()[2];
+     float max_fid_x = Event::GetMaximumFiducialDimensions()[0];
+     float max_fid_y = Event::GetMaximumFiducialDimensions()[1];
+     float max_fid_z = Event::GetMaximumFiducialDimensions()[2];
                                                                                  
-     if (    (nu_vertex_x > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-          || (nu_vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-          || (nu_vertex_y > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-          || (nu_vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-          || (nu_vertex_z > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-          || (nu_vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z))) return false; 
+     if (    (nu_vertex_x > max_fid_x)  
+          || (nu_vertex_x < min_fid_x)
+          || (nu_vertex_y > max_fid_y)
+          || (nu_vertex_y < min_fid_y)
+          || (nu_vertex_z > max_fid_z)
+          || (nu_vertex_z < min_fid_z)) return false;
 
      return true;
   }
 
+  //------------------------------------------------------------------------------------------ 
+ 
+  bool Event::AllContained() const{
+    for(const Particle &p : m_reco_particles){
+      if(p.GetFromRecoTrack() && !p.GetTrackContained()) return false;
+    }
+    return true;
+  }
   //------------------------------------------------------------------------------------------ 
   
   int Event::GetPhysicalProcess() const{

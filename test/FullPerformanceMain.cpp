@@ -33,7 +33,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/breakdown/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/breakdown/all_contained/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -93,15 +93,24 @@ int MainTest(){
   unsigned int cc1pi_true  = 0; 
   unsigned int cc1pi_sig   = 0; 
 
-  
+  unsigned int all_tracks_contained   = 0;
+  unsigned int max_one_escaping_track = 0;
+
   TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
 
   std::vector< TopologyMap > maps({cc_signal_map, cc0pi_signal_map, cc1pi_signal_map});  
 
+  // First, ensure all tracks are contained
   for(const Event &e : events){
 
+    if(!e.AllContained()) continue;
+    //all_tracks_contained++;
+
+    if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
+    max_one_escaping_track++;
+    
     if(e.CheckRecoTopology(maps[0])){
       if(e.CheckMCTopology(maps[1]))     ccinc_cc0pi++;
       else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
@@ -139,19 +148,21 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream file;
-  file.open(stats_location+"topology_and_particle_breakdown.txt");
+  file.open(stats_location+"chi2p_topology_and_particle_breakdown.txt");
 
-  file << "============================================" << std::endl;
+  file << "================================================================" << std::endl;
+  //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
+  file << " Total number of events with maximum one escaping track : " << max_one_escaping_track << std::endl;
   file << std::setw(12) << "True \\ Reco" << "||" <<  std::setw(10) << " CC Inc. " << std::setw(10) << " CC 0Pi " << std::setw(10) << " CC 1Pi " << std::endl;
   file << std::setw(12) << " CC 0Pi "     << "||" << std::setw(10) << ccinc_cc0pi << std::setw(10) << cc0pi_cc0pi << std::setw(10) << cc1pi_cc0pi << std::endl;  
   file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc1pi_cc1pi << std::endl;  
   file << std::setw(12) << " CC Other "   << "||" << std::setw(10) << ccinc_ccoth << std::setw(10) << cc0pi_ccoth << std::setw(10) << cc1pi_ccoth << std::endl;  
   file << std::setw(12) << " NC "         << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc1pi_ncoth << std::endl;  
-  file << "============================================" << std::endl;
+  file << "================================================================" << std::endl;
   file << " CC Inc. efficiency : " << ccinc_sig/double(ccinc_true) << std::endl; 
   file << " CC 0Pi  efficiency : " << cc0pi_sig/double(cc0pi_true) << std::endl; 
   file << " CC 1Pi  efficiency : " << cc1pi_sig/double(cc1pi_true) << std::endl; 
-  file << "============================================" << std::endl;
+  file << "================================================================" << std::endl;
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

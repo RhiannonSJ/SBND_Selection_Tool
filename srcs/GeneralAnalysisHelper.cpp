@@ -84,12 +84,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   bool GeneralAnalysisHelper::MaxOneEscapingTrack(const Event &e){
-    unsigned int escaping_tracks = 0;
-    for(const Particle &p : e.GetRecoParticleList()){
-      // Make sure the particle is a reconstructed track and check if it escapes
-     if(p.GetFromRecoTrack() && !p.GetTrackContained()) escaping_tracks++;
-    }
-    if(escaping_tracks > 1) return false;
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) return false;
     return true;
   }
 

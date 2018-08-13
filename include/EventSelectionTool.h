@@ -98,7 +98,7 @@ namespace selection{
        * @param  recoparticle_list particle list to fill
        *
        */
-      static void GetRecoParticleFromTrackNew(const TrackList &track_list, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromTrackChi2P(const TrackList &track_list, ParticleList &recoparticle_list);
       
       /**
        * @brief  get a list of reconstructed particles from track objects
@@ -107,7 +107,7 @@ namespace selection{
        * @param  recoparticle_list particle list to fill
        *
        */
-      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromTrack1Escaping(const TrackList &track_list, ParticleList &recoparticle_list);
  
       /**
        * @brief  get a list of reconstructed particles from track objects using original method
@@ -140,6 +140,16 @@ namespace selection{
       static int GetMuonByChi2(const TrackList &tracks, const std::vector<unsigned int> &mu_candidates);
 
       /**
+       * @brief  get the whether the particle is a muon under the chi^2 proton hypothesis
+       *
+       * @param  track the track to find the pdg of
+       *
+       * @return pdg
+       *
+       */
+      static int GetMuonByChi2Proton(const Track &track);
+      
+      /**
        * @brief  get the whether the particle is a proton under the chi^2 proton hypothesis
        *
        * @param  track the track to find the pdg of
@@ -147,7 +157,7 @@ namespace selection{
        * @return pdg
        *
        */
-      static int GetPdgByChi2Proton(const Track &track);
+      static int GetProtonByChi2Proton(const Track &track);
       
       /**
        * @brief  get the whether the particle is a muon candidate under the chi^2 muon hypothesis
@@ -203,9 +213,10 @@ namespace selection{
          * @param  kinetic_energy track kinetic energy
          * @param  vertex vertex of the track
          * @param  end end point of the track
+         * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
          *
          */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end);
+          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end, const bool &contained);
 
           // Member variables
           int      m_mc_id_charge;   ///< mc TrackID corresponding to MCParticle using charge
@@ -220,7 +231,8 @@ namespace selection{
           float    m_length;         ///< length of the track
           float    m_kinetic_energy; ///< kinetic energy of the track
           TVector3 m_vertex;         ///< vertex of the track         
-          TVector3 m_end;            ///< end of the track 
+          TVector3 m_end;            ///< end of the track
+          bool     m_contained;      ///< whether or not the reconstructed track is contained
       
       }; // Track
       
