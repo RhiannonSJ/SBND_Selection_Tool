@@ -263,15 +263,6 @@ namespace selection{
           float    m_energy;     ///< energy of the shower
 
       }; // Shower
-
-      /*
-       *
-      // Construct event from defined variables above and fill event list
-      Event e();
-      event_list.push_back(e);
-      *
-      */
-
   }; // EventSelectionTool
 } // namespace: selection
 #endif
