@@ -54,20 +54,14 @@ int MainTest(){
 
     if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
-    // Get the filename for each 2D histogram
-    std::stringstream ss;
-    ss.clear();
-    
+    // Get the filenames
     std::string name;
     name.clear();
-    
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_" << i << "/output_file.root";
-    name = ss.str();
-            
+    name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
-      
-    EventSelectionTool::LoadEventList(file_name, events);
+
+    EventSelectionTool::LoadEventList(file_name, events, i);
     
     //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
     EventSelectionTool::GetTimeLeft(start,total,i);
@@ -85,10 +79,10 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"particle_stats.txt");
+  all_file.open(stats_location+"raquel_particle_stats.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"mis_identification_stats.txt");
+  mis_id_file.open(stats_location+"raquel_mis_identification_stats.txt");
 
   GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
   GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);

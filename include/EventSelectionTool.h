@@ -36,9 +36,10 @@ namespace selection{
        *
        * @param  file_name name of the root file to access
        * @param  event_list vector of events to fill
+       * @param  file number of the file of the current event
        *
        */
-      static void LoadEventList(const std::string &file_name, EventList &event_list);
+      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file);
 
       /**
        * @brief  Output the length of time left in the running
@@ -92,7 +93,16 @@ namespace selection{
       static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list);
 
       /**
-       * @brief  get a list of reconstructed particles from track objects, new
+       * @brief  get a list of reconstructed particles from track objects, using Raquel's method in uBooNE
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       *
+       */
+      static void GetRecoParticleFromTrackRaquel(const TrackList &track_list, ParticleList &recoparticle_list);
+      
+      /**
+       * @brief  get a list of reconstructed particles from track objects, only tagging muons with the chi2 proton variable
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill

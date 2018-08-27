@@ -63,7 +63,7 @@ int MainTest(){
     strcpy( file_name, name.c_str() );
 
     //Load the event list with the contents of the current file
-    EventSelectionTool::LoadEventList(file_name, events);
+    EventSelectionTool::LoadEventList(file_name, events, i);
     
     // See how much time is left in the loading
     EventSelectionTool::GetTimeLeft(start,total_files,i);
@@ -97,6 +97,15 @@ int MainTest(){
     // Check if it was a reconstructed cc0pi final state
     if(e.CheckRecoTopology(cc0pi_topology))
       number_of_reconstructed_cc0pi_events++;
+
+    // Get the list of reconstructed particle from the current event
+    ParticleList reconstructed_particles = e.GetRecoParticleList();
+    
+    // Loop over the particles
+    for(const Particle &p : reconstructed_particles){
+      // Get the particle's PDG code
+      int pdg = p.GetPdgCode();
+    }
   }
 
   // File to hold particle statistics

@@ -1,4 +1,5 @@
 #include "../include/EventSelectionTool.h"
+#include "../include/GeneralAnalysisHelper.h"
 #include "../include/Event.h"
 #include <iostream>
 #include <iomanip>
@@ -29,111 +30,61 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " Running all files " << std::endl;
   
+  std::string evd_location = "../Output_Selection_Tool/evd/";
+  
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
   
-  TopologyMap cc0pi_signal_map;
-  TopologyMap cc1pi_signal_map;
-  TopologyMap ccpi0_signal_map;
- 
-  std::vector< int > mu;
-  std::vector< int > pi;
-  std::vector< int > pi0;
-  
-  mu.push_back( 13 );
-  pi.push_back( 211 );
-  pi.push_back(-211 );
-  pi0.push_back( 111 );
-  
-  cc0pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi,  0 ) );
-  cc0pi_signal_map.insert( std::make_pair( pi0, 0 ) );
+  int start = static_cast<int>(time(NULL));
+  unsigned int total_files = 500;
 
-  cc1pi_signal_map.insert( std::make_pair( mu,  1 ) );
-  cc1pi_signal_map.insert( std::make_pair( pi,  1 ) );
-  
-  ccpi0_signal_map.insert( std::make_pair( mu,  1 ) );
-  ccpi0_signal_map.insert( std::make_pair( pi0, 1 ) );
-  
-  for( unsigned int i = 0; i < 500; ++i ){
-  
-    // Get the filename for each 2D histogram
-    std::stringstream ss;
-    ss.clear();
-    
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total_files; ++i ){
+
+    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+
+    // Get the filenames
     std::string name;
     name.clear();
-    
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/sbn_workshop_0318/5103689_" << i <<"/output_file.root";
-    name = ss.str();
-            
+    name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
-      
-    EventSelectionTool::LoadEventList(file_name, events, i);
-  }
 
+    EventSelectionTool::LoadEventList(file_name, events, i);
+    
+    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
+    
+  }
+  std::cout << std::endl;
+  
+  TopologyMap cc0pi   = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc0pi2p = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
+ 
   // Initialise the file to hold file and event ids for different topologies 
   ofstream file;
-  file.open("event_display_ids.txt");
+  file.open(evd_location+"event_display_ids.txt");
   file << std::endl;
-  file << "-------------------------------------------------------------------------" << std::endl;
+  file << "-------------------------------------------------------------------------------------------------" << std::endl;
   file << std::endl;
-  file << std::setw(8) << " Type " << std::setw(8) << " File " << std::setw(8) << " Event " << std::endl;
+  file << std::setw(16) << " Type " << std::setw(16) << "MC, Reco, Both" << std::setw(8) << " File " << std::setw(8) << " Event " << std::endl;
   file << std::endl;
-  file << "-------------------------------------------------------------------------" << std::endl;
+  file << "-------------------------------------------------------------------------------------------------" << std::endl;
   file << std::endl;
-
-  // Counter for CC 1pi protons
-  unsigned int protons_reco = 0;
-  unsigned int protons_true = 0;
 
   for(unsigned int i = 0; i < events.size(); ++i){
 
     // Do analysis
     Event &e(events[i]);
 
-    if(e.CheckMCTopology(cc0pi_signal_map) && e.CheckRecoTopology(cc0pi_signal_map)) {
-      file << std::setw(8) << " 0 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    else if(e.CheckRecoTopology(cc0pi_signal_map)) {
-      file << std::setw(8) << " 1 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    if(e.CheckMCTopology(cc0pi_signal_map) && !e.CheckRecoTopology(cc0pi_signal_map)) {
-      file << std::setw(8) << " 2 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    
-    if(e.CheckMCTopology(cc1pi_signal_map) && e.CheckRecoTopology(cc1pi_signal_map)) {
-      
-      protons_true = e.CountMCParticlesWithPdg(2212);
-      protons_reco = e.CountRecoParticlesWithPdg(2212);
-     
-      if(e.GetPhysicalProcess() == 3) { 
-        file << std::setw(8) << " 9 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-      }
-      // If we are missing many protons
-      if( protons_true >= 4 && protons_reco == 0){
-        file << std::setw(8) << " 3p " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-      }
-      file << std::setw(8) << " 3 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
+    if(e.CheckMCTopology(cc0pi2p) && e.IsSBNDTrueFiducial()) {
+      file << std::setw(16) <<" CC 0Pi 2P " << std::setw(16) << " MC " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
 
+      if(e.CheckRecoTopology(cc0pi2p))
+        file << std::setw(16) <<" CC 0Pi 2P " << std::setw(16) << " Both " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
     }
-    else if(e.CheckRecoTopology(cc1pi_signal_map)) {
-      file << std::setw(8) << " 4 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    if(e.CheckMCTopology(cc1pi_signal_map) && !e.CheckRecoTopology(cc1pi_signal_map)) {
-      file << std::setw(8) << " 5 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    
-    if(e.CheckMCTopology(ccpi0_signal_map) && e.CheckRecoTopology(ccpi0_signal_map)) {
-      file << std::setw(8) << " 6 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
-    else if(e.CheckRecoTopology(ccpi0_signal_map)) {
-      file << std::setw(8) << " 7 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    } 
-    if(e.CheckMCTopology(ccpi0_signal_map) && !e.CheckRecoTopology(ccpi0_signal_map)) {
-      file << std::setw(8) << " 8 " << std::setw(8) << e.GetFileNumber() << std::setw(8) << e.GetID() << std::endl;
-    }
+    if(e.CheckRecoTopology(cc0pi2p) && e.IsSBNDTrueFiducial())
+      file << std::setw(16) <<" CC 0Pi 2P " << std::setw(16) << " Reco " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
   }
  
   file.close();

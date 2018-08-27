@@ -139,7 +139,7 @@ int MainTest(){
             
     strcpy( file_name, name.c_str() );
       
-    EventSelectionTool::LoadEventList(file_name, events);
+    EventSelectionTool::LoadEventList(file_name, events, i);
     
     //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
     EventSelectionTool::GetTimeLeft(start,total_files,i);

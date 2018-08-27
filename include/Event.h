@@ -35,8 +35,10 @@ namespace selection{
        * @param  is_cc is this a charged or neutral current event
        * @param  mc_vertex Monte Carlo neutrino vertex 
        * @param  reco_vertex reconstructed neutrino vertex
+       * @param  file the file number the event was from
+       * @param  id the id of the event
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int nuance, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy);
+      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int nuance, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -84,6 +86,16 @@ namespace selection{
        */
       ParticleList GetRecoParticleList() const;
       
+      /**
+       * @brief  Get the file id the current event came from
+       */
+      int GetFileId() const;
+
+      /**
+       * @brief  Get the id of the current event
+       */
+      int GetId() const;
+
       /**
        * @brief  Get the nuance code - interaction of the event
        */
@@ -206,6 +218,8 @@ namespace selection{
       TVector3           m_reco_vertex;        ///< reconstructed neutrino vertex
       TVector3           m_mc_vertex;          ///< reconstructed neutrino vertex
       float              m_neutrino_energy;    ///< true neutrino energy
+      int                m_file;               ///< file id
+      int                m_id;                 ///< event id
       float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector
       float              m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
       float              m_sbnd_border_z;      ///< fiducial border in z for the sbnd detector

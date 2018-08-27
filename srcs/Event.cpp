@@ -2,7 +2,7 @@
 #include "../include/EventSelectionTool.h"
 namespace selection{
   
-  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int nuance, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy) :
+  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int nuance, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id) :
     m_mc_particles(mc_particles),
     m_reco_particles(reco_particles),
     m_nuance(nuance),
@@ -12,7 +12,9 @@ namespace selection{
     m_is_cc(is_cc),
     m_mc_vertex(mc_vertex),
     m_reco_vertex(reco_vertex), 
-    m_neutrino_energy(neutrino_energy) {
+    m_neutrino_energy(neutrino_energy),
+    m_file(file),
+    m_id(id) {
     
       // Co-ordinate offset in cm
       m_sbnd_half_length_x = 400;
@@ -28,7 +30,6 @@ namespace selection{
       m_sbnd_border_z = 10;
 
     }
-
 
   //------------------------------------------------------------------------------------------ 
     
@@ -75,6 +76,18 @@ namespace selection{
  
     return this->GetMostEnergeticParticle(m_mc_particles);
 
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  int Event::GetFileId() const{
+    return m_file;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  int Event::GetId() const{
+    return m_id;
   }
 
   //------------------------------------------------------------------------------------------ 
