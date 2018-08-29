@@ -238,7 +238,7 @@ namespace selection{
  
   bool Particle::GetTrackContained() const{
 
-    if(!m_from_reco_track || !m_has_calorimetry) 
+    if(!m_from_reco_track && !m_has_calorimetry) 
       std::cerr << "Containment can only be checked for reconstructed tracks or MCParticles" << std::endl;
 
     // Check the neutrino interaction vertex is within the fiducial volume

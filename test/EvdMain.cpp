@@ -41,13 +41,14 @@ int MainTest(){
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
 
-    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+    //if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filenames
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
+    name = "/hepstore/rjones/Samples/FNAL/290818_analysis_sample/11206561_"+std::to_string(i)+"/output_file.root";
+    //name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);

@@ -53,13 +53,13 @@ int MainTest(){
   unsigned int total_files = 500;
   for( unsigned int i = 0; i < total_files; ++i ){
     // These are bad directories in this case, so continue past them
-    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+    //if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
     // Get the filenames
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/pnfs/sbnd/persistent/users/rsjones/analysis_sample/220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
+    name = "/pnfs/sbnd/persistent/users/rsjones/analysis_sample/290818_ana_files/11206561_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     //Load the event list with the contents of the current file

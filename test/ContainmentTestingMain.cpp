@@ -57,22 +57,17 @@ int MainTest(){
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
 
-    if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+   // if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
 
-    // Get the filename for each 2D histogram
-    std::stringstream ss;
-    ss.clear();
-    
+    // Get the filenames
     std::string name;
     name.clear();
-    
     char file_name[1024];
-    ss << "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_" << i << "/output_file.root";
-    name = ss.str();
-            
+    name = "/hepstore/rjones/Samples/FNAL/290818_analysis_sample/11206561_"+std::to_string(i)+"/output_file.root";
+    //name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
-      
-    EventSelectionTool::LoadEventList(file_name, events);
+
+    EventSelectionTool::LoadEventList(file_name, events, i);
     
     //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
     EventSelectionTool::GetTimeLeft(start,total_files,i);
@@ -122,6 +117,8 @@ int MainTest(){
   TH1D *h_closest_not      = new TH1D("h_closest_not","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
   TH1D *h_closest_muon     = new TH1D("h_closest_muon","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
   TH1D *h_closest_not_muon = new TH1D("h_closest_not_muon","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
+  TH2D *h_length_dist_muon = new TH2D("h_length_dist_muon", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
+  TH2D *h_length_dist_not  = new TH2D("h_length_dist_not", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
 
   /*
    *
@@ -133,6 +130,9 @@ int MainTest(){
   unsigned int longest_over_100_escapes = 0;
   unsigned int events_with_1_escaping_track = 0;
   unsigned int longest_escaping_true_muon = 0;
+
+  double escaping_track_length = -1.;
+
   for(const Event &e : events){
     bool longest_track_escapes = false;
     bool muon_escapes = false;
@@ -169,13 +169,16 @@ int MainTest(){
           
       if(p.GetFromRecoTrack() && !p.GetTrackContained()){
         for(const Particle &mcp : e.GetMCParticleList()){
-          if(mcp.GetMCId() == max_id && mcp.GetPdgCode() == 13){
+          if(mcp.GetPdgCode() == 13 && !mcp.GetTrackContained()){
             h_length_muon->Fill(p.GetLength());
+            escaping_track_length = p.GetLength();
             true_muon_escapes++;
             muon_escapes = true;
           }
-          else if(mcp.GetMCId() == max_id)
+          else if(!mcp.GetTrackContained()){
             h_length_not_muon->Fill(p.GetLength());
+            escaping_track_length = p.GetLength();
+          }
         }
       }
     }
@@ -219,20 +222,92 @@ int MainTest(){
       h_closest_not->Fill(delta_min);
     }
     if(muon_escapes){
+      h_length_dist_muon->Fill(delta_min, escaping_track_length);
       h_closest_muon->Fill(delta_min);
     }
     else{
+      h_length_dist_not->Fill(delta_min, escaping_track_length);
       h_closest_not_muon->Fill(delta_min);
     }
   }
 
   /*
    *
+   *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
+   *
+   */
+
+  // Find the location at which the escaping track leaves the TPC
+  for(const Particle &p : e.GetRecoParticleList()){
+    // Check that we are looking at the escaping track
+    if(p.GetFromRecoTrack() && !p.GetTrackContained()){
+      // Find the track direction
+      // First, make sure the track isn't flipped
+      double nu_vtx_dist = TMath::Abs(e.GetRecoNuVertex() - p.GetVertex()); 
+      double nu_end_dist = TMath::Abs(e.GetRecoNuVertex() - p.GetEnd()); 
+      if(nu_vtx_dist < nu_end_dist) {
+        // The track is the right way around, find the direction using end - vtx
+        TVector3 track_direction = (p.GetEnd() - p.GetVertex()) / p.GetLength();
+      }
+      else {
+        // The track is the wrong way around, find the direction using vtx - end
+        TVector3 track_direction = (p.GetVertex() - p.GetEnd()) / p.GetLength();
+      }
+
+      // Find out if the track is travelling in the positive x,y,z directions
+      TVector3 x, y, z;
+      if(track_direction[0] == 0) x = (0,0,0); 
+      if(track_direction[1] == 0) y = (0,0,0); 
+      if(track_direction[2] == 0) z = (0,0,0); 
+      if(track_direction[0] < 0)  x = (-1,0,0);
+      if(track_direction[1] < 0)  y = (0,-1,0);
+      if(track_direction[2] < 0)  z = (0,0,-1);
+      if(track_direction[0] > 0)  x = (1,0,0);
+      if(track_direction[1] > 0)  y = (0,1,0);
+      if(track_direction[2] > 0)  z = (0,0,1);
+
+
+      // Find angle to x,y,z
+      double cos_psi   = track_direction.Dot(x) / double(track_direction.Mag();
+      double cos_phi   = track_direction.Dot(y) / double(track_direction.Mag());
+      double cos_theta = track_direction.Dot(z) / double(track_direction.Mag());
+
+      // Find distance along track to x, y, z faces in correct direction
+      // This should be accounted for in the above calculation - always finding the angle
+      // to an axis relative to the direction of the track
+      
+    }
+  }
+
+
+  /*
+   *
    *      OUTPUTS
    *
    */
-  // Length plot
+  // Length vs dist 2D plot
   TCanvas *c = new TCanvas("c","",800,600);
+
+  h_length_dist_muon->GetXaxis()->SetTitle("Distance to closest fiducil border [cm]");
+  h_length_dist_muon->GetYaxis()->SetTitle("Length of the escaping track [cm]");
+  h_length_dist_muon->Draw("colz");
+  h_length_dist_muon->SetStats(0);
+
+  c->SaveAs((plots_location+"length_dist_muon.png").c_str());
+  c->SaveAs((plots_location+"length_dist_muon.root").c_str());
+
+  c->Clear();
+  
+  h_length_dist_not->GetXaxis()->SetTitle("Distance to closest fiducil border [cm]");
+  h_length_dist_not->GetYaxis()->SetTitle("Length of the escaping track [cm]");
+  h_length_dist_not->Draw("colz");
+  h_length_dist_not->SetStats(0);
+
+  c->SaveAs((plots_location+"length_dist_not.png").c_str());
+  c->SaveAs((plots_location+"length_dist_not.root").c_str());
+
+  c->Clear();
+  // Length plot
   TLegend *l = new TLegend(0.43,0.68,0.88,0.88);
 
   h_closest_muon->SetLineColor(2);
@@ -241,16 +316,16 @@ int MainTest(){
   l->AddEntry(h_closest_muon, "The true muon escapes", "l");
   l->AddEntry(h_closest_not_muon, "The true muon doesn't escape", "l");
   l->SetLineWidth(0);
-  //c->SetLogy();
-
+  
   double int_dist_mu = h_closest_muon->Integral();
   double int_dist_not_mu = h_closest_not_muon->Integral();
-  double maxdistmu = 1.1*std::max((h_closest_muon->GetMaximum()/int_dist_mu), (h_closest_not_muon->GetMaximum()/int_dist_not_mu));
-  h_closest_muon->GetYaxis()->SetRangeUser(0.1,maxdistmu);
-  h_closest_not_muon->GetYaxis()->SetRangeUser(0.1,maxdistmu);
-  h_closest_muon->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
   h_closest_muon->Scale(1./int_dist_mu);
   h_closest_not_muon->Scale(1./int_dist_not_mu);
+ 
+  double maxdistmu = 1.1*std::max(h_closest_muon->GetMaximum(), h_closest_not_muon->GetMaximum());
+  h_closest_muon->GetYaxis()->SetRangeUser(0,maxdistmu);
+  h_closest_not_muon->GetYaxis()->SetRangeUser(0,maxdistmu);
+  h_closest_muon->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
   h_closest_muon->Draw("hist");
   h_closest_not_muon->Draw("hist same");
   l->Draw("same");
@@ -267,12 +342,13 @@ int MainTest(){
 
   double int_mu = h_length_muon->Integral();
   double int_not_mu = h_length_not_muon->Integral();
-  double maxmu = 1.1*std::max((h_length_muon->GetMaximum()/int_mu), (h_length_not_muon->GetMaximum()/int_not_mu));
+  h_length_muon->Scale(1./int_mu);
+  h_length_not_muon->Scale(1./int_not_mu);
+  
+  double maxmu = 1.1*std::max(h_length_muon->GetMaximum(), h_length_not_muon->GetMaximum());
   h_length_muon->GetYaxis()->SetRangeUser(0.1,maxmu);
   h_length_not_muon->GetYaxis()->SetRangeUser(0.1,maxmu);
   h_length_muon->GetXaxis()->SetTitle("Length [cm]");
-  h_length_muon->Scale(1./int_mu);
-  h_length_not_muon->Scale(1./int_not_mu);
   h_length_muon->Draw("hist");
   h_length_not_muon->Draw("hist same");
   l->Draw("same");
@@ -290,11 +366,15 @@ int MainTest(){
   l->AddEntry(h_length_longest, "The longest track escapes", "l");
   l->AddEntry(h_length_not, "The longest track doesn't escape", "l");
   l->SetLineWidth(0);
-  //c->SetLogy();
 
+  double int_long     = h_length_longest->Integral();
+  double int_not_long = h_length_not->Integral();
+  h_length_longest->Scale(1./int_long);
+  h_length_not->Scale(1./int_not_long);
+  
   double max = 1.1*std::max(h_length_longest->GetMaximum(), h_length_not->GetMaximum());
-  h_length_longest->GetYaxis()->SetRangeUser(0.1,max);
-  h_length_not->GetYaxis()->SetRangeUser(0.1,max);
+  h_length_longest->GetYaxis()->SetRangeUser(0,max);
+  h_length_not->GetYaxis()->SetRangeUser(0,max);
   h_length_longest->GetXaxis()->SetTitle("Length [cm]");
   h_length_longest->Draw("hist");
   h_length_not->Draw("hist same");
@@ -310,6 +390,11 @@ int MainTest(){
   h_dist_x_longest->SetLineColor(2);
   h_dist_x_not->SetLineColor(4);
 
+  double int_dist_x     = h_dist_x_longest->Integral();
+  double int_dist_x_not = h_dist_x_not->Integral();
+  h_dist_x_longest->Scale(1./int_dist_x);
+  h_dist_x_not->Scale(1./int_dist_x_not);
+  
   double maxx = 1.1*std::max(h_dist_x_longest->GetMaximum(), h_dist_x_not->GetMaximum());
   h_dist_x_longest->GetYaxis()->SetRangeUser(0,maxx);
   h_dist_x_not->GetYaxis()->SetRangeUser(0,maxx);
@@ -327,6 +412,11 @@ int MainTest(){
   h_dist_y_longest->SetLineColor(2);
   h_dist_y_not->SetLineColor(4);
 
+  double int_dist_y     = h_dist_y_longest->Integral();
+  double int_dist_y_not = h_dist_y_not->Integral();
+  h_dist_y_longest->Scale(1./int_dist_y);
+  h_dist_y_not->Scale(1./int_dist_y_not);
+  
   double maxy = 1.1*std::max(h_dist_y_longest->GetMaximum(), h_dist_y_not->GetMaximum());
   h_dist_y_longest->GetYaxis()->SetRangeUser(0,maxy);
   h_dist_y_not->GetYaxis()->SetRangeUser(0,maxy);
@@ -344,6 +434,11 @@ int MainTest(){
   h_dist_z_longest->SetLineColor(2);
   h_dist_z_not->SetLineColor(4);
 
+  double int_dist_z     = h_dist_z_longest->Integral();
+  double int_dist_z_not = h_dist_z_not->Integral();
+  h_dist_z_longest->Scale(1./int_dist_z);
+  h_dist_z_not->Scale(1./int_dist_z_not);
+  
   double maxz = 1.1*std::max(h_dist_z_longest->GetMaximum(), h_dist_z_not->GetMaximum());
   h_dist_z_longest->GetYaxis()->SetRangeUser(0,maxz);
   h_dist_z_not->GetYaxis()->SetRangeUser(0,maxz);
