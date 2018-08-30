@@ -97,7 +97,7 @@ namespace selection{
       EventSelectionTool::GetTrackList(start_tracks, t_track, event_identification, tracks);
       EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
       EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
-      EventSelectionTool::GetRecoParticleFromTrackRaquel(tracks, recoparticles);
+      EventSelectionTool::GetRecoParticleFromTrackChi2P(tracks, recoparticles);
       EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
       
       event_list.push_back(Event(mcparticles, recoparticles, interaction, scatter, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy, file, event_id));

@@ -152,7 +152,7 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream file;
-  file.open(stats_location+"raquel_topology_breakdown.txt");
+  file.open(stats_location+"chi2p_topology_breakdown.txt");
 
   file << "================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
