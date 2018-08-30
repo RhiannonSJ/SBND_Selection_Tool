@@ -7,6 +7,7 @@
 #include <numeric>
 #include <time.h>
 #include "TROOT.h"
+#include "TMath.h"
 #include "TVector3.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -229,56 +230,57 @@ int MainTest(){
       h_length_dist_not->Fill(delta_min, escaping_track_length);
       h_closest_not_muon->Fill(delta_min);
     }
-  }
 
-  /*
-   *
-   *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
-   *
-   */
+    /*
+     *
+     *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
+     *
+     */
 
-  // Find the location at which the escaping track leaves the TPC
-  for(const Particle &p : e.GetRecoParticleList()){
-    // Check that we are looking at the escaping track
-    if(p.GetFromRecoTrack() && !p.GetTrackContained()){
-      // Find the track direction
-      // First, make sure the track isn't flipped
-      double nu_vtx_dist = TMath::Abs(e.GetRecoNuVertex() - p.GetVertex()); 
-      double nu_end_dist = TMath::Abs(e.GetRecoNuVertex() - p.GetEnd()); 
-      if(nu_vtx_dist < nu_end_dist) {
-        // The track is the right way around, find the direction using end - vtx
-        TVector3 track_direction = (p.GetEnd() - p.GetVertex()) / p.GetLength();
+    // Find the location at which the escaping track leaves the TPC
+    for(const Particle &p : e.GetRecoParticleList()){
+      // Check that we are looking at the escaping track
+      if(p.GetFromRecoTrack() && !p.GetTrackContained()){
+        // Find the track direction
+        // First, make sure the track isn't flipped
+        double nu_vtx_dist = (e.GetRecoNuVertex() - p.GetVertex()).Mag(); 
+        double nu_end_dist = (e.GetRecoNuVertex() - p.GetEnd()).Mag(); 
+        if(nu_vtx_dist < nu_end_dist) {
+          // The track is the right way around, find the direction using end - vtx
+          TVector3 track_direction = (p.GetEnd() - p.GetVertex()) * (1. / p.GetLength());
+        }
+        else {
+          // The track is the wrong way around, find the direction using vtx - end
+          TVector3 track_direction = (p.GetVertex() - p.GetEnd()) * (1. / p.GetLength());
+        }
+
+        /*
+        // Find out if the track is travelling in the positive x,y,z directions
+        TVector3 x, y, z;
+        if(track_direction[0] == 0) x = (0,0,0); 
+        if(track_direction[1] == 0) y = (0,0,0); 
+        if(track_direction[2] == 0) z = (0,0,0); 
+        if(track_direction[0] < 0)  x = (-1,0,0);
+        if(track_direction[1] < 0)  y = (0,-1,0);
+        if(track_direction[2] < 0)  z = (0,0,-1);
+        if(track_direction[0] > 0)  x = (1,0,0);
+        if(track_direction[1] > 0)  y = (0,1,0);
+        if(track_direction[2] > 0)  z = (0,0,1);
+
+
+        // Find angle to x,y,z
+        double cos_psi   = track_direction.Dot(x) / double(track_direction.Mag();
+        double cos_phi   = track_direction.Dot(y) / double(track_direction.Mag());
+        double cos_theta = track_direction.Dot(z) / double(track_direction.Mag());
+
+        // Find distance along track to x, y, z faces in correct direction
+        // This should be accounted for in the above calculation - always finding the angle
+        // to an axis relative to the direction of the track
+        // */
+        
       }
-      else {
-        // The track is the wrong way around, find the direction using vtx - end
-        TVector3 track_direction = (p.GetVertex() - p.GetEnd()) / p.GetLength();
-      }
-
-      // Find out if the track is travelling in the positive x,y,z directions
-      TVector3 x, y, z;
-      if(track_direction[0] == 0) x = (0,0,0); 
-      if(track_direction[1] == 0) y = (0,0,0); 
-      if(track_direction[2] == 0) z = (0,0,0); 
-      if(track_direction[0] < 0)  x = (-1,0,0);
-      if(track_direction[1] < 0)  y = (0,-1,0);
-      if(track_direction[2] < 0)  z = (0,0,-1);
-      if(track_direction[0] > 0)  x = (1,0,0);
-      if(track_direction[1] > 0)  y = (0,1,0);
-      if(track_direction[2] > 0)  z = (0,0,1);
-
-
-      // Find angle to x,y,z
-      double cos_psi   = track_direction.Dot(x) / double(track_direction.Mag();
-      double cos_phi   = track_direction.Dot(y) / double(track_direction.Mag());
-      double cos_theta = track_direction.Dot(z) / double(track_direction.Mag());
-
-      // Find distance along track to x, y, z faces in correct direction
-      // This should be accounted for in the above calculation - always finding the angle
-      // to an axis relative to the direction of the track
-      
     }
   }
-
 
   /*
    *

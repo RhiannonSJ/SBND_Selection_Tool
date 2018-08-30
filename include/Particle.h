@@ -74,18 +74,18 @@ namespace selection{
       /**
        * @brief Status code of the particle
        *
-       * \enum -1 : Undefined
-       * \enum  0 : Initial state
-       * \enum  1 : Stable final state
-       * \enum  2 : Intermediate state
-       * \enum  3 : Decayed state
-       * \enum 10 : Correlated nucleon
-       * \enum 11 : Nucleon target
-       * \enum 12 : DIS pre-fragmented hadronic final state
-       * \enum 13 : Pre-decay resonant state
-       * \enum 14 : Hadron in nucleus
-       * \enum 15 : Final state nuclear remnant
-       * \enum 16 : Nucleon cluster target
+       * -1 : Undefined
+       *  0 : Initial state
+       *  1 : Stable final state
+       *  2 : Intermediate state
+       *  3 : Decayed state
+       * 10 : Correlated nucleon
+       * 11 : Nucleon target
+       * 12 : DIS pre-fragmented hadronic final state
+       * 13 : Pre-decay resonant state
+       * 14 : Hadron in nucleus
+       * 15 : Final state nuclear remnant
+       * 16 : Nucleon cluster target
        *
        */
       int GetStatusCode() const;

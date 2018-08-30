@@ -99,32 +99,32 @@ namespace selection{
       /**
        * @brief  Get the interaction type of the event
        *
-       * \enum 0 : Unknown
-       * \enum 1 : Weak CC
-       * \enum 2 : Weak NC
-       * \enum 3 : Weak CC + NC + Interference
-       * \enum 4 : Nucleon decay
+       * 0 : Unknown
+       * 1 : Weak CC
+       * 2 : Weak NC
+       * 3 : Weak CC + NC + Interference
+       * 4 : Nucleon decay
        */
       int GetInteractionType() const;
 
       /**
        * @brief  Get the scattering code of the event: the physical process
        *
-       * \enum  0 : Unknown
-       * \enum  1 : QE
-       * \enum  2 : Single kaon
-       * \enum  3 : DIS
-       * \enum  4 : Resonant
-       * \enum  5 : Coherent
-       * \enum  6 : Diffractive
-       * \enum  7 : \f$ \nu-e^{-}\f$ elastic
-       * \enum  8 : Inverse \f$\mu\f$ decay
-       * \enum  9 : AM \f$\nu-\gamma\f$
-       * \enum 10 : MEC
-       * \enum 11 : Coherent elastic
-       * \enum 12 : Inverse \f$\beta\f$ decay
-       * \enum 13 : Glashow resonance
-       * \enum 14 : IMD Annihilation
+       *  0 : Unknown
+       *  1 : QE
+       *  2 : Single kaon
+       *  3 : DIS
+       *  4 : Resonant
+       *  5 : Coherent
+       *  6 : Diffractive
+       *  7 : nu-e elastic
+       *  8 : Inverse mu decay
+       *  9 : AM nu-gamma
+       * 10 : MEC
+       * 11 : Coherent elastic
+       * 12 : Inverse beta decay
+       * 13 : Glashow resonance
+       * 14 : IMD Annihilation
        *
        */
       int GetScatteringCode() const;
