@@ -47,7 +47,8 @@ namespace selection{
     TBranch *b_time_now        = t_event->GetBranch("time_now");
     TBranch *b_r_vertex        = t_event->GetBranch("r_vertex");
     TBranch *b_t_vertex        = t_event->GetBranch("t_vertex");
-    TBranch *b_t_nuance        = t_event->GetBranch("t_interaction");
+    TBranch *b_t_interaction   = t_event->GetBranch("t_interaction");
+    TBranch *b_t_scatter       = t_event->GetBranch("t_scatter");
     TBranch *b_t_iscc          = t_event->GetBranch("t_iscc");
     TBranch *b_t_nu_pdgcode    = t_event->GetBranch("t_nu_pdgcode");
     TBranch *b_t_charged_pions = t_event->GetBranch("t_charged_pions");
@@ -68,7 +69,7 @@ namespace selection{
       ShowerList   showers;
 
       TVector3 r_vertex, t_vertex;
-      unsigned int nuance, pions_ch, pions_neu;
+      unsigned int interaction, pions_ch, pions_neu, scatter;
       int neutrino_pdg;
       bool iscc(false);
       float neu_energy;
@@ -83,7 +84,8 @@ namespace selection{
       t_vertex[0]  = b_t_vertex->GetLeaf("t_vertex")->GetValue(0);
       t_vertex[1]  = b_t_vertex->GetLeaf("t_vertex")->GetValue(1);
       t_vertex[2]  = b_t_vertex->GetLeaf("t_vertex")->GetValue(2);
-      nuance       = b_t_nuance->GetLeaf("t_interaction")->GetValue();
+      interaction  = b_t_interaction->GetLeaf("t_interaction")->GetValue();
+      scatter      = b_t_scatter->GetLeaf("t_scatter")->GetValue();
       iscc         = b_t_iscc->GetLeaf("t_iscc")->GetValue();
       neutrino_pdg = b_t_nu_pdgcode->GetLeaf("t_nu_pdgcode")->GetValue();
       pions_ch     = b_t_charged_pions->GetLeaf("t_charged_pions")->GetValue();
@@ -98,7 +100,7 @@ namespace selection{
       EventSelectionTool::GetRecoParticleFromTrackRaquel(tracks, recoparticles);
       EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
       
-      event_list.push_back(Event(mcparticles, recoparticles, nuance, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy, file, event_id));
+      event_list.push_back(Event(mcparticles, recoparticles, interaction, scatter, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy, file, event_id));
 
       start_tracks      += tracks.size();
       start_showers     += showers.size();
@@ -289,6 +291,7 @@ namespace selection{
     TBranch *b_id       = mcparticle_tree->GetBranch("p_id");
     TBranch *b_n_hits   = mcparticle_tree->GetBranch("p_n_hits");
     TBranch *b_pdgcode  = mcparticle_tree->GetBranch("p_pdgcode");
+    TBranch *b_status   = mcparticle_tree->GetBranch("p_status");
     TBranch *b_mass     = mcparticle_tree->GetBranch("p_mass");
     TBranch *b_energy   = mcparticle_tree->GetBranch("p_energy");
     TBranch *b_vertex   = mcparticle_tree->GetBranch("p_vertex");
@@ -312,6 +315,7 @@ namespace selection{
       
       int id                = b_id->GetLeaf("p_id")->GetValue();
       int pdgcode           = b_pdgcode->GetLeaf("p_pdgcode")->GetValue();
+      int statuscode        = b_status->GetLeaf("p_status")->GetValue();
       int n_hits            = b_n_hits->GetLeaf("p_n_hits")->GetValue();
       float mass            = b_mass->GetLeaf("p_mass")->GetValue();
       float energy          = b_energy->GetLeaf("p_energy")->GetValue();
@@ -329,7 +333,7 @@ namespace selection{
       TVector3 end(temp_end);
       TVector3 momentum(temp_momentum);
 
-      mcparticle_list.push_back(Particle(id, pdgcode, n_hits, mass, energy, vertex, end, momentum));
+      mcparticle_list.push_back(Particle(id, pdgcode, statuscode, n_hits, mass, energy, vertex, end, momentum));
       
     }
   }

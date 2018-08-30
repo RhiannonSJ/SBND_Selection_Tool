@@ -20,6 +20,7 @@ namespace selection{
        *
        * @param  id of the particle
        * @param  pdg of the particle
+       * @param  status code of the particle
        * @param  n_hits number of hits the particle has
        * @param  mass mass of the particle
        * @param  energy total energy of the particle
@@ -28,7 +29,7 @@ namespace selection{
        * @param  momentum momentum of the track
        *
        */
-      Particle(const int mc_id, const int pdg, const int n_hits, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
+      Particle(const int mc_id, const int pdg, const int status, const int n_hits, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
 
       /**
        * @brief  Constructor for reconstructed tracks 
@@ -69,6 +70,25 @@ namespace selection{
        * @brief  Get the pdg code
        */
       int GetPdgCode() const;
+
+      /**
+       * @brief Status code of the particle
+       *
+       * \enum -1 : Undefined
+       * \enum  0 : Initial state
+       * \enum  1 : Stable final state
+       * \enum  2 : Intermediate state
+       * \enum  3 : Decayed state
+       * \enum 10 : Correlated nucleon
+       * \enum 11 : Nucleon target
+       * \enum 12 : DIS pre-fragmented hadronic final state
+       * \enum 13 : Pre-decay resonant state
+       * \enum 14 : Hadron in nucleus
+       * \enum 15 : Final state nuclear remnant
+       * \enum 16 : Nucleon cluster target
+       *
+       */
+      int GetStatusCode() const;
 
       /**
        * @brief  Get the number of hits
@@ -163,6 +183,7 @@ namespace selection{
       int      m_mc_id;           ///< mc TrackID 
       int      m_n_hits;          ///< number of hits 
       int      m_pdg;             ///< pdg code
+      int      m_status;          ///< status code
       float    m_mass;            ///< mass of the particle
       float    m_energy;          ///< energy of the particle
       float    m_length;          ///< length of the particle track

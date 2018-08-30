@@ -258,7 +258,14 @@ namespace selection{
   //-----------------------------------------------------------------------------------------------
 
   float CC1piAnalysisHelper::GetDeltaEnergy(const Event &e, const ParticleList &particle_list) {
-    TLorentzVector pion, p2;
+    /*
+     *
+     * NUANCE CODE NO LONGER EXISTS 
+     * SEE SCATTER CODES INSTEAD
+     *
+     *
+     *
+     * TLorentzVector pion, p2;
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
 	    if( e.GetNuanceCode() == 1003 || e.GetNuanceCode() == 1009 ){
 	      if( particle_list[i].GetPdgCode() ==  211 ){
@@ -282,6 +289,7 @@ namespace selection{
       }
     }
     return (pion + p2).M();
+    */
   }
   
   //---------------------------------------------------------------------------------------------                                                     

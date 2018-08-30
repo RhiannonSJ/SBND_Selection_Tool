@@ -31,14 +31,14 @@ namespace selection{
        *
        * @param  mc_particles list of the MC particle objects in the event
        * @param  reco_particles list of the reconstructed particle objects in the event
-       * @param  nuance the nuance code corresponding to the event
+       * @param  interaction the interaction type corresponding to the event
        * @param  is_cc is this a charged or neutral current event
        * @param  mc_vertex Monte Carlo neutrino vertex 
        * @param  reco_vertex reconstructed neutrino vertex
        * @param  file the file number the event was from
        * @param  id the id of the event
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int nuance, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id);
+      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -97,10 +97,38 @@ namespace selection{
       int GetId() const;
 
       /**
-       * @brief  Get the nuance code - interaction of the event
+       * @brief  Get the interaction type of the event
+       *
+       * \enum 0 : Unknown
+       * \enum 1 : Weak CC
+       * \enum 2 : Weak NC
+       * \enum 3 : Weak CC + NC + Interference
+       * \enum 4 : Nucleon decay
        */
-      int GetNuanceCode() const;
+      int GetInteractionType() const;
 
+      /**
+       * @brief  Get the scattering code of the event: the physical process
+       *
+       * \enum  0 : Unknown
+       * \enum  1 : QE
+       * \enum  2 : Single kaon
+       * \enum  3 : DIS
+       * \enum  4 : Resonant
+       * \enum  5 : Coherent
+       * \enum  6 : Diffractive
+       * \enum  7 : \f$ \nu-e^{-}\f$ elastic
+       * \enum  8 : Inverse \f$\mu\f$ decay
+       * \enum  9 : AM \f$\nu-\gamma\f$
+       * \enum 10 : MEC
+       * \enum 11 : Coherent elastic
+       * \enum 12 : Inverse \f$\beta\f$ decay
+       * \enum 13 : Glashow resonance
+       * \enum 14 : IMD Annihilation
+       *
+       */
+      int GetScatteringCode() const;
+      
       /**
        * @brief  Get the neutrino pdg code in the event
        */
@@ -126,11 +154,6 @@ namespace selection{
        * @brief  Get whether all the reconstructed tracks in an event are contained
        */
       bool AllContained() const;
-      
-      /**
-       * @brief  Get the physical process
-       */
-      int GetPhysicalProcess() const;
       
       /**
        * @brief  Get if the event is CC or NC
@@ -210,7 +233,8 @@ namespace selection{
       // Member variables
       ParticleList       m_mc_particles;       ///< vector of Monte Carlo particles
       ParticleList       m_reco_particles;     ///< vector of reconstructed particles
-      unsigned int       m_nuance;             ///< Nuance code/interaction of the event
+      unsigned int       m_interaction;        ///< interaction type of the event
+      unsigned int       m_scatter;            ///< scatter code for the event: physical process
       int                m_nu_pdg;             ///< Neutrino pdg code of the event
       unsigned int       m_charged_pi;         ///< Number of charged pions in the event
       unsigned int       m_neutral_pi;         ///< Number of neutral pions in the event

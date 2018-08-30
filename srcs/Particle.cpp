@@ -6,9 +6,10 @@
 
 namespace selection{
 
-  Particle::Particle(const int mc_id, const int pdg, const int n_hits,  const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
+  Particle::Particle(const int mc_id, const int pdg, const int status, const int n_hits,  const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
     m_mc_id(mc_id), 
     m_pdg(pdg),
+    m_status(status),
     m_n_hits(n_hits),
     m_mass(mass),
     m_energy(energy),
@@ -121,6 +122,17 @@ namespace selection{
   
   int Particle::GetPdgCode() const{return m_pdg;}
 
+  //------------------------------------------------------------------------------------------ 
+  
+  int Particle::GetStatusCode() const{
+    // Make sure we are looking at an mcparticle
+    if(m_has_calorimetry && !m_from_reco_track){
+      return m_status;
+    }
+    std::cout << "GetStatusCode" << std::endl;
+    throw 5;
+  }
+      
   //------------------------------------------------------------------------------------------ 
   
   int Particle::GetNumberOfHits() const{return m_n_hits;}
