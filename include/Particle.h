@@ -72,21 +72,22 @@ namespace selection{
       int GetPdgCode() const;
 
       /**
-       * @brief Status code of the particle
+       * @brief Status code of the particle \n
        *
-       * -1 : Undefined
-       *  0 : Initial state
-       *  1 : Stable final state
-       *  2 : Intermediate state
-       *  3 : Decayed state
-       * 10 : Correlated nucleon
-       * 11 : Nucleon target
-       * 12 : DIS pre-fragmented hadronic final state
-       * 13 : Pre-decay resonant state
-       * 14 : Hadron in nucleus
-       * 15 : Final state nuclear remnant
-       * 16 : Nucleon cluster target
-       *
+       * <tt>
+       * -1  : Undefined \n
+       *  0  : Initial state \n
+       *  1  : Stable final state \n
+       *  2  : Intermediate state \n
+       *  3  : Decayed state \n
+       * 10 : Correlated nucleon \n
+       * 11 : Nucleon target \n
+       * 12 : DIS pre-fragmented hadronic final state \n
+       * 13 : Pre-decay resonant state \n
+       * 14 : Hadron in nucleus \n
+       * 15 : Final state nuclear remnant \n
+       * 16 : Nucleon cluster target \n
+       * </tt> 
        */
       int GetStatusCode() const;
 

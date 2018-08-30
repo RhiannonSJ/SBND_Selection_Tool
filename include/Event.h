@@ -97,34 +97,36 @@ namespace selection{
       int GetId() const;
 
       /**
-       * @brief  Get the interaction type of the event
-       *
-       * 0 : Unknown
-       * 1 : Weak CC
-       * 2 : Weak NC
-       * 3 : Weak CC + NC + Interference
-       * 4 : Nucleon decay
+       * @brief  Get the interaction type of the event \n
+       * <tt>
+       * 0 : Unknown \n
+       * 1 : Weak CC \n
+       * 2 : Weak NC \n
+       * 3 : Weak CC + NC + Interference \n
+       * 4 : Nucleon decay \n
+       * </tt>
        */
       int GetInteractionType() const;
 
       /**
-       * @brief  Get the scattering code of the event: the physical process
-       *
-       *  0 : Unknown
-       *  1 : QE
-       *  2 : Single kaon
-       *  3 : DIS
-       *  4 : Resonant
-       *  5 : Coherent
-       *  6 : Diffractive
-       *  7 : nu-e elastic
-       *  8 : Inverse mu decay
-       *  9 : AM nu-gamma
-       * 10 : MEC
-       * 11 : Coherent elastic
-       * 12 : Inverse beta decay
-       * 13 : Glashow resonance
-       * 14 : IMD Annihilation
+       * @brief  Get the scattering code of the event: the physical process \n
+       *  <tt>
+       * 0  : Unknown \n
+       * 1  : QE \n
+       * 2  : Single kaon \n
+       * 3  : DIS \n
+       * 4  : Resonant \n
+       * 5  : Coherent \n
+       * 6  : Diffractive \n
+       * 7  : \f$ \nu \f$- e elastic \n
+       * 8  : Inverse \f$ \mu \f$ decay \n
+       * 9  : AM \f$ \nu - \gamma \f$ \n
+       * 10 : MEC \n
+       * 11 : Coherent elastic \n
+       * 12 : Inverse \f$ \beta \f$ decay \n
+       * 13 : Glashow resonance \n
+       * 14 : IMD Annihilation \n
+       * </tt>
        *
        */
       int GetScatteringCode() const;
