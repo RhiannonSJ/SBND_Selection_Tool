@@ -21,9 +21,9 @@ namespace selection{
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
       
       // Co-ordinate offset in cm
-      m_sbnd_half_length_x = 400;
-      m_sbnd_half_length_y = 400;
-      m_sbnd_half_length_z = 500;
+      m_sbnd_length_x = 400;
+      m_sbnd_length_y = 400;
+      m_sbnd_length_z = 500;
       
       m_sbnd_offset_x = 200;
       m_sbnd_offset_y = 200;
@@ -37,7 +37,7 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end) :
+  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
@@ -47,7 +47,10 @@ namespace selection{
     m_has_calorimetry(true),
     m_from_reco_track(true),
     m_vertex(vertex),
-    m_end(end){
+    m_end(end),
+    m_chi2p(chi2p),
+    m_chi2mu(chi2mu),
+    m_chi2pi(chi2pi) {
       // Set member variables
       m_mass            = this->GetMassFromPdg(pdg);
       m_energy          = m_mass + kinetic_energy/1000.;
@@ -57,9 +60,9 @@ namespace selection{
       m_momentum = momentum_magnitude * (m_end - m_vertex)*(1/double((m_end-m_vertex).Mag()));
       
       // Co-ordinate offset in cm
-      m_sbnd_half_length_x = 400;
-      m_sbnd_half_length_y = 400;
-      m_sbnd_half_length_z = 500;
+      m_sbnd_length_x = 400;
+      m_sbnd_length_y = 400;
+      m_sbnd_length_z = 500;
       
       m_sbnd_offset_x = 200;
       m_sbnd_offset_y = 200;
@@ -84,9 +87,9 @@ namespace selection{
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
       
       // Co-ordinate offset in cm
-      m_sbnd_half_length_x = 400;
-      m_sbnd_half_length_y = 400;
-      m_sbnd_half_length_z = 500;
+      m_sbnd_length_x = 400;
+      m_sbnd_length_y = 400;
+      m_sbnd_length_z = 500;
       
       m_sbnd_offset_x = 200;
       m_sbnd_offset_y = 200;
@@ -154,6 +157,28 @@ namespace selection{
     if(!m_has_calorimetry) throw 1;
     return m_energy-m_mass;
   }
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  float Particle::GetChi2P() const{
+    if(!m_from_reco_track) throw 1;
+    return m_chi2p;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  float Particle::GetChi2Mu() const{
+    if(!m_from_reco_track) throw 1;
+    return m_chi2mu;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  float Particle::GetChi2Pi() const{
+    if(!m_from_reco_track) throw 1;
+    return m_chi2pi;
+  }
+
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetLength() const{return m_length;}
@@ -165,6 +190,15 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Particle::GetEnd() const{return m_end;}
+
+  //------------------------------------------------------------------------------------------ 
+  
+  void Particle::FlipTrack(){
+    TVector3 temp;
+    temp     = m_vertex;
+    m_vertex = m_end;
+    m_end    = temp;
+  }
 
   //------------------------------------------------------------------------------------------ 
   
@@ -261,18 +295,55 @@ namespace selection{
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
                                                                                  
-    if (    (vertex_x > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+    if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
          || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (vertex_y > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
          || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (vertex_z > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
          || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z))
-         || (end_x    > (m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
          || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (end_y    > (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
          || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (end_z    > (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
          || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z))) return false; 
+
+    return true;
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+ 
+  bool Particle::GetOneEndTrackContained() const{
+
+    if(!m_from_reco_track && !m_has_calorimetry) 
+      std::cerr << "Containment can only be checked for reconstructed tracks or MCParticles" << std::endl;
+
+    // Check the neutrino interaction vertex is within the fiducial volume
+    float vertex_x = m_vertex[0];                        
+    float vertex_y = m_vertex[1];                        
+    float vertex_z = m_vertex[2];                        
+    float end_x    = m_end[0];                        
+    float end_y    = m_end[1];                        
+    float end_z    = m_end[2];                        
+    
+    bool does_vtx_escape = 
+      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z)));
+
+    bool does_end_escape = 
+      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z))); 
+
+    if(does_vtx_escape && does_end_escape) return false;
+    if(!does_vtx_escape && !does_end_escape) return false;
 
     return true;
   }

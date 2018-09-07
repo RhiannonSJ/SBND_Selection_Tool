@@ -51,8 +51,17 @@ namespace selection{
        */
       static void GetTimeLeft(const int start_time, const int total, const unsigned int i);
 
-    private : 
+    private :
 
+      /**
+       * @brief  check if a particle should be flipped and flip it
+       *
+       * @param  vtx the neutrino interaction vertex
+       * @param  particles the particles in the event
+       *
+       */
+      static void CheckAndFlip(const TVector3 &vtx, ParticleList &particles);
+      
       /**
        * @brief  get a list of event IDs which are entirely unique
        *
@@ -224,25 +233,27 @@ namespace selection{
          * @param  vertex vertex of the track
          * @param  end end point of the track
          * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
+         * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
          *
          */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end, const bool &contained);
+          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained);
 
           // Member variables
-          int      m_mc_id_charge;   ///< mc TrackID corresponding to MCParticle using charge
-          int      m_mc_id_energy;   ///< mc TrackID corresponding to MCParticle using energy
-          int      m_mc_id_hits;     ///< mc TrackID corresponding to MCParticle using hits
-          int      m_n_hits;         ///< number of hits in the track
-          float    m_pida;           ///< pida value
-          float    m_chi2_mu;        ///< chi squared fit to the muon expected dEdx
-          float    m_chi2_pi;        ///< chi squared fit to the pion expected dEdx
-          float    m_chi2_pr;        ///< chi squared fit to the proton expected dEdx 
-          float    m_chi2_ka;        ///< chi squared fit to the kaon expected dEdx
-          float    m_length;         ///< length of the track
-          float    m_kinetic_energy; ///< kinetic energy of the track
-          TVector3 m_vertex;         ///< vertex of the track         
-          TVector3 m_end;            ///< end of the track
-          bool     m_contained;      ///< whether or not the reconstructed track is contained
+          int      m_mc_id_charge;      ///< mc TrackID corresponding to MCParticle using charge
+          int      m_mc_id_energy;      ///< mc TrackID corresponding to MCParticle using energy
+          int      m_mc_id_hits;        ///< mc TrackID corresponding to MCParticle using hits
+          int      m_n_hits;            ///< number of hits in the track
+          float    m_pida;              ///< pida value
+          float    m_chi2_mu;           ///< chi squared fit to the muon expected dEdx
+          float    m_chi2_pi;           ///< chi squared fit to the pion expected dEdx
+          float    m_chi2_pr;           ///< chi squared fit to the proton expected dEdx 
+          float    m_chi2_ka;           ///< chi squared fit to the kaon expected dEdx
+          float    m_length;            ///< length of the track
+          float    m_kinetic_energy;    ///< kinetic energy of the track
+          TVector3 m_vertex;            ///< vertex of the track         
+          TVector3 m_end;               ///< end of the track
+          bool     m_contained;         ///< whether or not the reconstructed track is contained
+          bool     m_one_end_contained; ///< whether or not the reconstructed track has one contained end
       
       }; // Track
       

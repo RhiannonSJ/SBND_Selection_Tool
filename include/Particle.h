@@ -43,9 +43,12 @@ namespace selection{
        * @param  length length of the particle
        * @param  vertex start point of the track
        * @param  end end of the track
+       * @param  chi2p chi2 under the proton hypothesis
+       * @param  chi2mu chi2 under the muon hypothesis
+       * @param  chi2pi chi2 under the pion hypothesis
        *
        */
-      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end);
+      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi);
 
       /**
        * @brief  Constructor for reconstructed showers 
@@ -106,6 +109,21 @@ namespace selection{
       float GetEnergy() const;
 
       /**
+       * @brief  Get the chi2 proton
+       */
+      float GetChi2P() const;
+
+      /**
+       * @brief  Get the chi2 muon
+       */
+      float GetChi2Mu() const;
+
+      /**
+       * @brief  Get the chi2 pion
+       */
+      float GetChi2Pi() const;
+
+      /**
        * @brief  Get the kinetic energy
        */
       float GetKineticEnergy() const;
@@ -124,6 +142,11 @@ namespace selection{
        * @brief  Get the end
        */
       TVector3 GetEnd() const;
+
+      /**
+       * @brief  Flip the particle's vertex and end point if needed 
+       */
+      void FlipTrack();
 
       /**
        * @brief  Get the momentum
@@ -171,10 +194,14 @@ namespace selection{
       float GetCosTheta() const;
 
       /**
-       *
        * @brief Get whether a track is within the SBND fiducial volume
        */
       bool GetTrackContained() const;
+
+      /**
+       * @brief Get whether only 1 end of a track escapes the SBND fiducial volume
+       */
+      bool GetOneEndTrackContained() const;
 
     private : 
 
@@ -189,6 +216,9 @@ namespace selection{
       float    m_energy;          ///< energy of the particle
       float    m_length;          ///< length of the particle track
       float    m_costheta;        ///< cos(theta) of the particle
+      float    m_chi2p;           ///< chi2 under the proton hypothesis
+      float    m_chi2mu;          ///< chi2 under the muon hypothesis
+      float    m_chi2pi;          ///< chi2 under the pion hypothesis
       bool     m_has_calorimetry; ///< whether or not the particle has calorimetry
       bool     m_from_reco_track; ///< whether the particle is from a reconstructed track
       TVector3 m_vertex;          ///< particle start position
@@ -200,9 +230,9 @@ namespace selection{
       float              m_sbnd_offset_x;      ///< offset in x for the sbnd detector
       float              m_sbnd_offset_y;      ///< offset in y for the sbnd detector
       float              m_sbnd_offset_z;      ///< offset in z for the sbnd detector
-      float              m_sbnd_half_length_x; ///< detector half length in x
-      float              m_sbnd_half_length_y; ///< detector half length in y
-      float              m_sbnd_half_length_z; ///< detector half length in z
+      float              m_sbnd_length_x; ///< detector half length in x
+      float              m_sbnd_length_y; ///< detector half length in y
+      float              m_sbnd_length_z; ///< detector half length in z
 
 
   }; // Particle

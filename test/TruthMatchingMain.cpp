@@ -65,7 +65,7 @@ int MainTest(){
     EventSelectionTool::LoadEventList(file_name, events, i);
     
     //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-    EventSelectionTool::GetTimeLeft(start,total_files,i);
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
 
   std::cout << std::endl;
@@ -80,10 +80,10 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"raquel_particle_stats.txt");
+  all_file.open(stats_location+"chi2p_particle_stats.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"raquel_mis_identification_stats.txt");
+  mis_id_file.open(stats_location+"chi2p_mis_identification_stats.txt");
 
   GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
   GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);
