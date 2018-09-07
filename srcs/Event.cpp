@@ -117,7 +117,7 @@ namespace selection{
   
   //------------------------------------------------------------------------------------------ 
   
-  int Event::GetScatteringCode() const{
+  int Event::GetPhysicalProcess() const{
   
     return m_scatter;
   

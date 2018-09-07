@@ -129,7 +129,7 @@ namespace selection{
        * </tt>
        *
        */
-      int GetScatteringCode() const;
+      int GetPhysicalProcess() const;
       
       /**
        * @brief  Get the neutrino pdg code in the event
