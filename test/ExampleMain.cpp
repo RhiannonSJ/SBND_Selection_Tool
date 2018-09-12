@@ -59,7 +59,7 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/pnfs/sbnd/persistent/users/rsjones/analysis_sample/290818_ana_files/11206561_"+std::to_string(i)+"/output_file.root";
+    name = "/pnfs/sbnd/persistent/users/rsjones/analysis_sample/120918_ana_files/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     //Load the event list with the contents of the current file

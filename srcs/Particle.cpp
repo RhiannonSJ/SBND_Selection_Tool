@@ -37,12 +37,15 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi) :
+  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
     m_pdg(pdg),
     m_n_hits(n_hits),
+    m_mcs_mom_muon(mcs_momentum_muon),
+    m_range_mom_muon(range_momentum_muon),
+    m_range_mom_proton(range_momentum_proton),
     m_length(length),
     m_has_calorimetry(true),
     m_from_reco_track(true),
@@ -204,16 +207,48 @@ namespace selection{
   
   TVector3 Particle::GetMomentum() const{
     if(!m_has_calorimetry) throw 1;
-    return m_momentum;
+    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+      return this->Particle::GetMCSMomentumMuon();
+    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+      return this->Particle::GetRangeMomentumMuon();
+    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+      return this->Particle::GetRangeMomentumProton();
+    else
+      return m_momentum;
   }
 
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetModulusMomentum() const{
     if(!m_has_calorimetry) throw 1;
-    return m_momentum.Mag();
+    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+      return m_mcs_mom_muon;
+    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+      return m_range_mom_muon;
+    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+      return m_range_mom_proton;
+    else
+      return m_momentum.Mag();
   }
 
+  //------------------------------------------------------------------------------------------ 
+  
+  TVector3 Particle::GetMCSMomentumMuon() const{
+    return m_mcs_mom_muon * (1. / (this->Particle::GetEnd() - this->Particle::GetVertex()).Mag()) * (this->Particle::GetEnd() - this->Particle::GetVertex());
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  TVector3 Particle::GetRangeMomentumMuon() const{
+    return m_range_mom_muon * (1. / (this->Particle::GetEnd() - this->Particle::GetVertex()).Mag()) * (this->Particle::GetEnd() - this->Particle::GetVertex());
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  TVector3 Particle::GetRangeMomentumProton() const{
+    return m_range_mom_proton * (1. / (this->Particle::GetEnd() - this->Particle::GetVertex()).Mag()) * (this->Particle::GetEnd() - this->Particle::GetVertex());
+  }
+  
   //------------------------------------------------------------------------------------------ 
 
   int Particle::GetMCId() const{ 
@@ -295,18 +330,18 @@ namespace selection{
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
                                                                                  
-    if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+    if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
+         || (vertex_x < (-m_sbnd_offset_x))          
+         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
          || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z))
-         || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z))) return false; 
+         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
+         || (vertex_z < (-m_sbnd_offset_z))
+         || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
+         || (end_x    < (-m_sbnd_offset_x))          
+         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
+         || (end_y    < (-m_sbnd_offset_y))          
+         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
+         || (end_z    < (-m_sbnd_offset_z))) return false; 
 
     return true;
   }
@@ -327,21 +362,21 @@ namespace selection{
     float end_z    = m_end[2];                        
     
     bool does_vtx_escape = 
-      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
+         || (vertex_x < (-m_sbnd_offset_x))          
+         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
          || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z)));
+         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
+         || (vertex_z < (-m_sbnd_offset_z)));
 
     bool does_end_escape = 
-      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z))); 
-
+      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
+         || (end_x    < (-m_sbnd_offset_x))          
+         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
+         || (end_y    < (-m_sbnd_offset_y))          
+         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
+         || (end_z    < (-m_sbnd_offset_z))); 
+    
     if(does_vtx_escape && does_end_escape) return false;
     if(!does_vtx_escape && !does_end_escape) return false;
 

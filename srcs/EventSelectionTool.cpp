@@ -168,21 +168,24 @@ namespace selection{
   
   void EventSelectionTool::GetTrackList(unsigned int start, TTree *track_tree, const std::pair<int, int> &unique_event, TrackList &track_list){
    
-    TBranch *b_event_id       = track_tree->GetBranch("event_id");
-    TBranch *b_time_now       = track_tree->GetBranch("time_now");
-    TBranch *b_id_charge      = track_tree->GetBranch("tr_id_charge");
-    TBranch *b_id_energy      = track_tree->GetBranch("tr_id_energy");
-    TBranch *b_id_hits        = track_tree->GetBranch("tr_id_hits");
-    TBranch *b_n_hits         = track_tree->GetBranch("tr_n_hits");
-    TBranch *b_vertex         = track_tree->GetBranch("tr_vertex");
-    TBranch *b_end            = track_tree->GetBranch("tr_end");
-    TBranch *b_pida           = track_tree->GetBranch("tr_pida");
-    TBranch *b_chi2_mu        = track_tree->GetBranch("tr_chi2_mu");
-    TBranch *b_chi2_pi        = track_tree->GetBranch("tr_chi2_pi");
-    TBranch *b_chi2_pr        = track_tree->GetBranch("tr_chi2_pr");
-    TBranch *b_chi2_ka        = track_tree->GetBranch("tr_chi2_ka");
-    TBranch *b_length         = track_tree->GetBranch("tr_length");
-    TBranch *b_kinetic_energy = track_tree->GetBranch("tr_kinetic_energy");
+    TBranch *b_event_id         = track_tree->GetBranch("event_id");
+    TBranch *b_time_now         = track_tree->GetBranch("time_now");
+    TBranch *b_id_charge        = track_tree->GetBranch("tr_id_charge");
+    TBranch *b_id_energy        = track_tree->GetBranch("tr_id_energy");
+    TBranch *b_id_hits          = track_tree->GetBranch("tr_id_hits");
+    TBranch *b_n_hits           = track_tree->GetBranch("tr_n_hits");
+    TBranch *b_vertex           = track_tree->GetBranch("tr_vertex");
+    TBranch *b_end              = track_tree->GetBranch("tr_end");
+    TBranch *b_pida             = track_tree->GetBranch("tr_pida");
+    TBranch *b_chi2_mu          = track_tree->GetBranch("tr_chi2_mu");
+    TBranch *b_chi2_pi          = track_tree->GetBranch("tr_chi2_pi");
+    TBranch *b_chi2_pr          = track_tree->GetBranch("tr_chi2_pr");
+    TBranch *b_chi2_ka          = track_tree->GetBranch("tr_chi2_ka");
+    TBranch *b_length           = track_tree->GetBranch("tr_length");
+    TBranch *b_kinetic_energy   = track_tree->GetBranch("tr_kinetic_energy");
+    TBranch *b_mcs_mom_muon     = track_tree->GetBranch("tr_mcs_mom_muon");
+    TBranch *b_range_mom_muon   = track_tree->GetBranch("tr_range_mom_muon");
+    TBranch *b_range_mom_proton = track_tree->GetBranch("tr_range_mom_proton");
     
     unsigned int n_entries = track_tree->GetEntries();
 
@@ -198,23 +201,26 @@ namespace selection{
       double temp_vertex[3];
       double temp_end[3];
 
-      int id_charge        = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
-      int id_energy        = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
-      int id_hits          = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
-      int n_hits           = b_n_hits->GetLeaf("tr_n_hits")->GetValue();
-      temp_vertex[0]       = b_vertex->GetLeaf("tr_vertex")->GetValue(0);
-      temp_vertex[1]       = b_vertex->GetLeaf("tr_vertex")->GetValue(1);
-      temp_vertex[2]       = b_vertex->GetLeaf("tr_vertex")->GetValue(2);
-      temp_end[0]          = b_end->GetLeaf("tr_end")->GetValue(0);
-      temp_end[1]          = b_end->GetLeaf("tr_end")->GetValue(1);
-      temp_end[2]          = b_end->GetLeaf("tr_end")->GetValue(2);
-      float pida           = b_pida->GetLeaf("tr_pida")->GetValue();
-      float chi2_mu        = b_chi2_mu->GetLeaf("tr_chi2_mu")->GetValue();
-      float chi2_pi        = b_chi2_pi->GetLeaf("tr_chi2_pi")->GetValue();
-      float chi2_pr        = b_chi2_pr->GetLeaf("tr_chi2_pr")->GetValue();
-      float chi2_ka        = b_chi2_ka->GetLeaf("tr_chi2_ka")->GetValue();
-      float length         = b_length->GetLeaf("tr_length")->GetValue();
-      float kinetic_energy = b_kinetic_energy->GetLeaf("tr_kinetic_energy")->GetValue();
+      int id_charge          = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
+      int id_energy          = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
+      int id_hits            = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
+      int n_hits             = b_n_hits->GetLeaf("tr_n_hits")->GetValue();
+      temp_vertex[0]         = b_vertex->GetLeaf("tr_vertex")->GetValue(0);
+      temp_vertex[1]         = b_vertex->GetLeaf("tr_vertex")->GetValue(1);
+      temp_vertex[2]         = b_vertex->GetLeaf("tr_vertex")->GetValue(2);
+      temp_end[0]            = b_end->GetLeaf("tr_end")->GetValue(0);
+      temp_end[1]            = b_end->GetLeaf("tr_end")->GetValue(1);
+      temp_end[2]            = b_end->GetLeaf("tr_end")->GetValue(2);
+      float pida             = b_pida->GetLeaf("tr_pida")->GetValue();
+      float chi2_mu          = b_chi2_mu->GetLeaf("tr_chi2_mu")->GetValue();
+      float chi2_pi          = b_chi2_pi->GetLeaf("tr_chi2_pi")->GetValue();
+      float chi2_pr          = b_chi2_pr->GetLeaf("tr_chi2_pr")->GetValue();
+      float chi2_ka          = b_chi2_ka->GetLeaf("tr_chi2_ka")->GetValue();
+      float length           = b_length->GetLeaf("tr_length")->GetValue();
+      float kinetic_energy   = b_kinetic_energy->GetLeaf("tr_kinetic_energy")->GetValue();
+      float mcs_mom_muon     = b_mcs_mom_muon->GetLeaf("tr_mcs_mom_muon")->GetValue();
+      float range_mom_muon   = b_range_mom_muon->GetLeaf("tr_range_mom_muon")->GetValue();
+      float range_mom_proton = b_range_mom_proton->GetLeaf("tr_range_mom_proton")->GetValue();
 
       TVector3 vertex(temp_vertex);
       TVector3 end(temp_end);
@@ -240,40 +246,40 @@ namespace selection{
       int sbnd_border_z = 10;
 
       bool not_contained = 
-        (     (vertex_x > (sbnd_length_x - sbnd_offset_x - sbnd_border_x)) 
-           || (vertex_x < (-sbnd_offset_x + sbnd_border_x))          
-           || (vertex_y > (sbnd_length_y - sbnd_offset_y - sbnd_border_y)) 
+        (     (vertex_x > (sbnd_length_x - sbnd_offset_x)) 
+           || (vertex_x < (-sbnd_offset_x))          
+           || (vertex_y > (sbnd_length_y - sbnd_offset_y)) 
            || (vertex_y < (-sbnd_offset_y + sbnd_border_y))          
-           || (vertex_z > (sbnd_length_z - sbnd_offset_z - sbnd_border_z)) 
-           || (vertex_z < (-sbnd_offset_z + sbnd_border_z))
-           || (end_x    > (sbnd_length_x - sbnd_offset_x - sbnd_border_x)) 
-           || (end_x    < (-sbnd_offset_x + sbnd_border_x))          
-           || (end_y    > (sbnd_length_y - sbnd_offset_y - sbnd_border_y)) 
-           || (end_y    < (-sbnd_offset_y + sbnd_border_y))          
-           || (end_z    > (sbnd_length_z - sbnd_offset_z - sbnd_border_z)) 
-           || (end_z    < (-sbnd_offset_z + sbnd_border_z))); 
+           || (vertex_z > (sbnd_length_z - sbnd_offset_z)) 
+           || (vertex_z < (-sbnd_offset_z))
+           || (end_x    > (sbnd_length_x - sbnd_offset_x)) 
+           || (end_x    < (-sbnd_offset_x))          
+           || (end_y    > (sbnd_length_y - sbnd_offset_y)) 
+           || (end_y    < (-sbnd_offset_y))          
+           || (end_z    > (sbnd_length_z - sbnd_offset_z)) 
+           || (end_z    < (-sbnd_offset_z))); 
 
       bool does_vtx_escape = 
-        (     (vertex_x > (sbnd_length_x - sbnd_offset_x - sbnd_border_x)) 
-           || (vertex_x < (-sbnd_offset_x + sbnd_border_x))          
-           || (vertex_y > (sbnd_length_y - sbnd_offset_y - sbnd_border_y)) 
+        (     (vertex_x > (sbnd_length_x - sbnd_offset_x)) 
+           || (vertex_x < (-sbnd_offset_x))          
+           || (vertex_y > (sbnd_length_y - sbnd_offset_y)) 
            || (vertex_y < (-sbnd_offset_y + sbnd_border_y))          
-           || (vertex_z > (sbnd_length_z - sbnd_offset_z - sbnd_border_z)) 
-           || (vertex_z < (-sbnd_offset_z + sbnd_border_z)));
+           || (vertex_z > (sbnd_length_z - sbnd_offset_z)) 
+           || (vertex_z < (-sbnd_offset_z)));
 
       bool does_end_escape = 
-        (     (end_x    > (sbnd_length_x - sbnd_offset_x - sbnd_border_x)) 
-           || (end_x    < (-sbnd_offset_x + sbnd_border_x))          
-           || (end_y    > (sbnd_length_y - sbnd_offset_y - sbnd_border_y)) 
-           || (end_y    < (-sbnd_offset_y + sbnd_border_y))          
-           || (end_z    > (sbnd_length_z - sbnd_offset_z - sbnd_border_z)) 
-           || (end_z    < (-sbnd_offset_z + sbnd_border_z))); 
+        (     (end_x    > (sbnd_length_x - sbnd_offset_x)) 
+           || (end_x    < (-sbnd_offset_x))          
+           || (end_y    > (sbnd_length_y - sbnd_offset_y)) 
+           || (end_y    < (-sbnd_offset_y))          
+           || (end_z    > (sbnd_length_z - sbnd_offset_z)) 
+           || (end_z    < (-sbnd_offset_z))); 
 
       bool one_end_escapes = true;
       if(does_vtx_escape && does_end_escape) one_end_escapes   = false;
       if(!does_vtx_escape && !does_end_escape) one_end_escapes = false;
 
-      track_list.push_back(Track(id_charge, id_energy, id_hits, n_hits, pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, vertex, end, !not_contained, one_end_escapes));
+      track_list.push_back(Track(id_charge, id_energy, id_hits, n_hits, pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, mcs_mom_muon, range_mom_muon, range_mom_proton,vertex, end, !not_contained, one_end_escapes));
     
     } 
   }
@@ -428,22 +434,22 @@ namespace selection{
       // Then everything else
       if(only_longest_escapes){
         if(track.m_one_end_contained)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
       }
       else if(!none_escape) continue;
       else{
         // If the Chi2 Proton hypothesis gives proton, call the track a proton
         // Otherwise, call it a muon candidate
         if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetMuonByChi2Proton(track) == 13 || (id == longest_track_id && always_longest) || track.m_one_end_contained)
           mu_candidates.push_back(id);
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
       }
     }
 
@@ -451,7 +457,7 @@ namespace selection{
     if(mu_candidates.size() == 0) return;
     if(mu_candidates.size() == 1) {
       const Track &muon(track_list[mu_candidates[0]]);
-      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
       return;
     }
     
@@ -476,12 +482,12 @@ namespace selection{
     }
 
     const Track &muon(track_list[muonID]);
-    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
     
     for(unsigned int id = 0; id < mu_candidates.size(); ++id){
       if(id == muonID) continue;
       const Track &track(track_list[id]);
-      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
     } 
   }
 
@@ -530,21 +536,21 @@ namespace selection{
       // Then everything else
       if(exactly_one_escapes){
         if(track.m_one_end_contained) 
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
       }
       else{
         // If the Chi2 Proton hypothesis gives proton, call the track a proton
         // Otherwise, call it a muon candidate
         if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetMuonByChi2Proton(track) == 13 || (id == longest_track_id && always_longest) || track.m_one_end_contained)
           mu_candidates.push_back(id);
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
       }
     }
 
@@ -552,7 +558,7 @@ namespace selection{
     if(mu_candidates.size() == 0) return;
     if(mu_candidates.size() == 1) {
       const Track &muon(track_list[mu_candidates[0]]);
-      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
       return;
     }
     
@@ -577,12 +583,12 @@ namespace selection{
     }
 
     const Track &muon(track_list[muonID]);
-    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
     
     for(unsigned int id = 0; id < mu_candidates.size(); ++id){
       if(id == muonID) continue;
       const Track &track(track_list[id]);
-      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
     } 
   }
 
@@ -631,21 +637,21 @@ namespace selection{
       // Then everything else
       if(exactly_one_escapes){
         if(track.m_one_end_contained) 
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
       }
       else{
         // If the Chi2 Proton hypothesis gives proton, call the track a proton
         // Otherwise, call it a muon candidate
         if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetPdgByChi2MuonCandidate(track) == 13 || (id == longest_track_id && always_longest) || track.m_one_end_contained)
           mu_candidates.push_back(id);
         else
-          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
       }
     }
 
@@ -653,7 +659,7 @@ namespace selection{
     if(mu_candidates.size() == 0) return;
     if(mu_candidates.size() == 1) {
       const Track &muon(track_list[mu_candidates[0]]);
-      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
       return;
     }
     
@@ -678,12 +684,12 @@ namespace selection{
     }
 
     const Track &muon(track_list[muonID]);
-    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
     
     for(unsigned int id = 0; id < mu_candidates.size(); ++id){
       if(id == muonID) continue;
       const Track &track(track_list[id]);
-      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
     } 
   }
 
@@ -910,7 +916,7 @@ namespace selection{
   
   //------------------------------------------------------------------------------------------ 
   
-  EventSelectionTool::Track::Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained) :
+  EventSelectionTool::Track::Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
@@ -922,6 +928,9 @@ namespace selection{
     m_chi2_ka(chi2_ka),
     m_length(length),
     m_kinetic_energy(kinetic_energy),
+    m_mcs_mom_muon(mcs_momentum_muon),
+    m_range_mom_muon(range_momentum_muon),
+    m_range_mom_proton(range_momentum_proton),
     m_vertex(vertex),
     m_end(end),
     m_contained(contained),

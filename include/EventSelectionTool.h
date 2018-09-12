@@ -217,26 +217,26 @@ namespace selection{
       
         public : 
           
-        /**
-         * @brief  Constructor
-         *
-         * @param  mc_id_charge mc TrackID corresponding to MCParticle using charge 
-         * @param  mc_id_energy mc TrackID corresponding to MCParticle using energy
-         * @param  mc_id_hits mc TrackID corresponding to MCParticle using hits
-         * @param  pida pida value
-         * @param  chi2_mu chi squared value for the muon fit of the reconstructed dEdx to the expected distribution
-         * @param  chi2_pi chi squared value for the pion fit of the reconstructed dEdx to the expected distribution
-         * @param  chi2_pr chi squared value for the proton fit of the reconstructed dEdx to the expected distribution
-         * @param  chi2_ka chi squared value for the kaon fit of the reconstructed dEdx to the expected distribution
-         * @param  length track length
-         * @param  kinetic_energy track kinetic energy
-         * @param  vertex vertex of the track
-         * @param  end end point of the track
-         * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
-         * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
-         *
-         */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi_ka, const float length, const float kinetic_energy, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained);
+          /**
+           * @brief  Constructor
+           *
+           * @param  mc_id_charge mc TrackID corresponding to MCParticle using charge 
+           * @param  mc_id_energy mc TrackID corresponding to MCParticle using energy
+           * @param  mc_id_hits mc TrackID corresponding to MCParticle using hits
+           * @param  pida pida value
+           * @param  chi2_mu chi squared value for the muon fit of the reconstructed dEdx to the expected distribution
+           * @param  chi2_pi chi squared value for the pion fit of the reconstructed dEdx to the expected distribution
+           * @param  chi2_pr chi squared value for the proton fit of the reconstructed dEdx to the expected distribution
+           * @param  chi2_ka chi squared value for the kaon fit of the reconstructed dEdx to the expected distribution
+           * @param  length track length
+           * @param  kinetic_energy track kinetic energy
+           * @param  vertex vertex of the track
+           * @param  end end point of the track
+           * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
+           * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
+           *
+           */
+          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained);
 
           // Member variables
           int      m_mc_id_charge;      ///< mc TrackID corresponding to MCParticle using charge
@@ -250,6 +250,9 @@ namespace selection{
           float    m_chi2_ka;           ///< chi squared fit to the kaon expected dEdx
           float    m_length;            ///< length of the track
           float    m_kinetic_energy;    ///< kinetic energy of the track
+          float    m_mcs_mom_muon;      ///< multiple coulomb scattering momentum is the particle is an escaping muon
+          float    m_range_mom_muon;    ///< range momentum if the particle is a contained muon 
+          float    m_range_mom_proton;  ///< range momentum if the particle is a contained proton
           TVector3 m_vertex;            ///< vertex of the track         
           TVector3 m_end;               ///< end of the track
           bool     m_contained;         ///< whether or not the reconstructed track is contained

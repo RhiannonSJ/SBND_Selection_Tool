@@ -121,8 +121,7 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/hepstore/rjones/Samples/FNAL/290818_analysis_sample/11206561_"+std::to_string(i)+"/output_file.root";
-    //name = "/hepstore/rjones/Samples/FNAL/old_220518_ana_files/8110339_"+std::to_string(i)+"/output_file.root";
+    name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
@@ -182,15 +181,21 @@ int MainTest(){
 
   // Tree for TMVA calculation
   bool signal;
-  float length, chi2p, chi2mu, dist;
+  float length, chi2p, chi2mu, dist, energy, costheta, longest_track_length_fraction, energy_per_length, total_energy_fraction, length_costheta;
   TFile f("../Output_Selection_Tool/tmva/trees/TMVA_input.root","RECREATE");
   TTree *escaping_muon_pid = new TTree("escaping_muon_pid", "TTree to hold variables which might distinguish an escaping track as a muon");
   TTree *all_particle_pid  = new TTree("all_particle_pid",  "TTree to hold variables which might distinguish an escaping track as a muon");
-  escaping_muon_pid->Branch("signal", &signal, "signal/O");
-  escaping_muon_pid->Branch("length", &length, "length/F");
-  escaping_muon_pid->Branch("chi2p",  &chi2p,  "chi2p/F");
-  escaping_muon_pid->Branch("chi2mu", &chi2mu, "chi2mu/F");
-  escaping_muon_pid->Branch("dist",   &dist,   "dist/F");
+  escaping_muon_pid->Branch("dist",                          &dist,                          "dist/F");
+  escaping_muon_pid->Branch("chi2p",                         &chi2p,                         "chi2p/F");
+  escaping_muon_pid->Branch("chi2mu",                        &chi2mu,                        "chi2mu/F");
+  escaping_muon_pid->Branch("signal",                        &signal,                        "signal/O");
+  escaping_muon_pid->Branch("length",                        &length,                        "length/F");
+  escaping_muon_pid->Branch("energy",                        &energy,                        "energy/F");
+  escaping_muon_pid->Branch("costheta",                      &costheta,                      "costheta/F");
+  escaping_muon_pid->Branch("length_costheta",               &length_costheta,               "length_costheta/F");
+  escaping_muon_pid->Branch("energy_per_length",             &energy_per_length,             "energy_per_length/F");
+  escaping_muon_pid->Branch("total_energy_fraction",         &total_energy_fraction,         "total_energy_fraction/F");
+  escaping_muon_pid->Branch("longest_track_length_fraction", &longest_track_length_fraction, "longest_track_length_fraction/F");
 
   /*
    *
@@ -206,6 +211,7 @@ int MainTest(){
   double escaping_track_length = -1.;
 
   for(const Event &e : events){
+    double total_energy = 0.;
     bool longest_track_escapes = false;
     bool muon_escapes = false;
     // Only look at events with 1 escaping track
@@ -214,12 +220,17 @@ int MainTest(){
     
     // Now plot some things
     // Find the ID of the longest track
+    // Calculate the total kinetic energy deposited in the event by 
+    // all reconstructed particles
     double max = -std::numeric_limits<double>::max();
     int max_id = -1;
     for(const Particle &p : e.GetRecoParticleList()){
-      if(p.GetFromRecoTrack() && p.GetLength() > max){
-        max_id = p.GetMCParticleIdHits();
-        max = p.GetLength();
+      if(p.GetFromRecoTrack()){
+        total_energy += p.GetKineticEnergy();
+        if(p.GetLength() > max){
+          max_id = p.GetMCParticleIdHits();
+          max = p.GetLength();
+        }
       }
     }
     if(max_id == -1) continue;
@@ -321,29 +332,37 @@ int MainTest(){
           distance_to_intersection_point = GetDistanceFromParticleToPlane(plane,p);
           break;
         }
-        if(distance_to_intersection_point < 0 ) {
-          std::cout << " Start : " << p.GetVertex()[0] << ", " << p.GetVertex()[1] << ", " << p.GetVertex()[2] << std::endl;
-          std::cout << " End   : " << p.GetEnd()[0]    << ", " << p.GetEnd()[1]    << ", " << p.GetEnd()[2]    << std::endl;
-        }
         if(muon_escapes) {
           h_escaping_dist_muon->Fill(distance_to_intersection_point);
 
           // Fill the TMVA tree 
-          signal = 1;
-          length = p.GetLength();
-          chi2p  = p.GetChi2P();
-          chi2mu = p.GetChi2Mu();
-          dist   = distance_to_intersection_point;
+          signal                        = 1;
+          dist                          = distance_to_intersection_point;
+          chi2p                         = p.GetChi2P();
+          chi2mu                        = p.GetChi2Mu();
+          length                        = p.GetLength();
+          energy                        = p.GetKineticEnergy();
+          costheta                      = p.GetCosTheta();
+          length_costheta               = length * costheta;
+          energy_per_length             = energy / double(length);
+          total_energy_fraction         = energy / double(total_energy);
+          longest_track_length_fraction = length / double(max);
         }
         else {
           h_escaping_dist_not_muon->Fill(distance_to_intersection_point);
 
           // Fill the TMVA tree 
           signal = 0;
-          length = p.GetLength();
-          chi2p  = p.GetChi2P();
-          chi2mu = p.GetChi2Mu();
-          dist   = distance_to_intersection_point;
+          dist                          = distance_to_intersection_point;
+          chi2p                         = p.GetChi2P();
+          chi2mu                        = p.GetChi2Mu();
+          length                        = p.GetLength();
+          energy                        = p.GetKineticEnergy();
+          costheta                      = p.GetCosTheta();
+          length_costheta               = length * costheta;
+          energy_per_length             = energy / double(length);
+          total_energy_fraction         = energy / double(total_energy);
+          longest_track_length_fraction = length / double(max);
         }
         escaping_muon_pid->Fill();
       }
@@ -441,14 +460,14 @@ int MainTest(){
   h_length_muon->SetLineColor(2);
   h_length_not_muon->SetLineColor(4);
 
-  double int_mu = h_length_muon->Integral();
+  double int_mu     = h_length_muon->Integral();
   double int_not_mu = h_length_not_muon->Integral();
   h_length_muon->Scale(1./int_mu);
   h_length_not_muon->Scale(1./int_not_mu);
   
   double maxmu = 1.1*std::max(h_length_muon->GetMaximum(), h_length_not_muon->GetMaximum());
-  h_length_muon->GetYaxis()->SetRangeUser(0.1,maxmu);
-  h_length_not_muon->GetYaxis()->SetRangeUser(0.1,maxmu);
+  h_length_muon->GetYaxis()->SetRangeUser(0,maxmu);
+  h_length_not_muon->GetYaxis()->SetRangeUser(0,maxmu);
   h_length_muon->GetXaxis()->SetTitle("Length [cm]");
   h_length_muon->Draw("hist");
   h_length_not_muon->Draw("hist same");
@@ -499,8 +518,8 @@ int MainTest(){
   h_dist_x_longest->GetYaxis()->SetRangeUser(0,maxx);
   h_dist_x_not->GetYaxis()->SetRangeUser(0,maxx);
   h_dist_x_longest->GetXaxis()->SetTitle("#Delta X [cm]");
-  h_dist_x_longest->Draw();
-  h_dist_x_not->Draw("same");
+  h_dist_x_longest->Draw("hist");
+  h_dist_x_not->Draw("hist same");
   leg->Draw("same");
   h_dist_x_longest->SetStats(0);
 
@@ -521,8 +540,8 @@ int MainTest(){
   h_dist_y_longest->GetYaxis()->SetRangeUser(0,maxy);
   h_dist_y_not->GetYaxis()->SetRangeUser(0,maxy);
   h_dist_y_longest->GetXaxis()->SetTitle("#Delta Y [cm]");
-  h_dist_y_longest->Draw();
-  h_dist_y_not->Draw("same");
+  h_dist_y_longest->Draw("hist");
+  h_dist_y_not->Draw("hist same");
   leg->Draw("same");
   h_dist_y_longest->SetStats(0);
 
@@ -543,8 +562,8 @@ int MainTest(){
   h_dist_z_longest->GetYaxis()->SetRangeUser(0,maxz);
   h_dist_z_not->GetYaxis()->SetRangeUser(0,maxz);
   h_dist_z_longest->GetXaxis()->SetTitle("#Delta Z [cm]");
-  h_dist_z_longest->Draw();
-  h_dist_z_not->Draw("same");
+  h_dist_z_longest->Draw("hist");
+  h_dist_z_not->Draw("hist same");
   leg->Draw("same");
   h_dist_z_longest->SetStats(0);
 
