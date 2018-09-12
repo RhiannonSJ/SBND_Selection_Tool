@@ -43,7 +43,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 5;
+  unsigned int total_files = 50;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -110,7 +110,8 @@ int MainTest(){
 
   // First, ensure all tracks are contained
   for(const Event &e : events){
-  
+ 
+    /*
     if(e.CheckMCTopology(cc0pi2p_signal_map)){
       unsigned int n_protons = 0;
       std::cout << "--------------" << std::endl;
@@ -119,10 +120,8 @@ int MainTest(){
       }
       std::cout << " Protons : " << n_protons << std::endl;
     }
+    */
     
-    //if(!e.AllContained()) continue;
-    //all_tracks_contained++;
-
     // Check the true vertex is in the fiducial volume
     if(e.IsSBNDTrueFiducial()){
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
@@ -198,10 +197,10 @@ int MainTest(){
   file << " CC 0Pi 2P  efficiency : " << cc0pi2p_sig/double(cc0pi2p_true) << std::endl; 
   file << " CC 1Pi     efficiency : " << cc1pi_sig/double(cc1pi_true) << std::endl; 
   file << "===============================================================================" << std::endl;
-  file << " CC Inc. purity     : " << ccinc_sig/double(ccinc_sel)  << std::endl; 
-  file << " CC 0Pi  purity     : " << cc0pi_sig/double(cc0pi_sel)  << std::endl; 
-  file << " CC 0Pi 2P  purity     : " << cc0pi2p_sig/double(cc0pi2p_sel)  << std::endl; 
-  file << " CC 1Pi  purity     : " << cc1pi_sig/double(cc1pi_sel)  << std::endl; 
+  file << " CC Inc.   purity      : " << ccinc_sig/double(ccinc_sel)  << std::endl; 
+  file << " CC 0Pi    purity      : " << cc0pi_sig/double(cc0pi_sel)  << std::endl; 
+  file << " CC 0Pi 2P purity      : " << cc0pi2p_sig/double(cc0pi2p_sel)  << std::endl; 
+  file << " CC 1Pi    purity      : " << cc1pi_sig/double(cc1pi_sel)  << std::endl; 
   file << "===============================================================================" << std::endl;
 
   time_t rawtime_end;

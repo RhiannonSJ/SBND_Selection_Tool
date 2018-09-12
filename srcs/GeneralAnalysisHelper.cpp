@@ -84,7 +84,7 @@ namespace selection{
     unsigned int escaping_tracks = 0;
     for(const Particle &p : e.GetRecoParticleList()){
       // Make sure the particle is a reconstructed track and check if it escapes
-     if(p.GetFromRecoTrack() && !p.GetOneEndTrackContained()) escaping_tracks++;
+     if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) escaping_tracks++;
     }
     return escaping_tracks;
   }

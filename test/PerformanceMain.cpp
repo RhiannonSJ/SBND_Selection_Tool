@@ -97,6 +97,8 @@ int MainTest(){
   TopologyMap nc2pi_signal_map = GeneralAnalysisHelper::GetNC2PiTopologyMap();
 
   for(const Event &e : events){
+    // Only look at events with 1 escaping track
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     if(!e.IsSBNDTrueFiducial()) continue;
     if(e.CheckRecoTopology(cc0pi_signal_map)) {
       selected_cc0pi++;
