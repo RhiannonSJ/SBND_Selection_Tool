@@ -93,6 +93,8 @@ int MainTest(){
 
   for(const Event &e : events){
 
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+    
     ParticleList reco_particles = e.GetRecoParticleList(); 
     ParticleList true_particles = e.GetMCParticleList();
 

@@ -215,7 +215,8 @@ int MainTest(){
     bool longest_track_escapes = false;
     bool muon_escapes = false;
     // Only look at events with 1 escaping track
-    if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     events_with_1_escaping_track++;
     
     // Now plot some things

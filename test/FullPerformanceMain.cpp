@@ -43,7 +43,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 50;
+  unsigned int total_files = 5;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -111,17 +111,6 @@ int MainTest(){
   // First, ensure all tracks are contained
   for(const Event &e : events){
  
-    /*
-    if(e.CheckMCTopology(cc0pi2p_signal_map)){
-      unsigned int n_protons = 0;
-      std::cout << "--------------" << std::endl;
-      for(const Particle &p : e.GetMCParticleList()){
-        if(p.GetPdgCode() == 2212 && p.GetNumberOfHits() > 5) n_protons++;
-      }
-      std::cout << " Protons : " << n_protons << std::endl;
-    }
-    */
-    
     // Check the true vertex is in the fiducial volume
     if(e.IsSBNDTrueFiducial()){
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
@@ -181,6 +170,7 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream file;
+  
   file.open(stats_location+"chi2p_topology_breakdown.txt");
 
   file << "===============================================================================" << std::endl;

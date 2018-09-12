@@ -97,6 +97,8 @@ int MainTest(){
     ParticleList reco_particles = e.GetRecoParticleList(); 
     ParticleList true_particles = e.GetMCParticleList();
 
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+    
     for(Particle &p_reco : reco_particles){
       // If the particle is a reconstructed track (not pi0)
       if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){

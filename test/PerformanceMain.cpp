@@ -98,8 +98,7 @@ int MainTest(){
 
   for(const Event &e : events){
     // Only look at events with 1 escaping track
-    if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
-    if(!e.IsSBNDTrueFiducial()) continue;
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     if(e.CheckRecoTopology(cc0pi_signal_map)) {
       selected_cc0pi++;
       if(e.CheckMCTopology(cc0pi_signal_map)) signal_cc0pi++;

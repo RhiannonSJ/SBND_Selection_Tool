@@ -372,6 +372,8 @@ namespace selection{
 
     for(const Event &e : ev_list){
       
+      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+
       mc_selected_muons     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
       mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
       mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, -211);
@@ -496,6 +498,8 @@ namespace selection{
     unsigned int selected_proton_pion = 0;
     
     for(const Event &e : ev_list){
+      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+      
       selected_muon        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 13);
@@ -594,6 +598,7 @@ namespace selection{
     unsigned int charged_pions      = 0;
     
     for(const Event &e : ev_list){
+      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
       
       mc_muons           += e.CountMCParticlesWithPdg(13);
       mc_charged_pions   += e.CountMCParticlesWithPdg(211);
@@ -668,6 +673,8 @@ namespace selection{
     unsigned int proton_pion = 0;
     
     for(const Event &e : ev_list){
+      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+      
       muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13);
       muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13);
       muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13);

@@ -166,6 +166,8 @@ int MainTest(){
     ParticleList reco = e.GetRecoParticleList();
     ParticleList mc   = e.GetMCParticleList();
 
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+    
     // Particle type hit-based studies
     for(const Particle &p : mc){
       if(p.GetPdgCode() == 13) total_true_muon++;
@@ -178,56 +180,54 @@ int MainTest(){
       }
     }
     // Topology based contained and external (true) studies
-    if(e.IsSBNDTrueFiducial()){
-      true_contained++;
-      // Selected and signal
-      if(e.CheckRecoTopology(numu_signal_map)) {
-        sel_contained_numu++; 
-        if(e.CheckMCTopology(numu_signal_map)) sig_contained_numu++;
-      }
-      if(e.CheckRecoTopology(cc_signal_map)) {
-        sel_contained_numu_cc++; 
-        if(e.CheckMCTopology(cc_signal_map)) sig_contained_numu_cc++;
-      }
-      if(e.CheckRecoTopology(cc0pi_signal_map)) {
-        sel_contained_numu_cc_0pi++; 
-        if(e.CheckMCTopology(cc0pi_signal_map)) sig_contained_numu_cc_0pi++;
-      }
-      if(e.CheckRecoTopology(cc1pi_signal_map)) {
-        sel_contained_numu_cc_1pi++;
-        if(e.CheckMCTopology(cc1pi_signal_map)) sig_contained_numu_cc_1pi++;
-      }
-      // True
-      if(e.CheckMCTopology(numu_signal_map))  tru_contained_numu++; 
-      if(e.CheckMCTopology(cc_signal_map))    tru_contained_numu_cc++; 
-      if(e.CheckMCTopology(cc0pi_signal_map)) tru_contained_numu_cc_0pi++; 
-      if(e.CheckMCTopology(cc1pi_signal_map)) tru_contained_numu_cc_1pi++;
+    true_contained++;
+    // Selected and signal
+    if(e.CheckRecoTopology(numu_signal_map)) {
+      sel_contained_numu++; 
+      if(e.CheckMCTopology(numu_signal_map)) sig_contained_numu++;
     }
-    else{
-      true_outside++;
-      // Selected and signal
-      if(e.CheckRecoTopology(numu_signal_map)) {
-        sel_outside_numu++; 
-        if(e.CheckMCTopology(numu_signal_map)) sig_outside_numu++;
-      }
-      if(e.CheckRecoTopology(cc_signal_map)) {
-        sel_outside_numu_cc++; 
-        if(e.CheckMCTopology(cc_signal_map)) sig_outside_numu_cc++;
-      }
-      if(e.CheckRecoTopology(cc0pi_signal_map)) {
-        sel_outside_numu_cc_0pi++; 
-        if(e.CheckMCTopology(cc0pi_signal_map)) sig_outside_numu_cc_0pi++;
-      }
-      if(e.CheckRecoTopology(cc1pi_signal_map)) {
-        sel_outside_numu_cc_1pi++;
-        if(e.CheckMCTopology(cc1pi_signal_map)) sig_outside_numu_cc_1pi++;
-      }
-      // True
-      if(e.CheckMCTopology(numu_signal_map))  tru_outside_numu++; 
-      if(e.CheckMCTopology(cc_signal_map))    tru_outside_numu_cc++; 
-      if(e.CheckMCTopology(cc0pi_signal_map)) tru_outside_numu_cc_0pi++; 
-      if(e.CheckMCTopology(cc1pi_signal_map)) tru_outside_numu_cc_1pi++;
+    if(e.CheckRecoTopology(cc_signal_map)) {
+      sel_contained_numu_cc++; 
+      if(e.CheckMCTopology(cc_signal_map)) sig_contained_numu_cc++;
     }
+    if(e.CheckRecoTopology(cc0pi_signal_map)) {
+      sel_contained_numu_cc_0pi++; 
+      if(e.CheckMCTopology(cc0pi_signal_map)) sig_contained_numu_cc_0pi++;
+    }
+    if(e.CheckRecoTopology(cc1pi_signal_map)) {
+      sel_contained_numu_cc_1pi++;
+      if(e.CheckMCTopology(cc1pi_signal_map)) sig_contained_numu_cc_1pi++;
+    }
+    // True
+    if(e.CheckMCTopology(numu_signal_map))  tru_contained_numu++; 
+    if(e.CheckMCTopology(cc_signal_map))    tru_contained_numu_cc++; 
+    if(e.CheckMCTopology(cc0pi_signal_map)) tru_contained_numu_cc_0pi++; 
+    if(e.CheckMCTopology(cc1pi_signal_map)) tru_contained_numu_cc_1pi++;
+  }
+  else{
+    true_outside++;
+    // Selected and signal
+    if(e.CheckRecoTopology(numu_signal_map)) {
+      sel_outside_numu++; 
+      if(e.CheckMCTopology(numu_signal_map)) sig_outside_numu++;
+    }
+    if(e.CheckRecoTopology(cc_signal_map)) {
+      sel_outside_numu_cc++; 
+      if(e.CheckMCTopology(cc_signal_map)) sig_outside_numu_cc++;
+    }
+    if(e.CheckRecoTopology(cc0pi_signal_map)) {
+      sel_outside_numu_cc_0pi++; 
+      if(e.CheckMCTopology(cc0pi_signal_map)) sig_outside_numu_cc_0pi++;
+    }
+    if(e.CheckRecoTopology(cc1pi_signal_map)) {
+      sel_outside_numu_cc_1pi++;
+      if(e.CheckMCTopology(cc1pi_signal_map)) sig_outside_numu_cc_1pi++;
+    }
+    // True
+    if(e.CheckMCTopology(numu_signal_map))  tru_outside_numu++; 
+    if(e.CheckMCTopology(cc_signal_map))    tru_outside_numu_cc++; 
+    if(e.CheckMCTopology(cc0pi_signal_map)) tru_outside_numu_cc_0pi++; 
+    if(e.CheckMCTopology(cc1pi_signal_map)) tru_outside_numu_cc_1pi++;
   }
   
   /*

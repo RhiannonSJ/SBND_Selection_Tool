@@ -87,6 +87,9 @@ int MainTest(){
   // Loop over all the events we have loaded
   for(const Event &e : events){
 
+    // Make sure the true vertex is contained and that only 1 track escapes
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+    
     // Find out if the current event was a true cc0pi final state
     if(e.CheckMCTopology(cc0pi_topology)) {
       number_of_true_cc0pi_events++;
