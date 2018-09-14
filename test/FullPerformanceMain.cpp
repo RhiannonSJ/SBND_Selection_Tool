@@ -125,7 +125,7 @@ int MainTest(){
         // Find the protons
         for(const Particle &p : e.GetRecoParticleList()){
           track_id++;
-          if(p.GetPdgCode() == 2212 && p.GetNumberOfHits() > 5){
+          if(p.GetPdgCode() == 2212 && p.GetNumberOfHits() >= 5){
             if(e.NumberOfEscapingRecoParticles() == 0){
               std::cout << " Track ID        : " << track_id << std::endl;
               std::cout << " Proton          : " << proton_track_id << std::endl;

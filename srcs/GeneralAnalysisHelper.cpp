@@ -262,7 +262,7 @@ namespace selection{
      *    and the reconstructed pdgcode is the same at the truth pdgcode
      *    MATCHED PARTICLE == TRUE
      */
-    if(p.GetNumberOfHits() > 5){
+    if(p.GetNumberOfHits() >= 5){
       if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 0      && abs(GeneralAnalysisHelper::GetMCParticleHits(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
       else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 1 && abs(GeneralAnalysisHelper::GetMCParticleCharge(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
       else if(GeneralAnalysisHelper::ParticleHasAMatch(e, p) == 2 && abs(GeneralAnalysisHelper::GetMCParticleEnergy(e, p).GetPdgCode()) == p.GetPdgCode()) return true;
@@ -340,7 +340,7 @@ namespace selection{
     ParticleList particles = e.GetRecoParticleList();
     for(const Particle &p : particles){
       if(p.GetPdgCode() == reco_pdg && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
-        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() > 5 && p.GetNumberOfHits() > 5) mismatched_particles++;
+        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5) mismatched_particles++;
       }
     }
     return mismatched_particles;
