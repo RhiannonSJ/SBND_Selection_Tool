@@ -190,13 +190,36 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
  
-  bool Event::AllContained() const{
+  bool Event::AllRecoContained() const{
     for(const Particle &p : m_reco_particles){
       if(p.GetFromRecoTrack() && !p.GetTrackContained()) return false;
     }
     return true;
   }
+  
+  //------------------------------------------------------------------------------------------ 
+
+  int Event::NumberOfEscapingRecoParticles() const{
+    return this->Event::NumberOfEscapingParticles(this->Event::GetRecoParticleList());
+  }
+  
+  //------------------------------------------------------------------------------------------ 
       
+  int Event::NumberOfEscapingMCParticles() const{
+    return this->Event::NumberOfEscapingParticles(this->Event::GetMCParticleList());
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+      
+  int Event::NumberOfEscapingParticles(const ParticleList &particles) const{
+    int escaping = 0;
+    for(const Particle &p : particles){
+      if(!p.GetFromRecoTrack() || !p.GetHasCalorimetry()) continue;
+      if(p.GetOneEndTrackContained()) escaping++;
+    }
+    return escaping;
+  }
+  
   //------------------------------------------------------------------------------------------ 
 
   bool Event::GetIsCC() const{

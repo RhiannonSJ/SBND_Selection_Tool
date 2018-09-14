@@ -155,7 +155,7 @@ namespace selection{
       /**
        * @brief  Get whether all the reconstructed tracks in an event are contained
        */
-      bool AllContained() const;
+      bool AllRecoContained() const;
       
       /**
        * @brief  Get if the event is CC or NC
@@ -205,7 +205,22 @@ namespace selection{
        */
       TVector3 GetMaximumFiducialDimensions() const;
 
+      /**
+       * @brief  Get the number of escaping reconstructed particles
+       */
+      int NumberOfEscapingRecoParticles() const;
+      
+      /**
+       * @brief  Get the number of true escaping particles
+       */
+      int NumberOfEscapingMCParticles() const;
+      
     private : 
+
+      /*
+       * @brief  Get the number of escaping particles in the given list
+       */
+      int NumberOfEscapingParticles(const ParticleList &particles) const;
 
       /**
        * @brief  CountParticlesWithPdg

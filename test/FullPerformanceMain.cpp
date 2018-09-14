@@ -43,7 +43,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 5;
+  unsigned int total_files = 500;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -115,6 +115,27 @@ int MainTest(){
     if(e.IsSBNDTrueFiducial()){
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
       max_one_escaping_track++;
+  
+      /*
+      // Momentum study for CC0pi2p events
+      if(e.CheckRecoTopology(maps[3])){
+        unsigned int track_id = 0;
+        unsigned int proton_track_id = 0;
+        std::cout << "------------------------------------" << std::endl;
+        // Find the protons
+        for(const Particle &p : e.GetRecoParticleList()){
+          track_id++;
+          if(p.GetPdgCode() == 2212 && p.GetNumberOfHits() > 5){
+            if(e.NumberOfEscapingRecoParticles() == 0){
+              std::cout << " Track ID        : " << track_id << std::endl;
+              std::cout << " Proton          : " << proton_track_id << std::endl;
+              std::cout << " Momentum        : " << p.GetMomentum()[0] << ", " << p.GetMomentum()[1] << ", " << p.GetMomentum()[2] << std::endl;
+              proton_track_id++;
+            }
+          }
+        }
+      }
+      */
       
       if(e.CheckRecoTopology(maps[0])){
         if(e.CheckMCTopology(maps[1]))     ccinc_cc0pi++;
@@ -147,10 +168,11 @@ int MainTest(){
       }
       if(e.CheckMCTopology(maps[1])){
         cc0pi_true++;
-        if(e.CheckRecoTopology(maps[1])) cc0pi_sig++;
-        if(e.CheckMCTopology(maps[3])){
-          cc0pi2p_true++;
-          if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
+        if(e.CheckRecoTopology(maps[1])){ cc0pi_sig++;
+          if(e.CheckMCTopology(maps[3])){
+            cc0pi2p_true++;
+            if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
+          }
         }
       }
       if(e.CheckMCTopology(maps[2])) {
@@ -171,7 +193,7 @@ int MainTest(){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"chi2p_topology_breakdown.txt");
+  file.open(stats_location+"allchi2_topology_breakdown.txt");
 
   file << "===============================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
