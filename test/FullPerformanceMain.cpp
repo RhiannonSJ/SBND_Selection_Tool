@@ -43,7 +43,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 10;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -108,6 +108,10 @@ int MainTest(){
 
   std::vector< TopologyMap > maps({cc_signal_map, cc0pi_signal_map, cc1pi_signal_map, cc0pi2p_signal_map});  
 
+  unsigned int too_few_hits_true      = 0;
+  unsigned int true_not_reconstructed = 0;
+  unsigned int true_proton_reco_other = 0;
+
   // First, ensure all tracks are contained
   for(const Event &e : events){
  
@@ -115,28 +119,16 @@ int MainTest(){
     if(e.IsSBNDTrueFiducial()){
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
       max_one_escaping_track++;
-  
-      /*
-      // Momentum study for CC0pi2p events
-      if(e.CheckRecoTopology(maps[3])){
-        unsigned int track_id = 0;
-        unsigned int proton_track_id = 0;
-        std::cout << "------------------------------------" << std::endl;
-        // Find the protons
-        for(const Particle &p : e.GetRecoParticleList()){
-          track_id++;
-          if(p.GetPdgCode() == 2212 && p.GetNumberOfHits() >= 5){
-            if(e.NumberOfEscapingRecoParticles() == 0){
-              std::cout << " Track ID        : " << track_id << std::endl;
-              std::cout << " Proton          : " << proton_track_id << std::endl;
-              std::cout << " Momentum        : " << p.GetMomentum()[0] << ", " << p.GetMomentum()[1] << ", " << p.GetMomentum()[2] << std::endl;
-              proton_track_id++;
-            }
+
+      if(e.CheckMCTopology(maps[3])){
+        std::cout << "----------------------" << std::endl;
+        for(const Particle &mc : e.GetMCParticleList()){
+          if(mc.GetPdgCode() == 13){
+            std::cout << "Momentum " << mc.GetModulusMomentum() << std::endl;
           }
         }
       }
-      */
-      
+  
       if(e.CheckRecoTopology(maps[0])){
         if(e.CheckMCTopology(maps[1]))     ccinc_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
@@ -189,6 +181,10 @@ int MainTest(){
       if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
     }
   }
+  std::cout << " Total true              : " << cc0pi2p_true << std::endl;
+  std::cout << " Too few hits true       : " << too_few_hits_true << std::endl;
+  std::cout << " True not reco           : " << true_not_reconstructed << std::endl;
+  std::cout << " True proton, reco other : " << true_proton_reco_other << std::endl;
 
   // Files to hold particle statistics
   ofstream file;

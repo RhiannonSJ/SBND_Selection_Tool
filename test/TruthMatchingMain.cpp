@@ -79,10 +79,10 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"chi2p_particle_stats.txt");
+  all_file.open(stats_location+"allchi2p_particle_stats.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"chi2p_mis_identification_stats.txt");
+  mis_id_file.open(stats_location+"allchi2p_mis_identification_stats.txt");
 
   GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
   GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);

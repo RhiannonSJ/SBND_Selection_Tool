@@ -30,7 +30,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/25";
+  std::string plots = "../Output_Selection_Tool/plots/proton_loss/september2018";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -44,9 +44,6 @@ int MainTest(){
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total; ++i ){
-
-    //if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
-
     // Get the filenames
     std::string name;
     name.clear();
@@ -55,9 +52,7 @@ int MainTest(){
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
-    
-    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
-    EventSelectionTool::GetTimeLeft(start,total_files,i);
+    EventSelectionTool::GetTimeLeft(start,total,i);
   }
   std::cout << std::endl;
  
@@ -90,10 +85,11 @@ int MainTest(){
   std::vector<int>   signal_hits, background_hits, missed_hits;
   unsigned int missed = 0;
   unsigned int missed_below_25 = 0;
+  unsigned int missed_below_5  = 0;
 
   for(const Event &e : events){
 
-    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
     
     ParticleList reco_particles = e.GetRecoParticleList(); 
     ParticleList true_particles = e.GetMCParticleList();
@@ -126,6 +122,7 @@ int MainTest(){
         missed_hits.push_back(p_true.GetNumberOfHits());
         missed++;
         if(p_true.GetNumberOfHits() < 25) missed_below_25++;
+        if(p_true.GetNumberOfHits() < 5) missed_below_5++;
       }
     }
   }
@@ -135,17 +132,17 @@ int MainTest(){
    * Fill
    *
    */
-  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",25,0,0.6);
-  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",30,0,40);
-  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",30,0,40);
+  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",40,0,0.6);
+  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,40);
+  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",40,0,40);
 
-  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",30,0,0.6);
-  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",30,0,40);
-  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",30,0,40);
+  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",40,0,0.6);
+  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,40);
+  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",40,0,40);
 
-  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",30,0,0.6);
-  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",30,0,40);
-  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",30,0,40);
+  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",40,0,0.6);
+  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,40);
+  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",40,0,40);
 
   for(unsigned int i = 0; i < signal_energy.size(); ++i){
     h_signal_energy->Fill(signal_energy[i]);
@@ -257,7 +254,9 @@ int MainTest(){
 
   std::cout << " Missed protons :                                      " << missed << std::endl;
   std::cout << " Missed protons with less than 25 hits :               " << missed_below_25 << std::endl;
+  std::cout << " Missed protons with less than 5 hits  :               " << missed_below_5 << std::endl;
   std::cout << " Percentage of missed protons with less than 25 hits : " << missed_below_25 / double(missed) << std::endl;
+  std::cout << " Percentage of missed protons with less than 5 hits  : " << missed_below_5 / double(missed) << std::endl;
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

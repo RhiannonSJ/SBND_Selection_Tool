@@ -207,6 +207,7 @@ namespace selection{
   
   TVector3 Particle::GetMomentum() const{
     if(!m_has_calorimetry) throw 1;
+    if(!m_from_reco_track) return m_momentum;
     if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
       return this->Particle::GetMCSMomentumMuon();
     if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
@@ -221,6 +222,7 @@ namespace selection{
   
   float Particle::GetModulusMomentum() const{
     if(!m_has_calorimetry) throw 1;
+    if(!m_from_reco_track) return m_momentum.Mag();
     if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
       return m_mcs_mom_muon;
     if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
