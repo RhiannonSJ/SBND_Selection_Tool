@@ -3,11 +3,15 @@
 #include "../include/EventSelectionTool.h"
 #include "../include/Event.h"
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <numeric>
 #include <time.h>
 #include <algorithm>
+#include <vector>
+#include <string>
 #include "TVector3.h"
+#include "THStack.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -30,7 +34,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/september2018";
+  std::string plots = "../Output_Selection_Tool/plots/proton_loss/september2018/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -75,17 +79,31 @@ int MainTest(){
    *            Get length of true
    *  
    */
-  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
-  TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
-  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
-  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
-  TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
+  TopologyMap cc    = GeneralAnalysisHelper::GetCCIncTopologyMap();
+  TopologyMap nc    = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap cc0pi = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc1pi = GeneralAnalysisHelper::GetCC1PiTopologyMap();
+  TopologyMap ccpi0 = GeneralAnalysisHelper::GetCCPi0TopologyMap();
 
   std::vector<float> signal_energy, signal_length, background_energy, background_length, missed_energy, missed_length;
   std::vector<int>   signal_hits, background_hits, missed_hits;
   unsigned int missed = 0;
   unsigned int missed_below_25 = 0;
-  unsigned int missed_below_5  = 0;
+  unsigned int missed_below_10 = 0;
+
+  // Proton multiplicity counters
+  unsigned int ccqe  = 0;
+  unsigned int ccmec = 0;
+  unsigned int ccres = 0;
+  unsigned int ccdis = 0;
+  unsigned int ncany = 0;
+  
+  TH1D *h_ccqe  = new TH1D("h_ccqe",  "Proton multiplicity", 10, 0, 9);
+  TH1D *h_ccmec = new TH1D("h_ccmec", "Proton multiplicity", 10, 0, 9);
+  TH1D *h_ccres = new TH1D("h_ccres", "Proton multiplicity", 10, 0, 9);
+  TH1D *h_ccdis = new TH1D("h_ccdis", "Proton multiplicity", 10, 0, 9);
+  TH1D *h_nc    = new TH1D("h_nc",    "Proton multiplicity", 10, 0, 9);
+  std::vector<TH1D*> signal;
 
   for(const Event &e : events){
 
@@ -98,14 +116,14 @@ int MainTest(){
       // If the particle is a reconstructed track (not pi0)
       if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
         Particle p_match = GeneralAnalysisHelper::GetBestMCParticle(e,p_reco);
-        if(p_match.GetPdgCode() == 2212){
-          if(p_reco.GetPdgCode() == 2212){
+        if(p_match.GetPdgCode() == 2212 && p_match.GetNumberOfHits() >= 5){
+          if(p_reco.GetPdgCode() == 2212 && p_reco.GetNumberOfHits() >= 5){
             // True and reconstructed proton: signal
             signal_energy.push_back(p_match.GetKineticEnergy());
             signal_length.push_back(p_match.GetLength());
             signal_hits.push_back(p_match.GetNumberOfHits());
           }
-          else if(p_reco.GetPdgCode() != 2212){
+          else if(p_reco.GetPdgCode() != 2212 && p_reco.GetNumberOfHits() >= 5){
             // True and mis-indentified proton
             background_energy.push_back(p_match.GetKineticEnergy());
             background_length.push_back(p_match.GetLength());
@@ -115,15 +133,38 @@ int MainTest(){
       }
     }
     for(Particle &p_true : true_particles){
-      if(p_true.GetPdgCode() == 2212 && !GeneralAnalysisHelper::HasBeenReconstructed(e, p_true)){
+      if(p_true.GetPdgCode() == 2212 && !GeneralAnalysisHelper::HasBeenReconstructed(e, p_true) && p_true.GetNumberOfHits() >= 5){
         // True proton, not reconstructed
         missed_energy.push_back(p_true.GetKineticEnergy());
         missed_length.push_back(p_true.GetLength());
         missed_hits.push_back(p_true.GetNumberOfHits());
         missed++;
         if(p_true.GetNumberOfHits() < 25) missed_below_25++;
-        if(p_true.GetNumberOfHits() < 5) missed_below_5++;
+        if(p_true.GetNumberOfHits() < 10) missed_below_10++;
       }
+    }
+    if(e.CheckMCTopology(cc0pi)){
+      for(const Particle &mc : true_particles){
+        if(mc.GetPdgCode() == 2212 && mc.GetNumberOfHits() >= 5){
+          if(e.GetPhysicalProcess() == 1 && e.GetIsCC())  ccqe++;
+          if(e.GetPhysicalProcess() == 3 && e.GetIsCC())  ccdis++;
+          if(e.GetPhysicalProcess() == 4 && e.GetIsCC())  ccres++;
+          if(e.GetPhysicalProcess() == 10 && e.GetIsCC()) ccmec++;
+          if(!e.GetIsCC()) ncany++;
+        }
+      }
+    }
+    if(e.CheckMCTopology(cc0pi)){
+      h_ccqe->Fill(ccqe);
+      h_ccmec->Fill(ccmec);
+      h_ccres->Fill(ccres);
+      h_ccdis->Fill(ccdis);
+      h_nc->Fill(ncany);
+      signal.push_back(h_ccqe);
+      signal.push_back(h_ccmec);
+      signal.push_back(h_ccres);
+      signal.push_back(h_ccdis);
+      signal.push_back(h_nc);
     }
   }
 
@@ -133,16 +174,17 @@ int MainTest(){
    *
    */
   TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",40,0,0.6);
-  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,40);
+  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,15);
   TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",40,0,40);
 
   TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",40,0,0.6);
-  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,40);
+  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,15);
   TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",40,0,40);
 
   TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",40,0,0.6);
-  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,40);
+  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,15);
   TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",40,0,40);
+
 
   for(unsigned int i = 0; i < signal_energy.size(); ++i){
     h_signal_energy->Fill(signal_energy[i]);
@@ -162,15 +204,71 @@ int MainTest(){
 
   /*
    *
-   * Draw
+   * Stack
    *
    */
-  gStyle->SetPalette(55);
-  gStyle->SetNumberContours(250);
-
   TCanvas *c = new TCanvas();
   TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
   l->SetBorderSize(0);
+
+  /*
+  int pal[5];
+  pal[0]  = kRed;
+  pal[1]  = kGreen + 2;
+  pal[2]  = kOrange + 7;
+  pal[3]  = kBlue;
+  pal[4]  = kMagenta + 1;
+  
+  gStyle->SetPalette( 12, pal );
+  gStyle->SetHatchesLineWidth( 1 );
+  gStyle->SetHatchesSpacing( 0.5 );
+  gStyle->SetTitleOffset(1.5, "Y");
+  gStyle->SetOptStat( 0 );
+  
+  THStack *hsT = new THStack("hsT","pre-FSI");
+
+  double norm = 0;
+  
+  for (unsigned int i = 0; i < signal.size(); ++i){
+      norm += signal[i]->Integral();
+  }
+
+  for ( unsigned int i = 0; i < signal.size(); ++i ){
+    if(norm > 0){
+      signal[i]->SetFillColor(pal[i]);
+      signal[i]->SetLineColor(pal[i]);
+      signal[i]->Scale(1/norm);
+      hsT->Add(signal[i]);
+    }
+  }
+  l->AddEntry(h_ccqe,  "CC QE",   "f");
+  l->AddEntry(h_ccres, "CC RES",  "f");
+  l->AddEntry(h_ccmec, "CC MEC",  "f");
+  l->AddEntry(h_ccdis, "CC DIS",  "f");
+  l->AddEntry(h_nc,    "NC",      "f");
+*/
+  /*
+   *
+   * Draw
+   *
+   */
+  /*
+  hsT->Draw("hist");
+  const char *x_label = "Proton multiplicity";
+  const char *y_label = "Normalised event rate";
+  hsT->GetXaxis()->SetTitle(x_label);   
+  hsT->GetYaxis()->SetTitle(y_label);   
+  //c->Modified(); 
+  
+  l->Draw();
+  c->SaveAs((plots+"multiplicity_pre_fsi.png").c_str());
+  c->SaveAs((plots+"multiplicity_pre_fsi.root").c_str());
+
+  l->Clear();
+  c->Clear();
+*/  
+  gStyle->SetPalette(55);
+  gStyle->SetNumberContours(250);
 
   l->AddEntry( h_signal_energy,     " True, reconstructed proton", "l" );
   l->AddEntry( h_background_energy, " True, misidentified proton", "l" );
@@ -196,6 +294,7 @@ int MainTest(){
   l->Draw();
 
   c->SaveAs((plots+"proton_kinetic_energy.root").c_str());
+  c->SaveAs((plots+"proton_kinetic_energy.png").c_str());
   c->Clear();
 
   l->Clear();
@@ -222,6 +321,7 @@ int MainTest(){
   l->Draw();
 
   c->SaveAs((plots+"proton_length.root").c_str());
+  c->SaveAs((plots+"proton_length.png").c_str());
   c->Clear();
 
   l->Clear();
@@ -249,14 +349,14 @@ int MainTest(){
   l->Draw();
 
   c->SaveAs((plots+"proton_hits.root").c_str());
+  c->SaveAs((plots+"proton_hits.png").c_str());
   c->Clear();
-
 
   std::cout << " Missed protons :                                      " << missed << std::endl;
   std::cout << " Missed protons with less than 25 hits :               " << missed_below_25 << std::endl;
-  std::cout << " Missed protons with less than 5 hits  :               " << missed_below_5 << std::endl;
+  std::cout << " Missed protons with less than 10 hits  :               " << missed_below_10 << std::endl;
   std::cout << " Percentage of missed protons with less than 25 hits : " << missed_below_25 / double(missed) << std::endl;
-  std::cout << " Percentage of missed protons with less than 5 hits  : " << missed_below_5 / double(missed) << std::endl;
+  std::cout << " Percentage of missed protons with less than 10 hits  : " << missed_below_10 / double(missed) << std::endl;
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

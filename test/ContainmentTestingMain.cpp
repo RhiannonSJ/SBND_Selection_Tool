@@ -2,6 +2,7 @@
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
 #include "../include/Event.h"
+#include "../include/Plane.h"
 #include <iostream>
 #include <sstream>
 #include <numeric>
@@ -24,36 +25,6 @@
 #include "TLeaf.h"
 
 using namespace selection;
-
-// The plane object
-class Plane{
-
-  public  :
-    // Constructor 
-    Plane(const TVector3 &V, const TVector3 &A, const TVector3 &B);
-
-    // Getters
-    TVector3 GetV() const;
-    TVector3 GetA() const;
-    TVector3 GetB() const;
-    TVector3 GetUnitA() const;
-    TVector3 GetUnitB() const;
-    TVector3 GetUnitN() const;
-    float    GetAlpha() const;
-    float    GetBeta() const;
-
-  private :
-    // Member variables
-    // Caps    = vector
-    // No Caps = unit vector
-    TVector3 m_a, m_b, m_n, m_A, m_B, m_V;
-    float m_alpha, m_beta;
-};
-
-// Distance between particle start point and the point at which it crosses an (infinite) plane
-float GetDistanceFromParticleToPlane(const Plane &plane, const Particle &particle);
-bool  CheckIfParticleIntersectsPlane(const Plane &plane, const Particle &particle);
-bool  IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane);
 
 int MainTest(){
   
@@ -83,40 +54,11 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
-  // Define the fiducial planes of the detector
-  //  The order: +/-x, +/-y, +/-z
-  //
-  // To take into account the fiducial border define 
-  //    Half with fiducial   = Half width  - width fiducial border 
-  //    Half height fiducial = Half height - height fiducial border
-  //    Half length fiducial = Half length - length fiducial border
-  float w = 200; // half full detector width (x)
-  float h = 200; // half full detector height (y)
-  float l = 250; // half full detector length (z)
-  float w_border = 10; // width fiducial border
-  float h_border = 20; // height fiducial border
-  float l_border = 10; // length fiducial border
-  float fid_w = w - w_border; // fiducial half width
-  float fid_h = h - h_border; // fiducial half height
-  float fid_l = l - l_border; // fiducial half length
-
-  // Define the ficudial planes of the detector
-  std::vector<Plane> planes;
-  planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l));
-  planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l));
-  planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l));
-  planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l));
-  planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));
-  planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));
-
   int start = static_cast<int>(time(NULL));
   unsigned int total_files = 500;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
-
-   // if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
-
     // Get the filenames
     std::string name;
     name.clear();
@@ -125,8 +67,6 @@ int MainTest(){
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
-    
-    //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
     EventSelectionTool::GetTimeLeft(start,total_files,i);
   }
   std::cout << std::endl;
@@ -202,11 +142,13 @@ int MainTest(){
    * LENGTH
    *
    */
-  unsigned int longest_escapes = 0;
-  unsigned int true_muon_escapes = 0;
-  unsigned int longest_over_100_escapes = 0;
-  unsigned int events_with_1_escaping_track = 0;
-  unsigned int longest_escaping_true_muon = 0;
+  unsigned int longest_escapes                       = 0;
+  unsigned int true_muon_escapes                     = 0;
+  unsigned int true_muon_distance_cut                = 0;
+  unsigned int longest_over_100_escapes              = 0;
+  unsigned int events_with_1_escaping_track          = 0;
+  unsigned int events_with_1_escaping_track_with_cut = 0;
+  unsigned int longest_escaping_true_muon            = 0;
 
   double escaping_track_length = -1.;
 
@@ -219,6 +161,25 @@ int MainTest(){
     if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     events_with_1_escaping_track++;
     
+    bool contained_and_passes_distance_cut = false;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+        float distance_to_intersection_point = -std::numeric_limits<float>::max();
+        // Loop over the fiducial planes and find out which the escaping particle passed through
+        PlaneList planes;
+        EventSelectionTool::GetSBNDFiducialPlanes(planes);
+        for(const Plane &plane : planes){
+          if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
+          distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
+          if(distance_to_intersection_point > 50){
+            contained_and_passes_distance_cut = true;
+            break;
+          }
+        }
+      }
+    }
+    if(contained_and_passes_distance_cut) events_with_1_escaping_track_with_cut++;
+
     // Now plot some things
     // Find the ID of the longest track
     // Calculate the total kinetic energy deposited in the event by 
@@ -258,6 +219,7 @@ int MainTest(){
             escaping_track_length = p.GetLength();
             true_muon_escapes++;
             muon_escapes = true;
+            if(contained_and_passes_distance_cut) true_muon_distance_cut++; 
           }
           else if(mcp.GetOneEndTrackContained()){
             h_length_not_muon->Fill(p.GetLength());
@@ -265,6 +227,7 @@ int MainTest(){
           }
         }
       }
+
     }
     
     /*
@@ -320,6 +283,9 @@ int MainTest(){
      *
      */
     
+    PlaneList planes;
+    EventSelectionTool::GetSBNDFiducialPlanes(planes);
+
     // Find the location at which the escaping track leaves the TPC
     for(const Particle &p : e.GetRecoParticleList()){
       // Check that we are looking at the escaping track
@@ -329,8 +295,8 @@ int MainTest(){
         unsigned int i = 0;
         for(const Plane &plane : planes){
           i++;
-          if(!CheckIfParticleIntersectsPlane(plane, p)) continue;
-          distance_to_intersection_point = GetDistanceFromParticleToPlane(plane,p);
+          if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
+          distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
           break;
         }
         if(muon_escapes) {
@@ -592,12 +558,13 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream file;
-  file.open(stats_location+"containment_testing.txt");
+  file.open(stats_location+"distance_cut_containment_testing.txt");
 
   file << "=====================================================================" << std::endl;
   file << " Total number of events                                             : " << events.size()   << std::endl;
   file << " Number of events with maximum one escaping track                   : " << max_one_escapes << std::endl;
   file << " Number of events with exactly one escaping track                   : " << events_with_1_escaping_track << std::endl;
+  file << " Number of events with exactly one escaping track with distance cut : " << events_with_1_escaping_track_with_cut << std::endl;
   file << " Number of events with more than one escaping track                 : " << too_many_escape << std::endl;
   file << " Events with more than one escaping and true vertex contained       : " << too_many_true_contained << std::endl;
   file << " Events with more than one escaping and true vertex escaping        : " << too_many_true_escaping  << std::endl;
@@ -609,6 +576,10 @@ int MainTest(){
   file << " Percentage of events with longest escaping and > 100 cm            : " << 100 * longest_over_100_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events with longest escaping and longest true muon   : " << 100 * longest_escaping_true_muon/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of longest escaping track events with longest true muon : " << 100 * longest_escaping_true_muon/double(longest_escapes) << std::endl;
+  file << " ------------------------------------------------------------------- " << std::endl;
+  file << " For events with only 1 escaping track with distance cut : " << std::endl;
+  file << " ------------------------------------------------------------------- " << std::endl;
+  file << " Percentage of events where the true muon escapes                   : " << 100 * true_muon_distance_cut/double(events_with_1_escaping_track_with_cut) << std::endl;
   file << "=====================================================================" << std::endl;
 
   time_t rawtime_afterload;
@@ -630,66 +601,3 @@ int MainTest(){
   return 0;
 
 } // MainTest()
-
-// Plane object constructor
-Plane::Plane(const TVector3 &V, const TVector3 &A, const TVector3 &B) :
-  m_A(A),
-  m_B(B),
-  m_V(V) {
-    m_a = ((1/m_A.Mag()) * m_A);
-    m_b = ((1/m_B.Mag()) * m_B);
-    m_n = m_a.Cross(m_b);  
-    m_alpha = m_A.Mag();
-    m_beta  = m_B.Mag();
-
-}
-
-// Plane object getters
-TVector3 Plane::GetV() const {return m_V;}
-TVector3 Plane::GetA() const {return m_A;}
-TVector3 Plane::GetB() const {return m_B;}
-TVector3 Plane::GetUnitA() const {return m_a;}
-TVector3 Plane::GetUnitB() const {return m_b;} 
-TVector3 Plane::GetUnitN() const {return m_n;}
-float Plane::GetAlpha() const {return m_alpha;}
-float Plane::GetBeta()  const {return m_beta;}
-
-
-// Get distance to plane 
-float GetDistanceFromParticleToPlane(const Plane &plane, const Particle &particle){
-
-  // Get the value of the unit vector of the particle dotted with the normal to the plane
-  // If this is zero, the particle is parallel so throw an exception and catch it in the main
-  // then continue looping through the list of planes
-  TVector3 track_direction   = (particle.GetEnd() - particle.GetVertex()).Unit();
-  float direction_from_plane = track_direction.Dot(plane.GetUnitN());
-
-  if(std::abs(direction_from_plane) <= std::numeric_limits<float>::epsilon()){
-    throw std::domain_error("The particle is parallel to the plane");
-  }
-
-  return (1/direction_from_plane)*((plane.GetV() - particle.GetVertex()).Dot(plane.GetUnitN()));
-}
-
-
-bool CheckIfParticleIntersectsPlane(const Plane &plane, const Particle &particle){
-
-  float d = -std::numeric_limits<float>::max();
-  try{
-    // Will throw exception if the particle is parallel to the plane
-    d = GetDistanceFromParticleToPlane(plane, particle);
-  }
-  // If caught, the particle is parallel to the plane and does not intersect
-  catch(const std::domain_error&) {return false;}
-
-  if(d < 0 || d > particle.GetLength()) return false;
-  TVector3 track_direction    = (particle.GetEnd() - particle.GetVertex()).Unit();
-  TVector3 intersection_point = particle.GetVertex() + d * track_direction; 
-
-  return IsProjectedPointInPlaneBounds(intersection_point, plane);
-}
-
-bool IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane){
-  // Check if the point lies within the bound plane
-  return (std::abs((point-plane.GetV()).Dot(plane.GetUnitA())) <= plane.GetAlpha() && std::abs((point-plane.GetV()).Dot(plane.GetUnitB())) <= plane.GetBeta());
-}

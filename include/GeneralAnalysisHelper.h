@@ -148,6 +148,11 @@ namespace selection{
       static TopologyMap GetCC0Pi2PTopologyMap();
 
       /**
+       * @brief  Get CC 0Pi 3Protons topology map
+       */
+      static TopologyMap GetCC0Pi3PTopologyMap();
+
+      /**
        * @brief  Get CC 1Pi topology map
        */
       static TopologyMap GetCC1PiTopologyMap();

@@ -335,7 +335,7 @@ namespace selection{
     if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
          || (vertex_x < (-m_sbnd_offset_x))          
          || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (vertex_y < (-m_sbnd_offset_y))          
          || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
          || (vertex_z < (-m_sbnd_offset_z))
          || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
@@ -362,12 +362,29 @@ namespace selection{
     float end_x    = m_end[0];                        
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
-    
+   
+    /*
+    bool does_vtx_escape = 
+      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z)));
+
+    bool does_end_escape = 
+      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
+         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
+         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
+         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
+         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z)));
+    */
     bool does_vtx_escape = 
       (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
          || (vertex_x < (-m_sbnd_offset_x))          
          || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
+         || (vertex_y < (-m_sbnd_offset_y))          
          || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
          || (vertex_z < (-m_sbnd_offset_z)));
 

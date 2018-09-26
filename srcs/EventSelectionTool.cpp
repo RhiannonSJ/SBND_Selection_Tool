@@ -9,6 +9,7 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include <stdexcept>
 
 namespace selection{
  
@@ -97,7 +98,7 @@ namespace selection{
       EventSelectionTool::GetTrackList(start_tracks, t_track, event_identification, tracks);
       EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
       EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
-      EventSelectionTool::GetRecoParticleFromTrack1Escaping(tracks, recoparticles);
+      EventSelectionTool::GetRecoParticleFromTrack1EscapingDistanceCut(tracks, recoparticles);
       EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
      
       // Check if any particles should be flipped
@@ -109,6 +110,85 @@ namespace selection{
       start_showers     += showers.size();
       start_mcparticles += mcparticles.size();
     }
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  float EventSelectionTool::GetDistanceToPlane(const Plane &plane, const TVector3 &vtx, const TVector3 &end){
+    // Get the value of the unit vector of the particle dotted with the normal to the plane
+    // If this is zero, the particle is parallel so throw an exception and catch it in the main
+    // then continue looping through the list of planes
+    TVector3 track_direction   = (end - vtx).Unit();
+    float direction_from_plane = track_direction.Dot(plane.GetUnitN());
+
+    if(std::abs(direction_from_plane) <= std::numeric_limits<float>::epsilon()){
+      throw std::domain_error("The track is parallel to the plane");
+    }
+
+    return (1/direction_from_plane)*((plane.GetV() - vtx).Dot(plane.GetUnitN()));
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
+  float EventSelectionTool::GetDistanceFromParticleToPlane(const Plane &plane, const Particle &particle){
+    // Get the vertex and end of the particle and pass to the distance function
+    TVector3 vtx = particle.GetVertex();
+    TVector3 end = particle.GetEnd();
+    return EventSelectionTool::GetDistanceToPlane(plane, vtx, end);
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
+  float EventSelectionTool::GetDistanceFromTrackToPlane(const Plane &plane, const Track &track){
+    // Get the vertex and end of the particle and pass to the distance function
+    TVector3 vtx = track.m_vertex;
+    TVector3 end = track.m_end;
+    return EventSelectionTool::GetDistanceToPlane(plane, vtx, end);
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  bool EventSelectionTool::CheckIfParticleIntersectsPlane(const Plane &plane, const Particle &particle){
+    // Get the vertex and end of the particle and pass to the distance function
+    TVector3 vtx = particle.GetVertex();
+    TVector3 end = particle.GetEnd();
+    float length = particle.GetLength();
+    return EventSelectionTool::CheckIfIntersectsPlane(plane, vtx, end, length);
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  bool EventSelectionTool::CheckIfTrackIntersectsPlane(const Plane &plane, const Track &track){
+    // Get the vertex and end of the particle and pass to the distance function
+    TVector3 vtx = track.m_vertex;
+    TVector3 end = track.m_end;
+    float length = track.m_length;
+    return EventSelectionTool::CheckIfIntersectsPlane(plane, vtx, end, length);
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  bool EventSelectionTool::CheckIfIntersectsPlane(const Plane &plane, const TVector3 &vtx, const TVector3 &end, const float &length){
+    float d = -std::numeric_limits<float>::max();
+    try{
+      // Will throw exception if the particle is parallel to the plane
+      d = GetDistanceToPlane(plane, vtx, end);
+    }
+    // If caught, the particle is parallel to the plane and does not intersect
+    catch(const std::domain_error&) {return false;}
+
+    if(d < 0 || d > length) return false;
+    TVector3 track_direction    = (end - vtx).Unit();
+    TVector3 intersection_point = vtx + d * track_direction; 
+
+    return IsProjectedPointInPlaneBounds(intersection_point, plane);
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
+  bool EventSelectionTool::IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane){
+    // Check if the point lies within the bound plane
+    return (std::abs((point-plane.GetV()).Dot(plane.GetUnitA())) <= plane.GetAlpha() && std::abs((point-plane.GetV()).Dot(plane.GetUnitB())) <= plane.GetBeta());
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -130,7 +210,65 @@ namespace selection{
   }
 
   //------------------------------------------------------------------------------------------ 
+
+  void EventSelectionTool::GetSBNDAVPlanes(PlaneList &planes) {
+    // Define the fiducial planes of the detector
+    //  The order: +/-x, +/-y, +/-z
+    //
+    // To take into account the fiducial border define 
+    //    Half with fiducial   = Half width  - width fiducial border 
+    //    Half height fiducial = Half height - height fiducial border
+    //    Half length fiducial = Half length - length fiducial border
+    float w = 200; // half full detector width (x)
+    float h = 200; // half full detector height (y)
+    float l = 250; // half full detector length (z)
+    float w_border = 0; // width fiducial border
+    float h_border = 0; // height fiducial border
+    float l_border = 0; // length fiducial border
+    float fid_w = w - w_border; // fiducial half width
+    float fid_h = h - h_border; // fiducial half height
+    float fid_l = l - l_border; // fiducial half length
+
+    // Define the ficudial planes of the detector
+    planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l));
+    planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l));
+    planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l));
+    planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l));
+    planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));
+    planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));
+  }
+
+  //------------------------------------------------------------------------------------------ 
  
+  void EventSelectionTool::GetSBNDFiducialPlanes(PlaneList &planes) {
+    // Define the fiducial planes of the detector
+    //  The order: +/-x, +/-y, +/-z
+    //
+    // To take into account the fiducial border define 
+    //    Half with fiducial   = Half width  - width fiducial border 
+    //    Half height fiducial = Half height - height fiducial border
+    //    Half length fiducial = Half length - length fiducial border
+    float w = 200; // half full detector width (x)
+    float h = 200; // half full detector height (y)
+    float l = 250; // half full detector length (z)
+    float w_border = 10; // width fiducial border
+    float h_border = 20; // height fiducial border
+    float l_border = 10; // length fiducial border
+    float fid_w = w - w_border; // fiducial half width
+    float fid_h = h - h_border; // fiducial half height
+    float fid_l = l - l_border; // fiducial half length
+
+    // Define the ficudial planes of the detector
+    planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l));
+    planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l));
+    planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l));
+    planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l));
+    planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));
+    planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
   void EventSelectionTool::GetUniqueEventList(TTree *event_tree, UniqueEventIdList &unique_event_list){
   
     TBranch *b_event_id = event_tree->GetBranch("event_id");
@@ -639,6 +777,132 @@ namespace selection{
       // Then identify protons
       // Then everything else
       if(exactly_one_escapes){
+        if(track.m_one_end_contained) 
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+        else if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+        else
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+      }
+      else{
+        // If the Chi2 Proton hypothesis gives proton, call the track a proton
+        // Otherwise, call it a muon candidate
+        if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+        else if(EventSelectionTool::GetPdgByChi2MuonCandidate(track) == 13 || (id == longest_track_id && always_longest))
+          mu_candidates.push_back(id);
+        else
+          recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
+      }
+    }
+
+    // If the muon was found by length, this will return
+    if(mu_candidates.size() == 0) return;
+    if(mu_candidates.size() == 1) {
+      const Track &muon(track_list[mu_candidates[0]]);
+      recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+      return;
+    }
+    
+    // If more than one muon candidate exists
+    bool foundTheMuon(false);
+    unsigned int muonID = std::numeric_limits<unsigned int>::max();
+
+    for(unsigned int i = 0; i < mu_candidates.size(); ++i){
+      unsigned int id = mu_candidates[i];
+      const Track &candidate(track_list[id]);
+      if(longest_track_id == id && always_longest) {
+        muonID = id;
+        foundTheMuon = true;
+        break;
+      }
+    }
+    if(!foundTheMuon) {
+      // Find the smallest chi^2 under the muon hypothesis
+      muonID = EventSelectionTool::GetMuonByChi2(track_list, mu_candidates);
+      if(muonID != std::numeric_limits<unsigned int>::max()) foundTheMuon = true;
+      else throw 10;
+    }
+
+    const Track &muon(track_list[muonID]);
+    recoparticle_list.push_back(Particle(muon.m_mc_id_charge, muon.m_mc_id_energy, muon.m_mc_id_hits, 13, muon.m_n_hits, muon.m_kinetic_energy, muon.m_mcs_mom_muon, muon.m_range_mom_muon, muon.m_range_mom_proton,  muon.m_length, muon.m_vertex, muon.m_end, muon.m_chi2_pr, muon.m_chi2_mu, muon.m_chi2_pi));
+    
+    for(unsigned int i = 0; i < mu_candidates.size(); ++i){
+      unsigned int id = mu_candidates[i];
+      if(id == muonID) continue;
+      const Track &track(track_list[id]);
+      recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi)); 
+    } 
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
+  void EventSelectionTool::GetRecoParticleFromTrack1EscapingDistanceCut(const TrackList &track_list, ParticleList &recoparticle_list){
+
+    // Assign ridiculously short length to initiate the longest track length
+    float longest_track_length      = -std::numeric_limits<float>::max();
+    unsigned int longest_track_id   =  std::numeric_limits<unsigned int>::max();
+   
+    // Check if exactly 1 track escapes
+    bool exactly_one_escapes = false;
+    unsigned int n_escaping = 0;
+    for(unsigned int i = 0; i < track_list.size(); ++i){
+      const Track &trk(track_list[i]);
+      if(trk.m_one_end_contained) n_escaping++;
+    }
+    if(n_escaping == 1) exactly_one_escapes = true;
+
+    // Check if the track is contained and passes the distance cut to the escaping border
+    bool contained_and_passes_distance_cut = false;
+    if(exactly_one_escapes){
+      for(unsigned int i = 0; i < track_list.size(); ++i){
+        const Track &trk(track_list[i]);
+        if(trk.m_one_end_contained){
+          // Find out if the neutrino vertex is far enough from the escaping face
+          float distance_to_intersection_point = -std::numeric_limits<float>::max();
+          // Loop over the fiducial planes and find out which the escaping particle passed through
+          PlaneList planes;
+          EventSelectionTool::GetSBNDFiducialPlanes(planes);
+          for(const Plane &plane : planes){
+            if(!EventSelectionTool::CheckIfTrackIntersectsPlane(plane, trk)) continue;
+            distance_to_intersection_point = EventSelectionTool::GetDistanceFromTrackToPlane(plane,trk);
+            if(distance_to_intersection_point > 50){
+              contained_and_passes_distance_cut = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    for(unsigned int i = 0; i < track_list.size(); ++i){
+      const Track &candidate(track_list[i]);
+      // Get the lengths of the tracks and find the longest track and compare to the rest of
+      // the lengths
+      if(candidate.m_length > longest_track_length) {
+        longest_track_length = candidate.m_length;
+        longest_track_id     = i;
+      }
+    }
+
+    bool always_longest(true);
+    // Loop over track list
+    for(unsigned int id = 0; id < track_list.size(); ++id){
+      // Find out if the longest track is always 1.5x longer than all the others in the event
+      const Track &track(track_list[id]);
+      if(track.m_length*1.5 >= longest_track_length && id != longest_track_id) always_longest = false;
+    }
+  
+    // Muon candidates 
+    std::vector<unsigned int> mu_candidates;
+    // Loop over track list
+    for(unsigned int id = 0; id < track_list.size(); ++id){
+      const Track &track(track_list[id]);
+      // If exactly one particle escapes, call it the muon
+      // Then identify protons
+      // Then everything else
+      if(contained_and_passes_distance_cut){
+        // If one end is contained and the neutrino vertex is more than 75 cm from the escaping border
         if(track.m_one_end_contained) 
           recoparticle_list.push_back(Particle(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi));
         else if(EventSelectionTool::GetProtonByChi2Proton(track) == 2212)

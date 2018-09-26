@@ -2,6 +2,7 @@
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
 #include "../include/Event.h"
+#include "../include/Plane.h"
 #include <iostream>
 #include <sstream>
 #include <numeric>
@@ -43,7 +44,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 10;
+  unsigned int total_files = 500;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -108,26 +109,14 @@ int MainTest(){
 
   std::vector< TopologyMap > maps({cc_signal_map, cc0pi_signal_map, cc1pi_signal_map, cc0pi2p_signal_map});  
 
-  unsigned int too_few_hits_true      = 0;
-  unsigned int true_not_reconstructed = 0;
-  unsigned int true_proton_reco_other = 0;
-
   // First, ensure all tracks are contained
   for(const Event &e : events){
  
     // Check the true vertex is in the fiducial volume
     if(e.IsSBNDTrueFiducial()){
+//      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
       max_one_escaping_track++;
-
-      if(e.CheckMCTopology(maps[3])){
-        std::cout << "----------------------" << std::endl;
-        for(const Particle &mc : e.GetMCParticleList()){
-          if(mc.GetPdgCode() == 13){
-            std::cout << "Momentum " << mc.GetModulusMomentum() << std::endl;
-          }
-        }
-      }
   
       if(e.CheckRecoTopology(maps[0])){
         if(e.CheckMCTopology(maps[1]))     ccinc_cc0pi++;
@@ -160,36 +149,29 @@ int MainTest(){
       }
       if(e.CheckMCTopology(maps[1])){
         cc0pi_true++;
-        if(e.CheckRecoTopology(maps[1])){ cc0pi_sig++;
-          if(e.CheckMCTopology(maps[3])){
-            cc0pi2p_true++;
-            if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
-          }
-        }
+        if(e.CheckRecoTopology(maps[1])) cc0pi_sig++;
       }
       if(e.CheckMCTopology(maps[2])) {
         cc1pi_true++;
         if(e.CheckRecoTopology(maps[2])) cc1pi_sig++;
       }
+      if(e.CheckMCTopology(maps[3])){
+        cc0pi2p_true++;
+        if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
+      }
 
       // Overall purities
       if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
-      if(e.CheckRecoTopology(maps[1])) {
-        cc0pi_sel++;
-        if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
-      }
+      if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
       if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
+      if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
     }
   }
-  std::cout << " Total true              : " << cc0pi2p_true << std::endl;
-  std::cout << " Too few hits true       : " << too_few_hits_true << std::endl;
-  std::cout << " True not reco           : " << true_not_reconstructed << std::endl;
-  std::cout << " True proton, reco other : " << true_proton_reco_other << std::endl;
 
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"allchi2_topology_breakdown.txt");
+  file.open(stats_location+"smalldistance_cut_topology_breakdown.txt");
 
   file << "===============================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
@@ -199,6 +181,10 @@ int MainTest(){
   file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc0pi2p_cc1pi << std::setw(10) << cc1pi_cc1pi << std::endl;  
   file << std::setw(12) << " CC Other "   << "||" << std::setw(10) << ccinc_ccoth << std::setw(10) << cc0pi_ccoth << std::setw(10) << cc0pi2p_ccoth << std::setw(10) << cc1pi_ccoth << std::endl;  
   file << std::setw(12) << " NC "         << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc0pi2p_ncoth << std::setw(10) << cc1pi_ncoth << std::endl;  
+  file << "===============================================================================" << std::endl;
+  file << " CC Inc.    true       : " << ccinc_true << std::endl; 
+  file << " CC 0Pi     true       : " << cc0pi_true << std::endl; 
+  file << " CC 1Pi     true       : " << cc1pi_true << std::endl; 
   file << "===============================================================================" << std::endl;
   file << " CC Inc.    efficiency : " << ccinc_sig/double(ccinc_true) << std::endl; 
   file << " CC 0Pi     efficiency : " << cc0pi_sig/double(cc0pi_true) << std::endl; 

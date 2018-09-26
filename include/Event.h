@@ -1,6 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "Plane.h"
 #include "Particle.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
@@ -16,6 +17,7 @@ namespace selection{
   // Typedef for the map
   typedef std::map< std::vector< int >, int > TopologyMap;
   typedef std::vector<Particle> ParticleList;
+  typedef std::vector<Plane> PlaneList;
   typedef std::vector< vector<double> > ParticleMatrix;
 
   /**
@@ -156,7 +158,7 @@ namespace selection{
        * @brief  Get whether all the reconstructed tracks in an event are contained
        */
       bool AllRecoContained() const;
-      
+     
       /**
        * @brief  Get if the event is CC or NC
        */

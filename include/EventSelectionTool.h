@@ -11,6 +11,7 @@
 #include "TVector3.h"
 #include "Event.h"
 #include "Particle.h"
+#include "Plane.h"
 
 namespace selection{
  
@@ -26,6 +27,7 @@ namespace selection{
     public : 
 
       typedef std::vector<std::pair<int,int> > UniqueEventIdList;
+      typedef std::vector<Plane>               PlaneList;
       typedef std::vector<Particle>            ParticleList;
       typedef std::vector<Event>               EventList;
       typedef std::vector<Track>               TrackList;
@@ -50,6 +52,90 @@ namespace selection{
        *
        */
       static void GetTimeLeft(const int start_time, const int total, const unsigned int i);
+      
+      /**
+       * @brief  The the distance between a particle and a defined plane
+       *
+       * @param  plane 
+       * @param  particle
+       * 
+       * @return the distance between the particle and the plane
+       */
+      static float GetDistanceFromParticleToPlane(const Plane &plane, const Particle &particle);
+
+      /**
+       * @brief  The the distance between a particle and a defined plane
+       *
+       * @param  plane 
+       * @param  track
+       * 
+       * @return the distance between the particle and the plane
+       */
+      static float GetDistanceFromTrackToPlane(const Plane &plane, const Track &track);
+
+      /**
+       * @brief  The the distance to a defined plane
+       *
+       * @param  plane 
+       * @param  vtx
+       * @param  end
+       * 
+       * @return the distance from the neutrino vertex to the plane
+       */
+      static float GetDistanceToPlane(const Plane &plane, const TVector3 &vtx, const TVector3 &end);
+      
+      /**
+       * @brief  Check if the particle intersects a given plane
+       *
+       * @param  plane
+       * @param  particle
+       *
+       * @return true or false
+       */
+      static bool CheckIfParticleIntersectsPlane(const Plane &plane, const Particle &particle);
+
+      /**
+       * @brief  Check if the track intersects a given plane
+       *
+       * @param  plane
+       * @param  track
+       *
+       * @return true or false
+       */
+      static bool CheckIfTrackIntersectsPlane(const Plane &plane, const Track &track);
+
+      /**
+       * @brief  Check if it intersects a given plane
+       *
+       * @param  plane
+       * @param  vtx
+       * @param  end
+       * @param  length
+       *
+       * @return true or false
+       */
+      static bool CheckIfIntersectsPlane(const Plane &plane, const TVector3 &vtx, const TVector3 &end, const float &length);
+
+      /**
+       * @brief  Check if the projected point is within the bounds of the given plane
+       *
+       * @param  point
+       * @param  plane
+       *
+       * @return true or false
+       */
+      static bool IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane);
+      
+      /*
+       * @brief Get the list of planes for the sbnd active volume
+       */
+      static void GetSBNDAVPlanes(PlaneList &planes);
+
+      /*
+       * @brief Get the list of planes for the sbnd fiducial volume
+       */
+      static void GetSBNDFiducialPlanes(PlaneList &planes);
+
 
     private :
 
@@ -128,6 +214,15 @@ namespace selection{
        */
       static void GetRecoParticleFromTrack1Escaping(const TrackList &track_list, ParticleList &recoparticle_list);
  
+      /**
+       * @brief  get a list of reconstructed particles from track objects
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       *
+       */
+      static void GetRecoParticleFromTrack1EscapingDistanceCut(const TrackList &track_list, ParticleList &recoparticle_list);
+
       /**
        * @brief  get a list of reconstructed particles from track objects using original method
        *
