@@ -146,9 +146,13 @@ int MainTest(){
   unsigned int longest_escapes                       = 0;
   unsigned int true_muon_escapes                     = 0;
   unsigned int true_muon_distance_cut                = 0;
+  unsigned int ccinc_true_muon_escapes               = 0;
+  unsigned int ccinc_true_muon_distance_cut          = 0;
   unsigned int longest_over_100_escapes              = 0;
   unsigned int events_with_1_escaping_track          = 0;
+  unsigned int ccinc_with_1_escaping_track           = 0;
   unsigned int events_with_1_escaping_track_with_cut = 0;
+  unsigned int ccinc_with_1_escaping_track_with_cut  = 0;
   unsigned int longest_escaping_true_muon            = 0;
 
   double escaping_track_length = -1.;
@@ -161,6 +165,7 @@ int MainTest(){
 
     if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     events_with_1_escaping_track++;
+    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
     
     bool contained_and_passes_distance_cut = false;
     for(const Particle &p : e.GetRecoParticleList()){
@@ -179,7 +184,10 @@ int MainTest(){
         }
       }
     }
-    if(contained_and_passes_distance_cut) events_with_1_escaping_track_with_cut++;
+    if(contained_and_passes_distance_cut) {
+      events_with_1_escaping_track_with_cut++;
+      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track_with_cut++;
+    }
 
     // Now plot some things
     // Find the ID of the longest track
@@ -220,7 +228,11 @@ int MainTest(){
             escaping_track_length = p.GetLength();
             true_muon_escapes++;
             muon_escapes = true;
-            if(contained_and_passes_distance_cut) true_muon_distance_cut++; 
+            if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_escapes++;
+            if(contained_and_passes_distance_cut) {
+              true_muon_distance_cut++; 
+              if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_distance_cut++;
+            }
           }
           else if(mcp.GetOneEndTrackContained()){
             h_length_not_muon->Fill(p.GetLength());
@@ -566,6 +578,8 @@ int MainTest(){
   file << " Number of events with maximum one escaping track                   : " << max_one_escapes << std::endl;
   file << " Number of events with exactly one escaping track                   : " << events_with_1_escaping_track << std::endl;
   file << " Number of events with exactly one escaping track with distance cut : " << events_with_1_escaping_track_with_cut << std::endl;
+  file << " CC Inc. events with exactly one escaping track                     : " << ccinc_with_1_escaping_track << std::endl;
+  file << " CC Inc. events with exactly one escaping track with distance cut   : " << ccinc_with_1_escaping_track_with_cut << std::endl;
   file << " Number of events with more than one escaping track                 : " << too_many_escape << std::endl;
   file << " Events with more than one escaping and true vertex contained       : " << too_many_true_contained << std::endl;
   file << " Events with more than one escaping and true vertex escaping        : " << too_many_true_escaping  << std::endl;
@@ -573,6 +587,7 @@ int MainTest(){
   file << " For events with only 1 escaping track : " << std::endl;
   file << " ------------------------------------------------------------------- " << std::endl;
   file << " Percentage of events where the true muon escapes                   : " << 100 * true_muon_escapes/double(events_with_1_escaping_track) << std::endl;
+  file << " Percentage of events where the true muon escapes in cc inc.        : " << 100 * ccinc_true_muon_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events where the longest track escapes               : " << 100 * longest_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events with longest escaping and > 100 cm            : " << 100 * longest_over_100_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events with longest escaping and longest true muon   : " << 100 * longest_escaping_true_muon/double(events_with_1_escaping_track) << std::endl;
@@ -581,6 +596,7 @@ int MainTest(){
   file << " For events with only 1 escaping track with distance cut : " << std::endl;
   file << " ------------------------------------------------------------------- " << std::endl;
   file << " Percentage of events where the true muon escapes                   : " << 100 * true_muon_distance_cut/double(events_with_1_escaping_track_with_cut) << std::endl;
+  file << " Percentage of events where the true muon escapes in cc inc.        : " << 100 * ccinc_true_muon_distance_cut/double(events_with_1_escaping_track_with_cut) << std::endl;
   file << "=====================================================================" << std::endl;
 
   time_t rawtime_afterload;

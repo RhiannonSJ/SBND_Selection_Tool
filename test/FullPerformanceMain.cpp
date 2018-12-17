@@ -68,10 +68,27 @@ int MainTest(){
   std::cout << std::endl;
 
   // COUNTERS
+  unsigned int nue_true  = 0; 
+  
+  unsigned int ncinc_true  = 0; 
+  unsigned int ncinc_sig   = 0; 
+  unsigned int ncinc_sel   = 0; 
+  
+  unsigned int nc0pi_true  = 0; 
+  unsigned int nc0pi_sig   = 0; 
+  unsigned int nc0pi_sel   = 0; 
+  
+  unsigned int nc1pi_true  = 0; 
+  unsigned int nc1pi_sig   = 0; 
+  unsigned int nc1pi_sel   = 0; 
+  
   unsigned int ccinc_cc0pi = 0;
   unsigned int ccinc_cc1pi = 0;
   unsigned int ccinc_ccoth = 0;
+  unsigned int ccinc_nc0pi = 0;
+  unsigned int ccinc_nc1pi = 0;
   unsigned int ccinc_ncoth = 0;
+  unsigned int ccinc_nue   = 0;
   unsigned int ccinc_true  = 0; 
   unsigned int ccinc_sig   = 0; 
   unsigned int ccinc_sel   = 0; 
@@ -79,7 +96,10 @@ int MainTest(){
   unsigned int cc0pi_cc0pi = 0;
   unsigned int cc0pi_cc1pi = 0;
   unsigned int cc0pi_ccoth = 0;
+  unsigned int cc0pi_nc0pi = 0;
+  unsigned int cc0pi_nc1pi = 0;
   unsigned int cc0pi_ncoth = 0;
+  unsigned int cc0pi_nue   = 0;
   unsigned int cc0pi_true  = 0; 
   unsigned int cc0pi_sig   = 0; 
   unsigned int cc0pi_sel   = 0; 
@@ -87,7 +107,10 @@ int MainTest(){
   unsigned int cc1pi_cc0pi = 0;
   unsigned int cc1pi_cc1pi = 0;
   unsigned int cc1pi_ccoth = 0;
+  unsigned int cc1pi_nc0pi = 0;
+  unsigned int cc1pi_nc1pi = 0;
   unsigned int cc1pi_ncoth = 0;
+  unsigned int cc1pi_nue   = 0;
   unsigned int cc1pi_true  = 0; 
   unsigned int cc1pi_sig   = 0; 
   unsigned int cc1pi_sel   = 0; 
@@ -95,7 +118,10 @@ int MainTest(){
   unsigned int cc0pi2p_cc0pi = 0;
   unsigned int cc0pi2p_cc1pi = 0;
   unsigned int cc0pi2p_ccoth = 0;
+  unsigned int cc0pi2p_nc0pi = 0;
+  unsigned int cc0pi2p_nc1pi = 0;
   unsigned int cc0pi2p_ncoth = 0;
+  unsigned int cc0pi2p_nue   = 0;
   unsigned int cc0pi2p_true  = 0; 
   unsigned int cc0pi2p_sig   = 0; 
   unsigned int cc0pi2p_sel   = 0; 
@@ -103,12 +129,16 @@ int MainTest(){
   unsigned int all_tracks_contained   = 0;
   unsigned int max_one_escaping_track = 0;
 
-  TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
-  TopologyMap cc0pi_signal_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
-  TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
-  TopologyMap cc0pi2p_signal_map = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
+  TopologyMap nc_map      = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap cc_map      = GeneralAnalysisHelper::GetCCIncTopologyMap();
+  TopologyMap cc0pi_map   = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap cc1pi_map   = GeneralAnalysisHelper::GetCC1PiTopologyMap();
+  TopologyMap cc0pi2p_map = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
+  TopologyMap nc0pi_map   = GeneralAnalysisHelper::GetNC0PiTopologyMap();
+  TopologyMap nc1pi_map   = GeneralAnalysisHelper::GetNC1PiTopologyMap();
+  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuETopologyMap();
 
-  std::vector< TopologyMap > maps({cc_signal_map, cc0pi_signal_map, cc1pi_signal_map, cc0pi2p_signal_map});  
+  std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
 
   // First, ensure all tracks are contained
   for(const Event &e : events){
@@ -120,28 +150,40 @@ int MainTest(){
       max_one_escaping_track++;
   
       if(e.CheckRecoTopology(maps[0])){
-        if(e.CheckMCTopology(maps[1]))     ccinc_cc0pi++;
+        if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
         else if(e.CheckMCTopology(maps[0])) ccinc_ccoth++;
-        else ccinc_ncoth++;
+        else if(e.CheckMCTopology(maps[5])) ccinc_nc0pi++;
+        else if(e.CheckMCTopology(maps[6])) ccinc_nc1pi++;
+        else if(e.CheckMCTopology(maps[4])) ccinc_ncoth++;
+        else if(e.CheckMCTopology(maps[7])) ccinc_nue++;
       }
       if(e.CheckRecoTopology(maps[1])){
-        if(e.CheckMCTopology(maps[1]))     cc0pi_cc0pi++;
+        if(e.CheckMCTopology(maps[1]))      cc0pi_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) cc0pi_cc1pi++;
         else if(e.CheckMCTopology(maps[0])) cc0pi_ccoth++;
-        else cc0pi_ncoth++;
+        else if(e.CheckMCTopology(maps[5])) cc0pi_nc0pi++;
+        else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
+        else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
+        else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
         if(e.CheckRecoTopology(maps[3])){
-          if(e.CheckMCTopology(maps[1]))     cc0pi2p_cc0pi++;
+          if(e.CheckMCTopology(maps[1]))      cc0pi2p_cc0pi++;
           else if(e.CheckMCTopology(maps[2])) cc0pi2p_cc1pi++;
           else if(e.CheckMCTopology(maps[0])) cc0pi2p_ccoth++;
-          else cc0pi2p_ncoth++;
+          else if(e.CheckMCTopology(maps[5])) cc0pi2p_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) cc0pi2p_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) cc0pi2p_ncoth++;
+        else if(e.CheckMCTopology(maps[7]))   cc0pi2p_nue++;
         }
       }
       if(e.CheckRecoTopology(maps[2])){
-        if(e.CheckMCTopology(maps[1]))     cc1pi_cc0pi++;
+        if(e.CheckMCTopology(maps[1]))      cc1pi_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
         else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
-        else cc1pi_ncoth++;
+        else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
+        else if(e.CheckMCTopology(maps[6])) cc1pi_nc1pi++;
+        else if(e.CheckMCTopology(maps[4])) cc1pi_ncoth++;
+        else if(e.CheckMCTopology(maps[7])) cc1pi_nue++;
       }
       // Overall efficiencies 
       if(e.CheckMCTopology(maps[0])){
@@ -160,12 +202,28 @@ int MainTest(){
         cc0pi2p_true++;
         if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
       }
+      if(e.CheckMCTopology(maps[4])){
+        ncinc_true++;
+        if(e.CheckRecoTopology(maps[4])) ncinc_sig++;
+      }
+      if(e.CheckMCTopology(maps[5])){
+        nc0pi_true++;
+        if(e.CheckRecoTopology(maps[5])) nc0pi_sig++;
+      }
+      if(e.CheckMCTopology(maps[6])){
+        nc1pi_true++;
+        if(e.CheckRecoTopology(maps[6])) nc1pi_sig++;
+      }
+      if(e.CheckMCTopology(maps[7])) nue_true++;
 
       // Overall purities
       if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
       if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
       if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
       if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
+      if(e.CheckRecoTopology(maps[4])) ncinc_sel++;
+      if(e.CheckRecoTopology(maps[5])) nc0pi_sel++;
+      if(e.CheckRecoTopology(maps[6])) nc1pi_sel++;
     }
   }
 
@@ -181,21 +239,34 @@ int MainTest(){
   file << std::setw(12) << " CC 0Pi "     << "||" << std::setw(10) << ccinc_cc0pi << std::setw(10) << cc0pi_cc0pi << std::setw(10) << cc0pi2p_cc0pi << std::setw(10) << cc1pi_cc0pi << std::endl;  
   file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc0pi2p_cc1pi << std::setw(10) << cc1pi_cc1pi << std::endl;  
   file << std::setw(12) << " CC Other "   << "||" << std::setw(10) << ccinc_ccoth << std::setw(10) << cc0pi_ccoth << std::setw(10) << cc0pi2p_ccoth << std::setw(10) << cc1pi_ccoth << std::endl;  
-  file << std::setw(12) << " NC "         << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc0pi2p_ncoth << std::setw(10) << cc1pi_ncoth << std::endl;  
+  file << std::setw(12) << " NC 0Pi "     << "||" << std::setw(10) << ccinc_nc0pi << std::setw(10) << cc0pi_nc0pi << std::setw(10) << cc0pi2p_nc0pi << std::setw(10) << cc1pi_nc0pi << std::endl;  
+  file << std::setw(12) << " NC 1Pi "     << "||" << std::setw(10) << ccinc_nc1pi << std::setw(10) << cc0pi_nc1pi << std::setw(10) << cc0pi2p_nc1pi << std::setw(10) << cc1pi_nc1pi << std::endl;  
+  file << std::setw(12) << " NC Other "   << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc0pi2p_ncoth << std::setw(10) << cc1pi_ncoth << std::endl;  
+  file << std::setw(12) << " Nu E    "    << "||" << std::setw(10) << ccinc_nue   << std::setw(10) << cc0pi_nue   << std::setw(10) << cc0pi2p_nue   << std::setw(10) << cc1pi_nue << std::endl;  
   file << "===============================================================================" << std::endl;
   file << " CC Inc.    true       : " << ccinc_true << std::endl; 
   file << " CC 0Pi     true       : " << cc0pi_true << std::endl; 
   file << " CC 1Pi     true       : " << cc1pi_true << std::endl; 
+  file << " NC Inc.    true       : " << ncinc_true << std::endl; 
+  file << " NC 0Pi     true       : " << nc0pi_true << std::endl; 
+  file << " NC 1Pi     true       : " << nc1pi_true << std::endl; 
+  file << " Nu E       true       : " << nue_true   << std::endl; 
   file << "===============================================================================" << std::endl;
   file << " CC Inc.    efficiency : " << ccinc_sig/double(ccinc_true) << std::endl; 
   file << " CC 0Pi     efficiency : " << cc0pi_sig/double(cc0pi_true) << std::endl; 
   file << " CC 0Pi 2P  efficiency : " << cc0pi2p_sig/double(cc0pi2p_true) << std::endl; 
   file << " CC 1Pi     efficiency : " << cc1pi_sig/double(cc1pi_true) << std::endl; 
+  file << " NC Inc.    efficiency : " << ncinc_sig/double(ncinc_true) << std::endl; 
+  file << " NC 0Pi     efficiency : " << nc0pi_sig/double(nc0pi_true) << std::endl; 
+  file << " NC 1Pi     efficiency : " << nc1pi_sig/double(nc1pi_true) << std::endl; 
   file << "===============================================================================" << std::endl;
   file << " CC Inc.   purity      : " << ccinc_sig/double(ccinc_sel)  << std::endl; 
   file << " CC 0Pi    purity      : " << cc0pi_sig/double(cc0pi_sel)  << std::endl; 
   file << " CC 0Pi 2P purity      : " << cc0pi2p_sig/double(cc0pi2p_sel)  << std::endl; 
   file << " CC 1Pi    purity      : " << cc1pi_sig/double(cc1pi_sel)  << std::endl; 
+  file << " NC Inc.   purity      : " << ncinc_sig/double(ncinc_sel)  << std::endl; 
+  file << " NC 0Pi    purity      : " << nc0pi_sig/double(nc0pi_sel)  << std::endl; 
+  file << " NC 1Pi    purity      : " << nc1pi_sig/double(nc1pi_sel)  << std::endl; 
   file << "===============================================================================" << std::endl;
 
   time_t rawtime_end;

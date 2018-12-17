@@ -153,6 +153,11 @@ namespace selection{
       static TopologyMap GetCC0Pi3PTopologyMap();
 
       /**
+       * @brief  Get CC 0Pi 5Protons topology map
+       */
+      static TopologyMap GetCC0Pi5PTopologyMap();
+
+      /**
        * @brief  Get CC 1Pi topology map
        */
       static TopologyMap GetCC1PiTopologyMap();
@@ -167,6 +172,10 @@ namespace selection{
        */
       static TopologyMap GetCCPi0TopologyMap();
 
+      /*8
+       * @brief  Get the NuE topology map
+       */
+      static TopologyMap GetNuETopologyMap();
       /**
        * @brief  Get the number of escaping reconstructed tracks or MCParticles
        *

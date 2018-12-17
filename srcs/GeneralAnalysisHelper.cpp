@@ -65,6 +65,14 @@ namespace selection{
     return signal_map_cc_0pi_3p;
   } 
   //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC0Pi5PTopologyMap() {
+    TopologyMap signal_map_cc_0pi_5p;
+    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({13},1));
+    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({2212},5));
+    return signal_map_cc_0pi_5p;
+  } 
+  //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC1PiTopologyMap() { 
     TopologyMap signal_map_cc_1pi;
     signal_map_cc_1pi.insert(TopologyMap::value_type({13},1));
@@ -84,6 +92,15 @@ namespace selection{
     signal_map_cc_pi0.insert(TopologyMap::value_type({13},1));
     signal_map_cc_pi0.insert(TopologyMap::value_type({111},1));
     return signal_map_cc_pi0;
+  } 
+
+  //----------------------------------------------------------------------------------------
+  //      DO NOT USE ON RECO 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuETopologyMap() {
+    TopologyMap signal_map_nue;
+    signal_map_nue.insert(TopologyMap::value_type({11},1));
+    return signal_map_nue;
   } 
 
   //----------------------------------------------------------------------------------------
