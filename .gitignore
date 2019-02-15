@@ -4,5 +4,4 @@ include/Doxyfile
 include/README.md
 srcs/README.md
 LArEvdSmall.jpeg
-cleanup.sh
 
