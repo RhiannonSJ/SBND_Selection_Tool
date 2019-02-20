@@ -259,12 +259,12 @@ namespace selection{
     float fid_l = l - l_border; // fiducial half length
 
     // Define the ficudial planes of the detector
-    planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l));
-    planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l));
-    planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l));
-    planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l));
-    planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));
-    planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));
+    planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l)); // 0 = +x
+    planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l)); // 1 = -x
+    planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l)); // 2 = +y
+    planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l)); // 3 = -y
+    planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0)); // 4 = +z
+    planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0)); // 5 = -z
   }
 
   //------------------------------------------------------------------------------------------ 

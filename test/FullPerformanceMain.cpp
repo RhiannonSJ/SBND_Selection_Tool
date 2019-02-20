@@ -34,7 +34,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/breakdown/track_pid_testing/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/cosmics/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -44,19 +44,21 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 95;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
 
     //if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
+    if(i == 61) continue;
 
     // Get the filenames
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+   // name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/190219_ana_cosmic_overlay/ana/16332687_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
@@ -230,7 +232,7 @@ int MainTest(){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"smalldistance_cut_topology_breakdown.txt");
+  file.open(stats_location+"topology_breakdown.txt");
 
   file << "===============================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;

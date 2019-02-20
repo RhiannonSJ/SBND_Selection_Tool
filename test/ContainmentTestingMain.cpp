@@ -37,8 +37,9 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/";
-  std::string plots_location = "../Output_Selection_Tool/plots/escaping_track/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/cosmics/";
+  std::string plots_location = "../Output_Selection_Tool/plots/cosmics/escaping_track/";
+  std::string feb_location   = "../Output_Selection_Tool/plots/cosmics/vertices/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -55,15 +56,17 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 95;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
+    if(i == 61) continue;
     // Get the filenames
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/190219_ana_cosmic_overlay/ana/16332687_"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
@@ -117,8 +120,10 @@ int MainTest(){
   TH1D *h_closest_not_muon       = new TH1D("h_closest_not_muon","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
   TH2D *h_length_dist_muon       = new TH2D("h_length_dist_muon", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
   TH2D *h_length_dist_not        = new TH2D("h_length_dist_not", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
-  TH1D *h_escaping_dist_muon     = new TH1D("h_escaping_dist_muon","Distance of the neutrino vertex from the escaping fiducial border", 30, 0, 500);
-  TH1D *h_escaping_dist_not_muon = new TH1D("h_escaping_dist_not_muon","Distance of the neutrino vertex from the escaping fiducial border", 20, 0, 500);
+  TH1D *h_escaping_dist_muon     = new TH1D("h_escaping_dist_muon","Distance of the neutrino vertex from the escaping fiducial border", 100, 0, 500);
+  TH1D *h_escaping_dist_not_muon = new TH1D("h_escaping_dist_not_muon","Distance of the neutrino vertex from the escaping fiducial border", 100, 0, 500);
+  TH1D *h_exiting_plane_muon     = new TH1D("h_exiting_plane_muon","Plane from which the escaping muon leaves the detector", 6, 0, 6);
+  TH1D *h_exiting_plane_not      = new TH1D("h_exiting_plane_not","Plane from which the escaping particle leaves the detector", 6, 0, 6);
 
   // Tree for TMVA calculation
   bool signal;
@@ -158,9 +163,11 @@ int MainTest(){
   double escaping_track_length = -1.;
 
   for(const Event &e : events){
-    double total_energy = 0.;
+    // Define the escaping plane in the event
+    double total_energy        = 0.; 
+    int escaping_plane         = -1;
     bool longest_track_escapes = false;
-    bool muon_escapes = false;
+    bool muon_escapes          = false;
     // Only look at events with 1 escaping track
 
     if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
@@ -175,6 +182,7 @@ int MainTest(){
         PlaneList planes;
         EventSelectionTool::GetSBNDFiducialPlanes(planes);
         for(const Plane &plane : planes){
+          escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
           if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
           distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
           if(distance_to_intersection_point > 50){
@@ -186,7 +194,8 @@ int MainTest(){
     }
     if(contained_and_passes_distance_cut) {
       events_with_1_escaping_track_with_cut++;
-      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track_with_cut++;
+      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap()))
+        ccinc_with_1_escaping_track_with_cut++;
     }
 
     // Now plot some things
@@ -231,16 +240,18 @@ int MainTest(){
             if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_escapes++;
             if(contained_and_passes_distance_cut) {
               true_muon_distance_cut++; 
+              h_exiting_plane_muon->Fill(escaping_plane);
               if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_distance_cut++;
             }
           }
           else if(mcp.GetOneEndTrackContained()){
             h_length_not_muon->Fill(p.GetLength());
             escaping_track_length = p.GetLength();
+            if(contained_and_passes_distance_cut && (mcp.GetPdgCode() == 211 || mcp.GetPdgCode() == -211))
+              h_exiting_plane_not->Fill(escaping_plane);
           }
         }
       }
-
     }
     
     /*
@@ -305,9 +316,7 @@ int MainTest(){
       if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
         float distance_to_intersection_point = -std::numeric_limits<float>::max();
         // Loop over the fiducial planes and find out which the escaping particle passed through
-        unsigned int i = 0;
         for(const Plane &plane : planes){
-          i++;
           if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
           distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
           break;
@@ -360,6 +369,44 @@ int MainTest(){
   // Length vs dist 2D plot
   TCanvas *c = new TCanvas("c","",800,600);
 
+  h_exiting_plane_muon->SetFillColor(kSpring-3);
+  h_exiting_plane_muon->SetFillStyle(3001);
+  h_exiting_plane_muon->SetLineColor(kSpring-3);
+  h_exiting_plane_not->SetFillColor(kOrange+7);
+  h_exiting_plane_not->SetFillStyle(3001);
+  h_exiting_plane_not->SetLineColor(kOrange+7);
+  h_exiting_plane_muon->Scale(1./double(h_exiting_plane_muon->Integral()));
+  h_exiting_plane_not->Scale(1./double(h_exiting_plane_not->Integral()));
+
+  // Legend
+  TLegend *l      = new TLegend(0.58,0.68,0.88,0.88);
+  l->AddEntry(h_exiting_plane_muon,  "#mu exits",  "f");
+  l->AddEntry(h_exiting_plane_not,   "#pi exits",  "f");
+  l->SetLineWidth(0);
+  l->SetTextAlign(12);
+  l->SetTextFont(133);
+
+  // Max y
+  double max_exit = 1.1 * std::max(h_exiting_plane_muon->GetMaximum(), h_exiting_plane_not->GetMaximum());
+
+  h_exiting_plane_muon->SetStats(0);
+  h_exiting_plane_muon->GetXaxis()->SetTitle("Exiting plane");
+  h_exiting_plane_muon->GetYaxis()->SetTitle("Normalised event rate");
+  h_exiting_plane_muon->GetXaxis()->SetTitleFont(132);
+  h_exiting_plane_muon->GetXaxis()->SetLabelFont(132);
+  h_exiting_plane_muon->GetYaxis()->SetTitleFont(132);
+  h_exiting_plane_muon->GetYaxis()->SetLabelFont(132);
+  h_exiting_plane_muon->GetYaxis()->SetTitleOffset(1.2);
+  h_exiting_plane_muon->GetYaxis()->SetMaxDigits(3);
+  h_exiting_plane_muon->GetYaxis()->SetRangeUser(0, max_exit);
+  h_exiting_plane_not->Draw("hist");
+  h_exiting_plane_muon->Draw("hist same");
+  l->Draw("same");
+
+  c->SaveAs((feb_location+"exiting_plane.root").c_str());
+  c->Clear();
+
+
   h_length_dist_muon->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
   h_length_dist_muon->GetYaxis()->SetTitle("Length of the escaping track [cm]");
   h_length_dist_muon->Draw("colz");
@@ -381,12 +428,16 @@ int MainTest(){
   c->Clear();
 
   TLegend *leg = new TLegend(0.43,0.68,0.88,0.88);
-  leg->AddEntry(h_escaping_dist_muon, "The true muon escapes", "l");
-  leg->AddEntry(h_escaping_dist_not_muon, "The true muon doesn't escape", "l");
+  leg->AddEntry(h_escaping_dist_muon, "True #mu escapes", "f");
+  leg->AddEntry(h_escaping_dist_not_muon, "True #mu doesn't escape", "f");
   leg->SetLineWidth(0);
 
-  h_escaping_dist_muon->SetLineColor(2);
-  h_escaping_dist_not_muon->SetLineColor(4);
+  h_escaping_dist_muon->SetFillColor(kSpring-3);
+  h_escaping_dist_muon->SetFillStyle(3001);
+  h_escaping_dist_muon->SetLineColor(kSpring-3);
+  h_escaping_dist_not_muon->SetFillColor(kOrange+7);
+  h_escaping_dist_not_muon->SetFillStyle(3001);
+  h_escaping_dist_not_muon->SetLineColor(kOrange+7);
   
   double int_edist_mu = h_escaping_dist_muon->Integral();
   double int_edist_not_mu = h_escaping_dist_not_muon->Integral();
@@ -394,9 +445,17 @@ int MainTest(){
   h_escaping_dist_not_muon->Scale(1./int_edist_not_mu);
  
   double maxedistmu = 1.1*std::max(h_escaping_dist_muon->GetMaximum(), h_escaping_dist_not_muon->GetMaximum());
-  h_escaping_dist_muon->GetYaxis()->SetRangeUser(0,maxedistmu);
-  h_escaping_dist_not_muon->GetYaxis()->SetRangeUser(0,maxedistmu);
+
+  h_escaping_dist_muon->SetStats(0);
   h_escaping_dist_muon->GetXaxis()->SetTitle("Distance to escaping fiducial border [cm]");
+  h_escaping_dist_muon->GetYaxis()->SetTitle("Normalised event rate");
+  h_escaping_dist_muon->GetXaxis()->SetTitleFont(132);
+  h_escaping_dist_muon->GetXaxis()->SetLabelFont(132);
+  h_escaping_dist_muon->GetYaxis()->SetTitleFont(132);
+  h_escaping_dist_muon->GetYaxis()->SetLabelFont(132);
+  h_escaping_dist_muon->GetYaxis()->SetTitleOffset(1.2);
+  h_escaping_dist_muon->GetYaxis()->SetMaxDigits(3);
+  h_escaping_dist_muon->GetYaxis()->SetRangeUser(0, maxedistmu);
   h_escaping_dist_muon->Draw("hist");
   h_escaping_dist_not_muon->Draw("hist same");
   leg->Draw("same");

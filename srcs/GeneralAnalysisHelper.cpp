@@ -49,6 +49,14 @@ namespace selection{
     return signal_map_cc_0pi;
   } 
   //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC0Pi1PTopologyMap() {
+    TopologyMap signal_map_cc_0pi_1p;
+    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({13},1));
+    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({2212},1));
+    return signal_map_cc_0pi_1p;
+  } 
+  //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi2PTopologyMap() {
     TopologyMap signal_map_cc_0pi_2p;
     signal_map_cc_0pi_2p.insert(TopologyMap::value_type({13},1));

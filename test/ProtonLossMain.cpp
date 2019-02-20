@@ -34,7 +34,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/september2018/";
+  std::string plots = "../Output_Selection_Tool/plots/proton_loss/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -44,7 +44,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total = 500;
+  unsigned int total = 10;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total; ++i ){
@@ -208,24 +208,23 @@ int MainTest(){
    * Stack
    *
    */
-  TCanvas *c = new TCanvas();
-  TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
-  l->SetBorderSize(0);
-
-  /*
   int pal[5];
-  pal[0]  = kRed;
-  pal[1]  = kGreen + 2;
-  pal[2]  = kOrange + 7;
-  pal[3]  = kBlue;
-  pal[4]  = kMagenta + 1;
+  pal[0]  = kRed - 4;
+  pal[1]  = kSpring - 3;
+  pal[2]  = kViolet - 4;
+  pal[3]  = kCyan + 1;
+  pal[4]  = kOrange + 7;
   
-  gStyle->SetPalette( 12, pal );
-  gStyle->SetHatchesLineWidth( 1 );
-  gStyle->SetHatchesSpacing( 0.5 );
-  gStyle->SetTitleOffset(1.5, "Y");
-  gStyle->SetOptStat( 0 );
+  gStyle->SetPalette(5, pal);
+  gStyle->SetTitleOffset(1.2, "Y");
+  gStyle->SetTitleFont(132, "X");
+  gStyle->SetTitleFont(132, "Y");
+  gStyle->SetLabelFont(132, "X");
+  gStyle->SetLabelFont(132, "Y");
+  gStyle->SetOptStat(0);
   
+  TCanvas *c = new TCanvas("c","",800,600);
+  TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
   THStack *hsT = new THStack("hsT","pre-FSI");
 
   double norm = 0;
@@ -239,7 +238,6 @@ int MainTest(){
       signal[i]->SetFillColor(pal[i]);
       signal[i]->SetLineColor(pal[i]);
       signal[i]->Scale(1/norm);
-      hsT->Add(signal[i]);
     }
   }
   l->AddEntry(h_ccqe,  "CC QE",   "f");
@@ -247,27 +245,33 @@ int MainTest(){
   l->AddEntry(h_ccmec, "CC MEC",  "f");
   l->AddEntry(h_ccdis, "CC DIS",  "f");
   l->AddEntry(h_nc,    "NC",      "f");
-*/
+  l->SetLineWidth(0);
+  l->SetTextAlign(22);
+  l->SetTextFont(132);
+  
+  
   /*
    *
    * Draw
    *
    */
-  /*
+  for ( unsigned int i = 0; i < signal.size(); ++i )
+    hsT->Add(signal[i]);
+
   hsT->Draw("hist");
+  l->Draw("same");
   const char *x_label = "Proton multiplicity";
   const char *y_label = "Normalised event rate";
   hsT->GetXaxis()->SetTitle(x_label);   
   hsT->GetYaxis()->SetTitle(y_label);   
-  //c->Modified(); 
   
-  l->Draw();
   c->SaveAs((plots+"multiplicity_pre_fsi.png").c_str());
   c->SaveAs((plots+"multiplicity_pre_fsi.root").c_str());
 
   l->Clear();
   c->Clear();
-*/  
+  
+  
   gStyle->SetPalette(55);
   gStyle->SetNumberContours(250);
 
