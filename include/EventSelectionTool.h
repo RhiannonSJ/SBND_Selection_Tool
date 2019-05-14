@@ -34,14 +34,25 @@ namespace selection{
       typedef std::vector<Shower>              ShowerList;
       
       /**
+       * @brief get the pot corresponding to each individual file
+       *
+       * @param  subrun tree with the some of the subrun information from larsoft
+       *
+       * @return pot from the current file
+       *
+       */
+      static double GetPOT(TTree *subrun);
+
+      /**
        * @brief  load the list of events to analyse from the root file
        *
        * @param  file_name name of the root file to access
        * @param  event_list vector of events to fill
        * @param  file number of the file of the current event
+       * @param  pot from the current file
        *
        */
-      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file);
+      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot);
 
       /**
        * @brief  Output the length of time left in the running
@@ -331,27 +342,29 @@ namespace selection{
            * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
            *
            */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained);
+          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained, const std::vector<float> &dedx, const std::vector<float> &residual_range);
 
           // Member variables
-          int      m_mc_id_charge;      ///< mc TrackID corresponding to MCParticle using charge
-          int      m_mc_id_energy;      ///< mc TrackID corresponding to MCParticle using energy
-          int      m_mc_id_hits;        ///< mc TrackID corresponding to MCParticle using hits
-          int      m_n_hits;            ///< number of hits in the track
-          float    m_pida;              ///< pida value
-          float    m_chi2_mu;           ///< chi squared fit to the muon expected dEdx
-          float    m_chi2_pi;           ///< chi squared fit to the pion expected dEdx
-          float    m_chi2_pr;           ///< chi squared fit to the proton expected dEdx 
-          float    m_chi2_ka;           ///< chi squared fit to the kaon expected dEdx
-          float    m_length;            ///< length of the track
-          float    m_kinetic_energy;    ///< kinetic energy of the track
-          float    m_mcs_mom_muon;      ///< multiple coulomb scattering momentum is the particle is an escaping muon
-          float    m_range_mom_muon;    ///< range momentum if the particle is a contained muon 
-          float    m_range_mom_proton;  ///< range momentum if the particle is a contained proton
-          TVector3 m_vertex;            ///< vertex of the track         
-          TVector3 m_end;               ///< end of the track
-          bool     m_contained;         ///< whether or not the reconstructed track is contained
-          bool     m_one_end_contained; ///< whether or not the reconstructed track has one contained end
+          int      m_mc_id_charge;             ///< mc TrackID corresponding to MCParticle using charge
+          int      m_mc_id_energy;             ///< mc TrackID corresponding to MCParticle using energy
+          int      m_mc_id_hits;               ///< mc TrackID corresponding to MCParticle using hits
+          int      m_n_hits;                   ///< number of hits in the track
+          float    m_pida;                     ///< pida value
+          float    m_chi2_mu;                  ///< chi squared fit to the muon expected dEdx
+          float    m_chi2_pi;                  ///< chi squared fit to the pion expected dEdx
+          float    m_chi2_pr;                  ///< chi squared fit to the proton expected dEdx 
+          float    m_chi2_ka;                  ///< chi squared fit to the kaon expected dEdx
+          float    m_length;                   ///< length of the track
+          float    m_kinetic_energy;           ///< kinetic energy of the track
+          float    m_mcs_mom_muon;             ///< multiple coulomb scattering momentum is the particle is an escaping muon
+          float    m_range_mom_muon;           ///< range momentum if the particle is a contained muon 
+          float    m_range_mom_proton;         ///< range momentum if the particle is a contained proton
+          TVector3 m_vertex;                   ///< vertex of the track         
+          TVector3 m_end;                      ///< end of the track
+          bool     m_contained;                ///< whether or not the reconstructed track is contained
+          bool     m_one_end_contained;        ///< whether or not the reconstructed track has one contained end
+          std::vector<float> m_dedx;           ///< vector of the dedx distribution of the reconstructed track
+          std::vector<float> m_residual_range; ///< vector of the residual range distribution of the track
       
       }; // Track
       

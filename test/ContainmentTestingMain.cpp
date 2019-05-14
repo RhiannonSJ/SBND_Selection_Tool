@@ -26,6 +26,8 @@
 
 using namespace selection;
 
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+
 int MainTest(){
   
   time_t rawtime;
@@ -37,9 +39,9 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/cosmics/";
-  std::string plots_location = "../Output_Selection_Tool/plots/cosmics/escaping_track/";
-  std::string feb_location   = "../Output_Selection_Tool/plots/cosmics/vertices/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/";
+  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/escaping_track/";
+  std::string feb_location   = "../Output_Selection_Tool/plots/mcp0_9/vertices/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -56,25 +58,31 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 95;
+  unsigned int total_files = 991;
+  double pot = 0.; 
 
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total_files; ++i ){
-    if(i == 61) continue;
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    name = "/home/rhiannon/Samples/LocalSamples/analysis/190219_ana_cosmic_overlay/ana/16332687_"+std::to_string(i)+"/output_file.root";
-    //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
+  std::vector<int> exceptions;
+  exceptions.clear();
 
-    EventSelectionTool::LoadEventList(file_name, events, i);
-    EventSelectionTool::GetTimeLeft(start,total_files,i);
+  // Read in txt file of list of empty input directories
+  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
+  std::string s_exc;
+  while (std::getline(exception_file, s_exc)) {
+    int i_exc;
+    std::istringstream ss_exc(s_exc);
+    ss_exc >> i_exc;
+    exceptions.push_back(i_exc); 
+    ss_exc.str(std::string());
+    s_exc.clear();
   }
+
+  std::cout << " Skipping files ending in : " << std::endl;
+  for(const int & ex : exceptions)
+    std::cout << " - " << ex << " - ";
   std::cout << std::endl;
- 
+
+  LoadAllEvents(events, total_files, start, pot, exceptions);
+
   /*
    *
    *      TESTING
@@ -677,3 +685,29 @@ int MainTest(){
   return 0;
 
 } // MainTest()
+
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
+  double total_pot = 0;
+  std::vector<int>::iterator it;
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total_files; ++i ){
+    it = std::find(exceptions.begin(), exceptions.end(),i);
+    if(it != exceptions.end()) continue;
+    // Get the filenames
+    std::string name;
+    name.clear();
+    char file_name[1024];
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
+      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    strcpy( file_name, name.c_str() );
+
+    double temp_pot = 0.;
+    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
+    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
+    total_pot += temp_pot;
+  }
+  std::cout << std::endl;
+  pot = total_pot;
+} // LoadAllEvents

@@ -30,8 +30,8 @@ int MainTest(){
   std::cout << endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/";
-  std::string plots_location  = "../Output_Selection_Tool/plots/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/";
+  std::string plots_location  = "../Output_Selection_Tool/plots/mcp0_9";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -47,7 +47,7 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total = 500;
+  unsigned int total = 991;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total; ++i ){
@@ -58,7 +58,8 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 

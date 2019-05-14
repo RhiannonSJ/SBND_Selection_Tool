@@ -37,10 +37,12 @@ namespace selection{
        * @param  is_cc is this a charged or neutral current event
        * @param  mc_vertex Monte Carlo neutrino vertex 
        * @param  reco_vertex reconstructed neutrino vertex
+       * @param  neutrino_energy energy of the neutrino
+       * @param  neutrino_qsqr qsqr of the neutrino
        * @param  file the file number the event was from
        * @param  id the id of the event
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id);
+      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -180,6 +182,11 @@ namespace selection{
       float GetTrueNuEnergy() const;
       
       /**
+       * @brief  Get the true neutrino qsqr
+       */
+      float GetTrueNuQ2() const;
+      
+      /**
        * @brief  Get the most energetic reconstructed particle
        *
        * @return Particle most energetic reco
@@ -261,6 +268,7 @@ namespace selection{
       TVector3           m_reco_vertex;        ///< reconstructed neutrino vertex
       TVector3           m_mc_vertex;          ///< reconstructed neutrino vertex
       float              m_neutrino_energy;    ///< true neutrino energy
+      float              m_neutrino_qsqr;      ///< true neutrino qsqr
       int                m_file;               ///< file id
       int                m_id;                 ///< event id
       float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector

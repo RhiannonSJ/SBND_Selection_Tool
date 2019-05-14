@@ -44,7 +44,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 95;
+  unsigned int total_files = 991;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -58,7 +58,8 @@ int MainTest(){
     char file_name[1024];
    // name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    name = "/home/rhiannon/Samples/LocalSamples/analysis/190219_ana_cosmic_overlay/ana/16332687_"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/190219_ana_cosmic_overlay/ana/16332687_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);

@@ -119,7 +119,7 @@ int MainTest(){
   unsigned int tru_outside_numu_cc_1pi       = 0;
 
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 50;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -129,7 +129,8 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 

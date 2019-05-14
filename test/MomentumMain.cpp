@@ -37,7 +37,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots_location = "../Output_Selection_Tool/plots/";
+  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -47,9 +47,10 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   TopologyMap cc0pi_map = GeneralAnalysisHelper::GetCC0PiTopologyMap();
+  TopologyMap ccinc_map = GeneralAnalysisHelper::GetCCIncTopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 991;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -57,7 +58,8 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
     //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
@@ -66,20 +68,27 @@ int MainTest(){
   }
   std::cout << std::endl;
  
-  TH1D *h_momentum_muon = new TH1D("h_momentum_muon","Selected muon momentum", 100,0,2);
+  TH2D *h_muon_momentum_angle_ccinc = new TH2D("h_muon_momentum_angle_ccinc","Selected muon momentum vs. angle", 40,0,2, 50, -1, 1);
+  TH2D *h_muon_momentum_angle_cc0pi = new TH2D("h_muon_momentum_angle_cc0pi","Selected muon momentum vs. angle", 40,0,2, 50, -1, 1);
   
   for(const Event &e : events){
     //Counter for event-based track counting
     if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e) || !e.IsSBNDTrueFiducial()) continue;
+    if(e.CheckRecoTopology(ccinc_map)){
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(p.GetPdgCode() == 13){
+          h_muon_momentum_angle_ccinc->Fill(p.GetModulusMomentum(),p.GetCosTheta());
+        } 
+      }
+    }
     if(e.CheckRecoTopology(cc0pi_map)){
       for(const Particle &p : e.GetRecoParticleList()){
         if(p.GetPdgCode() == 13){
-          h_momentum_muon->Fill(p.GetModulusMomentum());
+          h_muon_momentum_angle_cc0pi->Fill(p.GetModulusMomentum(),p.GetCosTheta());
         } 
       }
     }
   }
-  std::cout << " Number of events : " << h_momentum_muon->Integral() << std::endl;
 
   /*
    *
@@ -89,13 +98,26 @@ int MainTest(){
   // Length vs dist 2D plot
   TCanvas *c = new TCanvas("c","",800,600);
 
-  h_momentum_muon->GetXaxis()->SetTitle("Muon momentum [GeV/c]");
-  h_momentum_muon->GetYaxis()->SetTitle("Events");
-  h_momentum_muon->SetStats(0);
-  h_momentum_muon->Draw();
+  gStyle->SetPalette(57);
+  h_muon_momentum_angle_ccinc->SetContour(250);
+  h_muon_momentum_angle_ccinc->GetXaxis()->SetTitle("Muon momentum [GeV/c]");
+  h_muon_momentum_angle_ccinc->GetYaxis()->SetTitle("cos(#theta)");
+  h_muon_momentum_angle_ccinc->SetStats(0);
+  h_muon_momentum_angle_ccinc->Draw("colz");
 
-  c->SaveAs((plots_location+"momentum_muon.png").c_str());
-  c->SaveAs((plots_location+"momentum_muon.root").c_str());
+  c->SaveAs((plots_location+"muon_momentum_angle_ccinc.png").c_str());
+  c->SaveAs((plots_location+"muon_momentum_angle_ccinc.root").c_str());
+
+  c->Clear();
+  
+  h_muon_momentum_angle_cc0pi->SetContour(250);
+  h_muon_momentum_angle_cc0pi->GetXaxis()->SetTitle("Muon momentum [GeV/c]");
+  h_muon_momentum_angle_cc0pi->GetYaxis()->SetTitle("cos(#theta)");
+  h_muon_momentum_angle_cc0pi->SetStats(0);
+  h_muon_momentum_angle_cc0pi->Draw("colz");
+
+  c->SaveAs((plots_location+"muon_momentum_angle_cc0pi.png").c_str());
+  c->SaveAs((plots_location+"muon_momentum_angle_cc0pi.root").c_str());
 
   c->Clear();
   

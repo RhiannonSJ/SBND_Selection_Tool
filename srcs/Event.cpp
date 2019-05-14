@@ -2,7 +2,7 @@
 #include "../include/EventSelectionTool.h"
 namespace selection{
   
-  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id) :
+  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id) :
     m_mc_particles(mc_particles),
     m_reco_particles(reco_particles),
     m_interaction(interaction),
@@ -14,6 +14,7 @@ namespace selection{
     m_mc_vertex(mc_vertex),
     m_reco_vertex(reco_vertex), 
     m_neutrino_energy(neutrino_energy),
+    m_neutrino_qsqr(neutrino_qsqr),
     m_file(file),
     m_id(id) {
     
@@ -249,6 +250,11 @@ namespace selection{
   float Event::GetTrueNuEnergy() const{
   
     return m_neutrino_energy;
+
+  }
+  float Event::GetTrueNuQ2() const{
+  
+    return m_neutrino_qsqr;
 
   }
   

@@ -37,12 +37,13 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi) :
+  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi, const std::vector<float> &dedx, const std::vector<float> &residual_range) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
     m_pdg(pdg),
     m_n_hits(n_hits),
+    m_kinetic_energy(kinetic_energy),
     m_mcs_mom_muon(mcs_momentum_muon),
     m_range_mom_muon(range_momentum_muon),
     m_range_mom_proton(range_momentum_proton),
@@ -53,10 +54,15 @@ namespace selection{
     m_end(end),
     m_chi2p(chi2p),
     m_chi2mu(chi2mu),
-    m_chi2pi(chi2pi) {
+    m_chi2pi(chi2pi),
+    m_dedx(dedx),
+    m_residual_range(residual_range){
       // Set member variables
-      m_mass            = this->GetMassFromPdg(pdg);
-      m_energy          = m_mass + kinetic_energy/1000.;
+      m_mass   = this->GetMassFromPdg(pdg);
+      m_energy = m_mass + (kinetic_energy/1000.);
+      /*for(unsigned int i = 0; i < dedx.size(); ++i){
+        m_energy          = (m_dedx[i] * (1./residual_range[i]) /1000.);
+      }*/
       
       // Get the magnitude of the momentum
       double momentum_magnitude = sqrt(pow(m_energy,2) - pow(m_mass,2));
@@ -79,15 +85,16 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
 
-  Particle::Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end) :
+  Particle::Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end, const float &energy) :
     m_pdg(pdg),
     m_n_hits(n_hits),
     m_mass(this->GetMassFromPdg(pdg)),
-    m_has_calorimetry(false),
+    m_has_calorimetry(true),
     m_from_reco_track(false),
     m_vertex(vertex),
-    m_end(end){
-      m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
+    m_end(end),
+    m_energy(energy){
+    m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
       
       // Co-ordinate offset in cm
       m_sbnd_length_x = 400;
@@ -115,6 +122,10 @@ namespace selection{
         return 0.1349766;
       case 13:
         return 0.1056583;
+      case 11:
+        return 0.0005489;
+      case 22:
+        return 0.0;
       case 2212:
         return 0.9382720;
       case 321:
@@ -158,7 +169,7 @@ namespace selection{
   
   float Particle::GetKineticEnergy() const{
     if(!m_has_calorimetry) throw 1;
-    return m_energy-m_mass;
+      return m_energy-m_mass;
   }
 
   //------------------------------------------------------------------------------------------ 
