@@ -95,13 +95,10 @@ int MainTest(){
   t_run->Branch("true_topology", &true_topology, "true_topology/I");
   t_run->Branch("reco_topology", &reco_topology, "reco_topology/I");
 
-  t_subrun->Branch("pot",   &pot,      "pot/D");
+  t_subrun->Branch("pot",        &pot,           "pot/D");
   
-  //t_run->SetDirectory(0);
-  //t_subrun->SetDirectory(0);
-
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 20;
+  unsigned int total_files = 10;
   std::vector<int> exceptions;
   exceptions.clear();
 
@@ -123,9 +120,7 @@ int MainTest(){
   std::cout << std::endl;
 
   LoadAllEvents(events, total_files, start, pot, exceptions);
-  t_subrun->Fill();
-  // Print the total pot from all the samples
-  std::cout << " Total POT in the samples is: " << pot << std::endl;
+  
 
   // Counter to quantify how many events have strange particle energies in them
   int bad_events = 0;
@@ -172,6 +167,10 @@ int MainTest(){
             } 
             enu_reco += p.GetKineticEnergy();
           }
+          if(e.CheckRecoTopology(cc0pi)){
+            std::cout << " Scatter code : " << e.GetPhysicalProcess() << std::endl;
+            std::cin.get();
+          }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
             if(p.GetPdgCode() ==  211) npip++;
@@ -204,9 +203,13 @@ int MainTest(){
     } // Fiducial
   } // Events
   std::cout << " Total events with particles with bad energy : " << bad_events << std::endl;
+  
+  // Print the total pot from all the samples
+  std::cout << " Total POT in the samples is: " << pot << std::endl;
+  t_subrun->Fill();
 
   // Output TFile
-  TFile f((file_location+"ccinc_selection.root").c_str(), "RECREATE");
+  TFile f((file_location+"test_ccinc_selection.root").c_str(), "RECREATE");
 
   t_run->Write();
   t_subrun->Write();

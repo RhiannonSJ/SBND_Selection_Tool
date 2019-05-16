@@ -39,9 +39,9 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/";
-  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/escaping_track/";
-  std::string feb_location   = "../Output_Selection_Tool/plots/mcp0_9/vertices/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/test/";
+  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/escaping_track/test/";
+  std::string feb_location   = "../Output_Selection_Tool/plots/mcp0_9/vertices/test/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -481,8 +481,10 @@ int MainTest(){
   h_closest_muon->SetLineColor(2);
   h_closest_not_muon->SetLineColor(4);
 
-  double int_dist_mu = h_closest_muon->Integral();
+  double int_dist_mu     = h_closest_muon->Integral();
   double int_dist_not_mu = h_closest_not_muon->Integral();
+  TH1D *h_closest_muon_no_norm     = (TH1D*)h_closest_muon->Clone("h_closest_muon_no_norm");
+  TH1D *h_closest_not_muon_no_norm = (TH1D*)h_closest_not_muon->Clone("h_closest_not_muon_no_norm");
   h_closest_muon->Scale(1./int_dist_mu);
   h_closest_not_muon->Scale(1./int_dist_not_mu);
  
@@ -497,6 +499,32 @@ int MainTest(){
 
   c->SaveAs((plots_location+"closest_fid_distance_of_escaping_muon.png").c_str());
   c->SaveAs((plots_location+"closest_fid_distance_of_escaping_muon.root").c_str());
+
+  leg->Clear();
+  c->Clear();
+  
+  leg->AddEntry(h_closest_muon_no_norm, "The true muon escapes", "l");
+  leg->AddEntry(h_closest_not_muon_no_norm, "The true muon doesn't escape", "l");
+  
+  h_closest_muon_no_norm->SetLineColor(2);
+  h_closest_not_muon_no_norm->SetLineColor(4);
+
+  double int_dist = h_closest_muon_no_norm->Integral() + h_closest_not_muon_no_norm->Integral();
+
+  h_closest_muon_no_norm->Scale(1./int_dist);
+  h_closest_not_muon_no_norm->Scale(1./int_dist);
+ 
+  double maxdistmunonorm = 1.1*std::max(h_closest_muon_no_norm->GetMaximum(), h_closest_not_muon_no_norm->GetMaximum());
+  h_closest_muon_no_norm->GetYaxis()->SetRangeUser(0,maxdistmunonorm);
+  h_closest_not_muon_no_norm->GetYaxis()->SetRangeUser(0,maxdistmunonorm);
+  h_closest_muon_no_norm->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
+  h_closest_muon_no_norm->Draw("hist");
+  h_closest_not_muon_no_norm->Draw("hist same");
+  leg->Draw("same");
+  h_closest_muon_no_norm->SetStats(0);
+
+  c->SaveAs((plots_location+"closest_fid_distance_of_escaping_muon_ratio.png").c_str());
+  c->SaveAs((plots_location+"closest_fid_distance_of_escaping_muon_ratio.root").c_str());
 
   leg->Clear();
   c->Clear();
