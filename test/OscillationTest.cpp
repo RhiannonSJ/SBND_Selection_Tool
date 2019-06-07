@@ -114,7 +114,7 @@ int MainTest(){
     s_exc.clear();
   }
 
-  std::cout << " Skipping files ending in : " << std::endl;
+  std::cout << " Skipping files in directory : " << std::endl;
   for(const int & ex : exceptions)
     std::cout << " - " << ex << " - ";
   std::cout << std::endl;
@@ -166,10 +166,6 @@ int MainTest(){
               mu_cos_z    = p.GetCosTheta();
             } 
             enu_reco += p.GetKineticEnergy();
-          }
-          if(e.CheckRecoTopology(cc0pi)){
-            std::cout << " Scatter code : " << e.GetPhysicalProcess() << std::endl;
-            std::cin.get();
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
