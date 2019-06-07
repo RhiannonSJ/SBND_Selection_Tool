@@ -27,7 +27,7 @@
 
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions);
 
 int MainTest(){
   
@@ -98,25 +98,29 @@ int MainTest(){
   t_subrun->Branch("pot",        &pot,           "pot/D");
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 10;
-  std::vector<int> exceptions;
+  unsigned int total_files = 991;
+  std::vector<unsigned int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
   std::fstream exception_file("exceptions.txt");
+  if(!exception_file)
+    std::cout << " File not open! " << std::endl;
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
-    int i_exc;
+    unsigned int i_exc;
     std::istringstream ss_exc(s_exc);
     ss_exc >> i_exc;
-    exceptions.push_back(i_exc); 
+    exceptions.push_back(i_exc);
     ss_exc.str(std::string());
     s_exc.clear();
   }
 
-  std::cout << " Skipping files ending in : " << std::endl;
-  for(const int & ex : exceptions)
-    std::cout << " - " << ex << " - ";
+  std::cout << " Skipping files in directory : " << std::endl;
+  for(const unsigned int & ex : exceptions){
+    if(ex < total_files)
+      std::cout << " - " << ex << " - ";
+  }
   std::cout << std::endl;
 
   LoadAllEvents(events, total_files, start, pot, exceptions);
@@ -165,11 +169,7 @@ int MainTest(){
               mu_momentum = p.GetModulusMomentum();
               mu_cos_z    = p.GetCosTheta();
             } 
-            enu_reco += p.GetKineticEnergy();
-          }
-          if(e.CheckRecoTopology(cc0pi)){
-            std::cout << " Scatter code : " << e.GetPhysicalProcess() << std::endl;
-            std::cin.get();
+            enu_reco += (p.GetKineticEnergy() + p.GetMass());
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
@@ -237,9 +237,9 @@ int MainTest(){
 
 } // MainTest
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions) {
   double total_pot = 0;
-  std::vector<int>::iterator it;
+  std::vector<unsigned int>::iterator it;
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
     it = std::find(exceptions.begin(), exceptions.end(),i);
@@ -249,7 +249,7 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+      name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
