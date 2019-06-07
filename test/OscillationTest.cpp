@@ -117,10 +117,8 @@ int MainTest(){
   }
 
   std::cout << " Skipping files in directory : " << std::endl;
-  for(const unsigned int & ex : exceptions){
-    if(ex < total_files)
-      std::cout << " - " << ex << " - ";
-  }
+  for(const int & ex : exceptions)
+    std::cout << " - " << ex << " - ";
   std::cout << std::endl;
 
   LoadAllEvents(events, total_files, start, pot, exceptions);
