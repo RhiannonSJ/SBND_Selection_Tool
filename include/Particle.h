@@ -251,9 +251,13 @@ namespace selection{
       TVector3 m_vertex;                   ///< particle start position
       TVector3 m_end;                      ///< particle end position
       TVector3 m_momentum;                 ///< particle momentum
-      float    m_sbnd_border_x;            ///< fiducial border in x for the sbnd detector
+      float    m_sbnd_border_x_min1;       ///< fiducial border in x for the sbnd detector
+      float    m_sbnd_border_x_min2;       ///< fiducial border in x for the sbnd detector
+      float    m_sbnd_border_x_max1;       ///< fiducial border in x for the sbnd detector
+      float    m_sbnd_border_x_max2;       ///< fiducial border in x for the sbnd detector
       float    m_sbnd_border_y;            ///< fiducial border in y for the sbnd detector
-      float    m_sbnd_border_z;            ///< fiducial border in z for the sbnd detector
+      float    m_sbnd_border_z_min;        ///< fiducial border in z for the sbnd detector
+      float    m_sbnd_border_z_max;        ///< fiducial border in z for the sbnd detector
       float    m_sbnd_offset_x;            ///< offset in x for the sbnd detector
       float    m_sbnd_offset_y;            ///< offset in y for the sbnd detector
       float    m_sbnd_offset_z;            ///< offset in z for the sbnd detector

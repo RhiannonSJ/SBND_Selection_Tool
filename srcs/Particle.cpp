@@ -29,9 +29,13 @@ namespace selection{
       m_sbnd_offset_y = 200;
       m_sbnd_offset_z = 0;
 
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
+      m_sbnd_border_x_min1 = 8.25;
+      m_sbnd_border_x_max1 = 5.6;
+      m_sbnd_border_x_min2 = 10.9;
+      m_sbnd_border_x_max2 = 8.25;
+      m_sbnd_border_y      = 15.;
+      m_sbnd_border_z_min  = 15.;
+      m_sbnd_border_z_max  = 85.;
 
   }
 
@@ -77,9 +81,13 @@ namespace selection{
       m_sbnd_offset_y = 200;
       m_sbnd_offset_z = 0;
 
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
+      m_sbnd_border_x_min1 = 8.25;
+      m_sbnd_border_x_max1 = 5.6;
+      m_sbnd_border_x_min2 = 10.9;
+      m_sbnd_border_x_max2 = 8.25;
+      m_sbnd_border_y      = 15.;
+      m_sbnd_border_z_min  = 15.;
+      m_sbnd_border_z_max  = 85.;
 
     }
 
@@ -105,9 +113,13 @@ namespace selection{
       m_sbnd_offset_y = 200;
       m_sbnd_offset_z = 0;
 
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
+      m_sbnd_border_x_min1 = 8.25;
+      m_sbnd_border_x_max1 = 5.6;
+      m_sbnd_border_x_min2 = 10.9;
+      m_sbnd_border_x_max2 = 8.25;
+      m_sbnd_border_y      = 15.;
+      m_sbnd_border_z_min  = 15.;
+      m_sbnd_border_z_max  = 85.;
 
     }
 
@@ -146,7 +158,7 @@ namespace selection{
     if(m_has_calorimetry && !m_from_reco_track){
       return m_status;
     }
-    std::cout << "GetStatusCode" << std::endl;
+    std::cerr << "GetStatusCode" << std::endl;
     throw 5;
   }
       
@@ -161,35 +173,50 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetEnergy() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     return m_energy;
   }
 
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetKineticEnergy() const{
-    if(!m_has_calorimetry) throw 1;
-      return m_energy-m_mass;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
+    return m_energy-m_mass;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2P() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2p;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2Mu() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2mu;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2Pi() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2pi;
   }
 
@@ -217,7 +244,10 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Particle::GetMomentum() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     if(!m_from_reco_track) return m_momentum;
     if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
       return this->Particle::GetMCSMomentumMuon();
@@ -232,7 +262,10 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetModulusMomentum() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     if(!m_from_reco_track) return m_momentum.Mag();
     if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
       return m_mcs_mom_muon;
@@ -267,10 +300,8 @@ namespace selection{
   int Particle::GetMCId() const{ 
     if(m_has_calorimetry && !m_from_reco_track){
       return m_mc_id;
-    }
-    
+    } 
     std::cout << "GetMCId" << std::endl;
-
     throw 5;
   }
 

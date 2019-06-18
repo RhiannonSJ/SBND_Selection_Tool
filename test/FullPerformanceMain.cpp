@@ -36,7 +36,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -46,14 +46,14 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 991;
+  unsigned int total_files = 5;
   double pot = 0.; 
 
   std::vector<int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
+  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
     int i_exc;
@@ -169,11 +169,11 @@ int MainTest(){
   for(const Event &e : events){
  
     // Check the true vertex is in the fiducial volume
-    if(e.IsSBNDTrueFiducial()){
+    if(e.IsSBNDTrueFiducial() && e.IsSBNDRecoFiducial()){
 //      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
       if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
       max_one_escaping_track++;
-  
+ 
       if(e.CheckRecoTopology(maps[0])){
         if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
@@ -282,7 +282,7 @@ int MainTest(){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"topology_breakdown.txt");
+  file.open(stats_location+"full_breakdown_reco_truth_topologies.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
@@ -344,7 +344,9 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );

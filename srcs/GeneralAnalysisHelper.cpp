@@ -216,7 +216,7 @@ namespace selection{
     for(const Particle &p : particle_list) {
       if(p.GetMCId() == id) return p;
     }
-    std::cout << "GetMCParticle" << std::endl;
+    std::cerr << "GetMCParticle" << std::endl;
     throw 8;
   }
   
@@ -239,7 +239,7 @@ namespace selection{
     else if(GeneralAnalysisHelper::ParticleHasAMatch(e, particle) == 2){
       return GeneralAnalysisHelper::GetMCParticleEnergy(e, particle);
     }
-    std::cout << "GetBestMCParticle" << std::endl;
+    std::cerr << "GetBestMCParticle" << std::endl;
     throw 9;
   }
   

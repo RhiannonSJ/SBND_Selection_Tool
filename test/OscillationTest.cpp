@@ -40,7 +40,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string file_location  = "../Output_Selection_Tool/files/";
+  std::string file_location  = "../Output_Selection_Tool/files/newfiducial/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -98,12 +98,12 @@ int MainTest(){
   t_subrun->Branch("pot",        &pot,           "pot/D");
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 10;
+  unsigned int total_files = 991;
   std::vector<int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("exceptions.txt");
+  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
     int i_exc;
@@ -130,6 +130,7 @@ int MainTest(){
     bool bad_event = false;
 
     // TPC track criteria
+    if(!e.IsSBNDRecoFiducial()) continue;
     if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
     iscc     = e.GetIsCC();
     isnc     = !e.GetIsCC();
@@ -155,7 +156,7 @@ int MainTest(){
         if(!bad_event){
           for(const Particle &p : reco){
             if(p.GetKineticEnergy() <= 0.) continue;
-            if(p.GetKineticEnergy() > 10.) {
+            if(p.GetKineticEnergy() > 10) { // Higher than 10 GeV
               bad_event = true;
               bad_events++;
               std::cerr << " Badly defined energy of the particle, skipping event " << std::endl;
@@ -165,7 +166,9 @@ int MainTest(){
               mu_momentum = p.GetModulusMomentum();
               mu_cos_z    = p.GetCosTheta();
             } 
-            enu_reco += p.GetKineticEnergy();
+            // Calculate the reconstructed energy from the reco kinetic (visible) + the true particle mass (cheating)
+            double mass = GeneralAnalysisHelper::GetBestMCParticle(e,p).GetMass();
+            enu_reco += (p.GetKineticEnergy() + mass);
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
@@ -205,7 +208,7 @@ int MainTest(){
   t_subrun->Fill();
 
   // Output TFile
-  TFile f((file_location+"test_ccinc_selection.root").c_str(), "RECREATE");
+  TFile f((file_location+"ccinc_selection.root").c_str(), "RECREATE");
 
   t_run->Write();
   t_subrun->Write();
@@ -245,7 +248,8 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );

@@ -39,9 +39,9 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/test/";
-  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/escaping_track/test/";
-  std::string feb_location   = "../Output_Selection_Tool/plots/mcp0_9/vertices/test/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
+  std::string plots_location = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/escaping_track/";
+  std::string feb_location   = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/vertices/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -65,7 +65,7 @@ int MainTest(){
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
+  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
     int i_exc;
@@ -96,6 +96,7 @@ int MainTest(){
 
   for(const Event &e : events){
     //Counter for event-based track counting
+    if(!e.IsSBNDRecoFiducial()) continue;
     if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
       too_many_escape++;
       if(e.IsSBNDTrueFiducial()) too_many_true_contained++;
@@ -178,6 +179,7 @@ int MainTest(){
     bool muon_escapes          = false;
     // Only look at events with 1 escaping track
 
+    if(!e.IsSBNDRecoFiducial()) continue;
     if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     events_with_1_escaping_track++;
     if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
@@ -725,9 +727,10 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     std::string name;
     name.clear();
     char file_name[1024];
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 

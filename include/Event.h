@@ -157,6 +157,12 @@ namespace selection{
       bool IsSBNDTrueFiducial() const;
       
       /**
+       * @brief  Get whether the reco neutrino interaction happened within the SBND fiducial 
+       *         volume
+       */
+      bool IsSBNDRecoFiducial() const;
+
+      /**
        * @brief  Get whether all the reconstructed tracks in an event are contained
        */
       bool AllRecoContained() const;
@@ -208,6 +214,13 @@ namespace selection{
       TVector3 GetMinimumFiducialDimensions() const;
 
       /**
+       * @brief  Get the central x border of the SBND fiducial volume
+       *
+       * @return pair of the central x border positions
+       */
+      std::pair<float,float> GetCentralFiducialDimensions() const;
+
+      /**
        * @brief  Get the maximum x,y,z positions of the SBND fiducial volume
        *
        * @return Vector of highest x,y,z positions
@@ -257,29 +270,33 @@ namespace selection{
       Particle GetMostEnergeticParticle(const ParticleList &particle_list) const;
 
       // Member variables
-      ParticleList       m_mc_particles;       ///< vector of Monte Carlo particles
-      ParticleList       m_reco_particles;     ///< vector of reconstructed particles
-      unsigned int       m_interaction;        ///< interaction type of the event
-      unsigned int       m_scatter;            ///< scatter code for the event: physical process
-      int                m_nu_pdg;             ///< Neutrino pdg code of the event
-      unsigned int       m_charged_pi;         ///< Number of charged pions in the event
-      unsigned int       m_neutral_pi;         ///< Number of neutral pions in the event
-      bool               m_is_cc;              ///< whether the event contains and CC or NC interaction
-      TVector3           m_reco_vertex;        ///< reconstructed neutrino vertex
-      TVector3           m_mc_vertex;          ///< reconstructed neutrino vertex
-      float              m_neutrino_energy;    ///< true neutrino energy
-      float              m_neutrino_qsqr;      ///< true neutrino qsqr
-      int                m_file;               ///< file id
-      int                m_id;                 ///< event id
-      float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector
-      float              m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
-      float              m_sbnd_border_z;      ///< fiducial border in z for the sbnd detector
-      float              m_sbnd_offset_x;      ///< offset in x for the sbnd detector
-      float              m_sbnd_offset_y;      ///< offset in y for the sbnd detector
-      float              m_sbnd_offset_z;      ///< offset in z for the sbnd detector
-      float              m_sbnd_half_length_x; ///< detector half length in x
-      float              m_sbnd_half_length_y; ///< detector half length in y
-      float              m_sbnd_half_length_z; ///< detector half length in z
+      ParticleList m_mc_particles;       ///< vector of Monte Carlo particles
+      ParticleList m_reco_particles;     ///< vector of reconstructed particles
+      unsigned int m_interaction;        ///< interaction type of the event
+      unsigned int m_scatter;            ///< scatter code for the event: physical process
+      int          m_nu_pdg;             ///< Neutrino pdg code of the event
+      unsigned int m_charged_pi;         ///< Number of charged pions in the event
+      unsigned int m_neutral_pi;         ///< Number of neutral pions in the event
+      bool         m_is_cc;              ///< whether the event contains and CC or NC interaction
+      TVector3     m_reco_vertex;        ///< reconstructed neutrino vertex
+      TVector3     m_mc_vertex;          ///< reconstructed neutrino vertex
+      float        m_neutrino_energy;    ///< true neutrino energy
+      float        m_neutrino_qsqr;      ///< true neutrino qsqr
+      int          m_file;               ///< file id
+      int          m_id;                 ///< event id
+      float        m_sbnd_border_x_min1; ///< fiducial border in x for the sbnd detector
+      float        m_sbnd_border_x_min2; ///< fiducial border in x for the sbnd detector
+      float        m_sbnd_border_x_max1; ///< fiducial border in x for the sbnd detector
+      float        m_sbnd_border_x_max2; ///< fiducial border in x for the sbnd detector
+      float        m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
+      float        m_sbnd_border_z_min;  ///< fiducial border in z for the sbnd detector
+      float        m_sbnd_border_z_max;  ///< fiducial border in z for the sbnd detector
+      float        m_sbnd_offset_x;      ///< offset in x for the sbnd detector
+      float        m_sbnd_offset_y;      ///< offset in y for the sbnd detector
+      float        m_sbnd_offset_z;      ///< offset in z for the sbnd detector
+      float        m_sbnd_half_length_x; ///< detector half length in x
+      float        m_sbnd_half_length_y; ///< detector half length in y
+      float        m_sbnd_half_length_z; ///< detector half length in z
                                                                                
 
   }; // Event

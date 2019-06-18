@@ -22,14 +22,16 @@ namespace selection{
       m_sbnd_half_length_x = 400;
       m_sbnd_half_length_y = 400;
       m_sbnd_half_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
+      m_sbnd_offset_x      = 200;
+      m_sbnd_offset_y      = 200;
+      m_sbnd_offset_z      = 0;
+      m_sbnd_border_x_min1 = 8.25;
+      m_sbnd_border_x_max1 = 5.6;
+      m_sbnd_border_x_min2 = 10.9;
+      m_sbnd_border_x_max2 = 8.25;
+      m_sbnd_border_y      = 15.;
+      m_sbnd_border_z_min  = 15.;
+      m_sbnd_border_z_max  = 85.;
 
     }
 
@@ -151,17 +153,24 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMinimumFiducialDimensions() const{
-    return TVector3((-m_sbnd_offset_x + m_sbnd_border_x), 
+    return TVector3((-m_sbnd_offset_x + m_sbnd_border_x_min1), 
                     (-m_sbnd_offset_y + m_sbnd_border_y), 
-                    (-m_sbnd_offset_z + m_sbnd_border_z));
+                    (-m_sbnd_offset_z + m_sbnd_border_z_min));
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  std::pair<float, float> Event::GetCentralFiducialDimensions() const{
+    std::pair<float, float> central(-m_sbnd_border_x_max1, m_sbnd_border_x_min2);
+    return central;
   }
 
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMaximumFiducialDimensions() const{
-    return TVector3((m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x), 
+    return TVector3((m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x_max2), 
                     (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y), 
-                    (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z));
+                    (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z_max));
   }
   
   //------------------------------------------------------------------------------------------ 
@@ -169,24 +178,57 @@ namespace selection{
   bool Event::IsSBNDTrueFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
-     float nu_vertex_x = m_mc_vertex[0];                        
-     float nu_vertex_y = m_mc_vertex[1];                        
-     float nu_vertex_z = m_mc_vertex[2];                
-     float min_fid_x = Event::GetMinimumFiducialDimensions()[0];
-     float min_fid_y = Event::GetMinimumFiducialDimensions()[1];
-     float min_fid_z = Event::GetMinimumFiducialDimensions()[2];
-     float max_fid_x = Event::GetMaximumFiducialDimensions()[0];
-     float max_fid_y = Event::GetMaximumFiducialDimensions()[1];
-     float max_fid_z = Event::GetMaximumFiducialDimensions()[2];
-                                                                                 
-     if (    (nu_vertex_x > max_fid_x)  
-          || (nu_vertex_x < min_fid_x)
-          || (nu_vertex_y > max_fid_y)
-          || (nu_vertex_y < min_fid_y)
-          || (nu_vertex_z > max_fid_z)
-          || (nu_vertex_z < min_fid_z)) return false;
+    std::pair<float,float> central_x(Event::GetCentralFiducialDimensions());
+    float nu_vertex_x   = m_mc_vertex[0];                        
+    float nu_vertex_y   = m_mc_vertex[1];                        
+    float nu_vertex_z   = m_mc_vertex[2];                
+    float min_fid_x     = Event::GetMinimumFiducialDimensions()[0];
+    float min_fid_y     = Event::GetMinimumFiducialDimensions()[1];
+    float min_fid_z     = Event::GetMinimumFiducialDimensions()[2];
+    float max_fid_x     = Event::GetMaximumFiducialDimensions()[0];
+    float max_fid_y     = Event::GetMaximumFiducialDimensions()[1];
+    float max_fid_z     = Event::GetMaximumFiducialDimensions()[2];
+    float central_x_min = central_x.first;
+    float central_x_max = central_x.second;
 
-     return true;
+    if (   (nu_vertex_x > max_fid_x)  
+        || (nu_vertex_x < min_fid_x)
+        || ((nu_vertex_x > central_x_min) && (nu_vertex_x < central_x_max))
+        || (nu_vertex_y > max_fid_y)
+        || (nu_vertex_y < min_fid_y)
+        || (nu_vertex_z > max_fid_z)
+        || (nu_vertex_z < min_fid_z)) return false;
+
+    return true;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  bool Event::IsSBNDRecoFiducial() const{
+       
+    // Check the neutrino interaction vertex is within the fiducial volume      
+    std::pair<float,float> central_x(Event::GetCentralFiducialDimensions());
+    float nu_vertex_x   = m_reco_vertex[0];                        
+    float nu_vertex_y   = m_reco_vertex[1];                        
+    float nu_vertex_z   = m_reco_vertex[2];                
+    float min_fid_x     = Event::GetMinimumFiducialDimensions()[0];
+    float min_fid_y     = Event::GetMinimumFiducialDimensions()[1];
+    float min_fid_z     = Event::GetMinimumFiducialDimensions()[2];
+    float max_fid_x     = Event::GetMaximumFiducialDimensions()[0];
+    float max_fid_y     = Event::GetMaximumFiducialDimensions()[1];
+    float max_fid_z     = Event::GetMaximumFiducialDimensions()[2];
+    float central_x_min = central_x.first;
+    float central_x_max = central_x.second;
+
+    if (   (nu_vertex_x > max_fid_x)  
+        || (nu_vertex_x < min_fid_x)
+        || ((nu_vertex_x > central_x_min) && (nu_vertex_x < central_x_max))
+        || (nu_vertex_y > max_fid_y)
+        || (nu_vertex_y < min_fid_y)
+        || (nu_vertex_z > max_fid_z)
+        || (nu_vertex_z < min_fid_z)) return false;
+
+    return true;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -262,7 +304,14 @@ namespace selection{
 
   unsigned int Event::CountParticlesWithPdg(const int pdg, const ParticleList &particle_list) const{
     unsigned int particle_counter = 0;
-    for(unsigned int i = 0; i < particle_list.size(); ++i) if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) particle_counter++;
+    for(unsigned int i = 0; i < particle_list.size(); ++i) {
+      if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) {
+        if(pdg == 2212) {// Make sure the proton energy is realistic for reconstruction
+          if(particle_list[i].GetKineticEnergy() > 21.) particle_counter++;
+        }
+        else particle_counter++;
+      }
+    }
     return particle_counter;
   }
 
