@@ -27,7 +27,7 @@
 
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions);
 
 int MainTest(){
   
@@ -103,17 +103,19 @@ int MainTest(){
   
   int start = static_cast<int>(time(NULL));
   unsigned int total_files = 991;
-  std::vector<int> exceptions;
+  std::vector<unsigned int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
+  std::fstream exception_file("exceptions.txt");
+  if(!exception_file)
+    std::cout << " File not open! " << std::endl;
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
-    int i_exc;
+    unsigned int i_exc;
     std::istringstream ss_exc(s_exc);
     ss_exc >> i_exc;
-    exceptions.push_back(i_exc); 
+    exceptions.push_back(i_exc);
     ss_exc.str(std::string());
     s_exc.clear();
   }
@@ -173,16 +175,7 @@ int MainTest(){
               mu_momentum = p.GetModulusMomentum();
               mu_cos_z    = p.GetCosTheta();
             } 
-            // Calculate the reconstructed energy from the reco kinetic (visible) + the true particle mass (cheating)
-            double mass = 0.;
-            if(p.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e,p) >= 0) {
-              if(GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 211  || 
-                 GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == -211 ||
-                 GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 13){
-                mass = GeneralAnalysisHelper::GetBestMCParticle(e,p).GetMass();
-              }
-            }
-            enu_reco += (p.GetKineticEnergy() + mass);
+            enu_reco += (p.GetKineticEnergy() + p.GetMass());
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
@@ -284,9 +277,9 @@ int MainTest(){
 
 } // MainTest
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions) {
   double total_pot = 0;
-  std::vector<int>::iterator it;
+  std::vector<unsigned int>::iterator it;
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
     it = std::find(exceptions.begin(), exceptions.end(),i);
@@ -299,6 +292,7 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
     name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
