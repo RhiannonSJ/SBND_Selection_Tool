@@ -249,11 +249,11 @@ namespace selection{
       throw 1;
     }
     if(!m_from_reco_track) return m_momentum;
-    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained() && this->Particle::GetLength() >= 100)
       return this->Particle::GetMCSMomentumMuon();
-    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return this->Particle::GetRangeMomentumMuon();
-    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return this->Particle::GetRangeMomentumProton();
     else
       return m_momentum;
@@ -267,11 +267,11 @@ namespace selection{
       throw 1;
     }
     if(!m_from_reco_track) return m_momentum.Mag();
-    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained() && this->Particle::GetLength() >= 100)
       return m_mcs_mom_muon;
-    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return m_range_mom_muon;
-    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 2212 && this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return m_range_mom_proton;
     else
       return m_momentum.Mag();

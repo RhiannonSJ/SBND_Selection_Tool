@@ -119,7 +119,7 @@ namespace selection{
       EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
       EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
       
-      if(tracks.size() != 0) EventSelectionTool::GetRecoParticleFromTrack1EscapingDistanceCut(tracks, recoparticles);
+      if(tracks.size() != 0) EventSelectionTool::GetRecoParticleFromTrack(tracks, recoparticles);
       if(showers.size() != 0) EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
      
       // Check if any particles should be flipped
@@ -567,7 +567,7 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  void EventSelectionTool::GetRecoParticleFromTrack1EscapingDistanceCut(const TrackList &track_list, ParticleList &recoparticle_list){
+  void EventSelectionTool::GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list){
 
     // Assign ridiculously short length to initiate the longest track length
     float longest_track_length      = -std::numeric_limits<float>::max();
@@ -587,7 +587,8 @@ namespace selection{
     if(exactly_one_escapes){
       for(unsigned int i = 0; i < track_list.size(); ++i){
         const Track &trk(track_list[i]);
-        if(trk.m_one_end_contained){
+        // Only one end contained and the escaping track's length is greater than 100 cm
+        if(trk.m_one_end_contained && trk.m_length >= 100){
           // Find out if the neutrino vertex is far enough from the escaping face
           float distance_to_intersection_point = -std::numeric_limits<float>::max();
           // Loop over the fiducial planes and find out which the escaping particle passed through
@@ -596,7 +597,8 @@ namespace selection{
           for(const Plane &plane : planes){
             if(!EventSelectionTool::CheckIfTrackIntersectsPlane(plane, trk)) continue;
             distance_to_intersection_point = EventSelectionTool::GetDistanceFromTrackToPlane(plane,trk);
-            if(distance_to_intersection_point > 50){
+            // Make sure the distance to the escaping border is big enough 
+            if(distance_to_intersection_point > 35){
               contained_and_passes_distance_cut = true;
               break;
             }

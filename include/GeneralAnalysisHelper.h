@@ -191,13 +191,22 @@ namespace selection{
       static unsigned int NumberEscapingTracks(const Event &e);
       
       /**
-       * @brief  Finds if there is more than one escaping track in an event
+       * @brief  Finds if there is max one escaping track in an event
        *
        * @param  e Current event
        *
        * @return True if there is a maximum of one, false if there are more than one
        */
       static bool MaxOneEscapingTrack(const Event &e);
+      
+      /**
+       * @brief  Finds if there is max one escaping track in an event that's greater than 100 cm
+       *
+       * @param  e Current event
+       *
+       * @return True if there is a maximum of one, false if there are more than one
+       */
+      static bool MaxOneLongEscapingTrack(const Event &e);
       
       /**                                                              
        * @brief  Gives the number of MC, Reco and Coincidences for a given topology                                                           

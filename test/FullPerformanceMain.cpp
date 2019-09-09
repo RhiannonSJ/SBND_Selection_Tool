@@ -46,7 +46,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 5;
+  unsigned int total_files = 991;
   double pot = 0.; 
 
   std::vector<int> exceptions;
@@ -171,7 +171,7 @@ int MainTest(){
     // Check the true vertex is in the fiducial volume
     if(e.IsSBNDTrueFiducial() && e.IsSBNDRecoFiducial()){
 //      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
-      if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
+      if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
       max_one_escaping_track++;
  
       if(e.CheckRecoTopology(maps[0])){
@@ -282,7 +282,7 @@ int MainTest(){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"full_breakdown_reco_truth_topologies.txt");
+  file.open(stats_location+"full_breakdown_reco_truth_topologies2.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
@@ -344,8 +344,8 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";

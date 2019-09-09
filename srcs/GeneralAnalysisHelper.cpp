@@ -129,6 +129,23 @@ namespace selection{
     return true;
   }
 
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::MaxOneLongEscapingTrack(const Event &e){
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) return false;
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 0) return true;
+    double escaping_particle_length = 0;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+        escaping_particle_length = p.GetLength();
+        break;
+      }
+    }
+    if(escaping_particle_length >= 100) return true;
+    return false;
+  }
+
   //----------------------------------------------------------------------------------------
   
   void GeneralAnalysisHelper::TopologyStatistics(const Event &e, const TopologyMap signal_map_topology, double & count_true, double & count_signal, double & count_selected){
