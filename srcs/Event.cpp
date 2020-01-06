@@ -307,7 +307,7 @@ namespace selection{
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
       if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) {
         if(pdg == 2212) {// Make sure the proton energy is realistic for reconstruction
-          if(particle_list[i].GetKineticEnergy() > 21.) particle_counter++;
+          if(particle_list[i].GetKineticEnergy() > 0.021) particle_counter++;
         }
         else particle_counter++;
       }

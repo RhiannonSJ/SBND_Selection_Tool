@@ -269,23 +269,25 @@ namespace selection{
     //    Half with fiducial   = Half width  - width fiducial border 
     //    Half height fiducial = Half height - height fiducial border
     //    Half length fiducial = Half length - length fiducial border
-    float w           = 200; // half full detector width (x)
-    float h           = 200; // half full detector height (y)
-    float l           = 250; // half full detector length (z)
-    float w_border    = 8.25; // width fiducial border
-    float h_border    = 15.; // height fiducial border
-    float lmin_border = 15.; // length fiducial border min
-    float lmax_border = 85.; // length fiducial border max
-    float fid_w       = w - w_border; // fiducial half width
-    float fid_h       = h - h_border; // fiducial half height
-    float fid_lmin    = l - lmin_border; // fiducial half length
-    float fid_lmax    = l - lmax_border; // fiducial half length
+    float w               = 200; // half full detector width (x)
+    float h               = 200; // half full detector height (y)
+    float l               = 250; // half full detector length (z)
+    float w_border        = 8.25; // width fiducial border
+    float h_border        = 15.; // height fiducial border
+    float lmin_border     = 15.; // length fiducial border min
+    float lmax_border     = 85.; // length fiducial border max
+    float fid_w           = w - w_border; // fiducial half width
+    float fid_h           = h - h_border; // fiducial half height
+    float fid_lmin        = l - lmin_border; // fiducial half length
+    float fid_lmax        = l - lmax_border; // fiducial half length
+    float half_fiducial_l = ((2*l)-lmin_border-lmax_border)/2.; // Half the fiducial length (z)
+    float front_l         = lmin_border+half_fiducial_l; // Distance from front of the detector to half the fiducial length (z)
 
     // Define the ficudial planes of the detector
-    planes.emplace_back(TVector3( fid_w, 0, l),            TVector3(0, fid_h, 0), TVector3(0, 0,  fid_lmin)); // 0 = +x
-    planes.emplace_back(TVector3(-fid_w, 0, l),            TVector3(0, fid_h, 0), TVector3(0, 0, -fid_lmax)); // 1 = -x
-    planes.emplace_back(TVector3(0,  fid_h, l),            TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_lmax)); // 2 = +y
-    planes.emplace_back(TVector3(0, -fid_h, l),            TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_lmin)); // 3 = -y
+    planes.emplace_back(TVector3( fid_w, 0, front_l),      TVector3(0, fid_h, 0), TVector3(0,      0,  half_fiducial_l)); // 0 = +x
+    planes.emplace_back(TVector3(-fid_w, 0, front_l),      TVector3(0, fid_h, 0), TVector3(0,      0, -half_fiducial_l)); // 1 = -x
+    planes.emplace_back(TVector3(0,  fid_h, front_l),      TVector3(fid_w, 0, 0), TVector3(0,      0, -half_fiducial_l)); // 2 = +y
+    planes.emplace_back(TVector3(0, -fid_h, front_l),      TVector3(fid_w, 0, 0), TVector3(0,      0,  half_fiducial_l)); // 3 = -y
     planes.emplace_back(TVector3(0, 0, lmin_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));    // 4 = min z
     planes.emplace_back(TVector3(0, 0, (2*l)-lmax_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));    // 5 = max z
   }
