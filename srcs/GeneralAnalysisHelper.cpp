@@ -26,6 +26,7 @@ namespace selection{
     TopologyMap signal_map_nc1pi;
     signal_map_nc1pi.insert(TopologyMap::value_type({13},0));
     signal_map_nc1pi.insert(TopologyMap::value_type({211, -211},1));
+    signal_map_nc1pi.insert(TopologyMap::value_type({111},0));
     return signal_map_nc1pi;
   } 
   //----------------------------------------------------------------------------------------
@@ -33,6 +34,7 @@ namespace selection{
     TopologyMap signal_map_nc2pi;
     signal_map_nc2pi.insert(TopologyMap::value_type({13},0));
     signal_map_nc2pi.insert(TopologyMap::value_type({211, -211},2));
+    signal_map_nc2pi.insert(TopologyMap::value_type({111},0));
     return signal_map_nc2pi;
   } 
   //----------------------------------------------------------------------------------------
@@ -85,6 +87,7 @@ namespace selection{
     TopologyMap signal_map_cc_1pi;
     signal_map_cc_1pi.insert(TopologyMap::value_type({13},1));
     signal_map_cc_1pi.insert(TopologyMap::value_type({211, -211},1));
+    signal_map_cc_1pi.insert(TopologyMap::value_type({111},0));
     return signal_map_cc_1pi;
   }
   //----------------------------------------------------------------------------------------
@@ -92,6 +95,7 @@ namespace selection{
     TopologyMap signal_map_cc_2pi;
     signal_map_cc_2pi.insert(TopologyMap::value_type({13},1));
     signal_map_cc_2pi.insert(TopologyMap::value_type({211, -211},2));
+    signal_map_cc_2pi.insert(TopologyMap::value_type({111},0));
     return signal_map_cc_2pi;
   }
   //----------------------------------------------------------------------------------------
@@ -99,8 +103,18 @@ namespace selection{
     TopologyMap signal_map_cc_pi0;
     signal_map_cc_pi0.insert(TopologyMap::value_type({13},1));
     signal_map_cc_pi0.insert(TopologyMap::value_type({111},1));
+    signal_map_cc_pi0.insert(TopologyMap::value_type({211, -211},0));
     return signal_map_cc_pi0;
   } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCCPi0PiCTopologyMap() {
+    TopologyMap signal_map_cc_pi0_pic;
+    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({13},1));
+    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({111},1));
+    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map_cc_pi0_pic;
+  } 
+
 
   //----------------------------------------------------------------------------------------
   //      DO NOT USE ON RECO 
