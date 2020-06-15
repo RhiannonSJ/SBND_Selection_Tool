@@ -6,4 +6,6 @@ srcs/README.md
 LArEvdSmall.jpeg
 exceptions.txt
 test/TEST.cpp
-
+*.d
+*.so
+*.pcm
