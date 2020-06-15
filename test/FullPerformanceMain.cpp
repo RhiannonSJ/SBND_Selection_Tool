@@ -36,7 +36,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -169,11 +169,11 @@ int MainTest(){
   for(const Event &e : events){
  
     // Check the true vertex is in the fiducial volume
-    if(e.IsSBNDTrueFiducial()){
+    if(e.IsSBNDTrueFiducial() && e.IsSBNDRecoFiducial()){
 //      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
-      if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
+      if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
       max_one_escaping_track++;
-  
+ 
       if(e.CheckRecoTopology(maps[0])){
         if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
@@ -282,7 +282,7 @@ int MainTest(){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"topology_breakdown.txt");
+  file.open(stats_location+"full_breakdown_reco_truth_topologies2.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;

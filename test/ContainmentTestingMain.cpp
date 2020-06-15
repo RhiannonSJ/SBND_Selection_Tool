@@ -39,9 +39,9 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/mcp0_9/test/";
-  std::string plots_location = "../Output_Selection_Tool/plots/mcp0_9/escaping_track/test/";
-  std::string feb_location   = "../Output_Selection_Tool/plots/mcp0_9/vertices/test/";
+  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
+  std::string plots_location = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/escaping_track/";
+  std::string feb_location   = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/vertices/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -65,7 +65,7 @@ int MainTest(){
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
+  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
   std::string s_exc;
   while (std::getline(exception_file, s_exc)) {
     int i_exc;
@@ -76,10 +76,10 @@ int MainTest(){
     s_exc.clear();
   }
 
-  std::cout << " Skipping files ending in : " << std::endl;
+  /*std::cout << " Skipping files ending in : " << std::endl;
   for(const int & ex : exceptions)
     std::cout << " - " << ex << " - ";
-  std::cout << std::endl;
+  std::cout << std::endl;*/
 
   LoadAllEvents(events, total_files, start, pot, exceptions);
 
@@ -89,13 +89,19 @@ int MainTest(){
    *
    */
   // Counter for total number of escaping tracks
-  unsigned int max_one_escapes         = 0;
-  unsigned int too_many_escape         = 0;
-  unsigned int too_many_true_contained = 0;
-  unsigned int too_many_true_escaping  = 0;
+  unsigned int reco_vertex_contained          = 0;
+  unsigned int reco_and_true_vertex_contained = 0;
+  unsigned int max_one_escapes                = 0;
+  unsigned int too_many_escape                = 0;
+  unsigned int too_many_true_contained        = 0;
+  unsigned int too_many_true_escaping         = 0;
 
   for(const Event &e : events){
     //Counter for event-based track counting
+    if(!e.IsSBNDRecoFiducial()) continue;
+    reco_vertex_contained++;
+    if(e.IsSBNDRecoFiducial()) reco_and_true_vertex_contained++;
+
     if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
       too_many_escape++;
       if(e.IsSBNDTrueFiducial()) too_many_true_contained++;
@@ -156,17 +162,22 @@ int MainTest(){
    * LENGTH
    *
    */
-  unsigned int longest_escapes                       = 0;
-  unsigned int true_muon_escapes                     = 0;
-  unsigned int true_muon_distance_cut                = 0;
-  unsigned int ccinc_true_muon_escapes               = 0;
-  unsigned int ccinc_true_muon_distance_cut          = 0;
-  unsigned int longest_over_100_escapes              = 0;
-  unsigned int events_with_1_escaping_track          = 0;
-  unsigned int ccinc_with_1_escaping_track           = 0;
-  unsigned int events_with_1_escaping_track_with_cut = 0;
-  unsigned int ccinc_with_1_escaping_track_with_cut  = 0;
-  unsigned int longest_escaping_true_muon            = 0;
+  unsigned int longest_escapes                           = 0;
+  unsigned int true_muon_escapes                         = 0;
+  unsigned int true_muon_distance_cut                    = 0;
+  unsigned int ccinc_true_muon_escapes                   = 0;
+  unsigned int ccinc_true_muon_distance_cut              = 0;
+  unsigned int longest_over_100_escapes                  = 0;
+  unsigned int events_with_1_escaping_track              = 0;
+  unsigned int ccinc_with_1_escaping_track               = 0;
+  unsigned int events_with_1_escaping_track_with_cut     = 0;
+  unsigned int events_with_1_escaping_track_with_cut_100 = 0;
+  unsigned int ccinc_with_1_escaping_track_with_cut      = 0;
+  unsigned int longest_escaping_true_muon                = 0;
+  unsigned int longest_escaping_not_muon                 = 0;
+  unsigned int longest_true_muon_over_100_escapes        = 0;
+  unsigned int longest_not_muon_over_100_escapes         = 0;
+
 
   double escaping_track_length = -1.;
 
@@ -178,6 +189,7 @@ int MainTest(){
     bool muon_escapes          = false;
     // Only look at events with 1 escaping track
 
+    if(!e.IsSBNDRecoFiducial()) continue;
     if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     events_with_1_escaping_track++;
     if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
@@ -195,6 +207,8 @@ int MainTest(){
           distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
           if(distance_to_intersection_point > 50){
             contained_and_passes_distance_cut = true;
+            if(p.GetLength() >= 100)
+              events_with_1_escaping_track_with_cut_100++;
             break;
           }
         }
@@ -230,8 +244,14 @@ int MainTest(){
         longest_escapes++;
         longest_track_escapes = true;
         for(const Particle &mcp : e.GetMCParticleList()){
-          if(mcp.GetMCId() == max_id && mcp.GetPdgCode() == 13)
+          if(mcp.GetMCId() == max_id && mcp.GetPdgCode() == 13){
             longest_escaping_true_muon++;
+            if(p.GetLength() > 100) longest_true_muon_over_100_escapes++;
+          }  
+          else if(mcp.GetMCId() == max_id && mcp.GetPdgCode() != 13){
+            longest_escaping_not_muon++;
+            if(p.GetLength() > 100) longest_not_muon_over_100_escapes++;
+          }
         }
         if(p.GetLength() > 100) longest_over_100_escapes++;
       }
@@ -670,9 +690,12 @@ int MainTest(){
 
   file << "=====================================================================" << std::endl;
   file << " Total number of events                                             : " << events.size()   << std::endl;
+  file << " Reconstructed vertex contained                                     : " << reco_vertex_contained << std::endl;
+  file << " Reconstructed and true vertices contained                          : " << reco_and_true_vertex_contained << std::endl;
   file << " Number of events with maximum one escaping track                   : " << max_one_escapes << std::endl;
   file << " Number of events with exactly one escaping track                   : " << events_with_1_escaping_track << std::endl;
   file << " Number of events with exactly one escaping track with distance cut : " << events_with_1_escaping_track_with_cut << std::endl;
+  file << " Number of events with one escaping track, distance cut, > 100 cm   : " << events_with_1_escaping_track_with_cut_100 << std::endl;
   file << " CC Inc. events with exactly one escaping track                     : " << ccinc_with_1_escaping_track << std::endl;
   file << " CC Inc. events with exactly one escaping track with distance cut   : " << ccinc_with_1_escaping_track_with_cut << std::endl;
   file << " Number of events with more than one escaping track                 : " << too_many_escape << std::endl;
@@ -686,7 +709,10 @@ int MainTest(){
   file << " Percentage of events where the longest track escapes               : " << 100 * longest_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events with longest escaping and > 100 cm            : " << 100 * longest_over_100_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of events with longest escaping and longest true muon   : " << 100 * longest_escaping_true_muon/double(events_with_1_escaping_track) << std::endl;
+  file << " Percentage of events with longest escaping and true muon > 100 cm  : " << 100 * longest_true_muon_over_100_escapes/double(events_with_1_escaping_track) << std::endl;
+  file << " Percentage of events with longest escaping and not muon > 100 cm   : " << 100 * longest_not_muon_over_100_escapes/double(events_with_1_escaping_track) << std::endl;
   file << " Percentage of longest escaping track events with longest true muon : " << 100 * longest_escaping_true_muon/double(longest_escapes) << std::endl;
+  file << " Percentage of longest escaping events with longest true muon > 100 : " << 100 * longest_true_muon_over_100_escapes/double(longest_escapes) << std::endl;
   file << " ------------------------------------------------------------------- " << std::endl;
   file << " For events with only 1 escaping track with distance cut : " << std::endl;
   file << " ------------------------------------------------------------------- " << std::endl;
@@ -725,9 +751,10 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     std::string name;
     name.clear();
     char file_name[1024];
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 

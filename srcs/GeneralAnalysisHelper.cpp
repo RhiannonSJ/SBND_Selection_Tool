@@ -143,6 +143,23 @@ namespace selection{
     return true;
   }
 
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::MaxOneLongEscapingTrack(const Event &e){
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) return false;
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 0) return true;
+    double escaping_particle_length = 0;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+        escaping_particle_length = p.GetLength();
+        break;
+      }
+    }
+    if(escaping_particle_length >= 100) return true;
+    return false;
+  }
+
   //----------------------------------------------------------------------------------------
   
   void GeneralAnalysisHelper::TopologyStatistics(const Event &e, const TopologyMap signal_map_topology, double & count_true, double & count_signal, double & count_selected){
@@ -230,7 +247,7 @@ namespace selection{
     for(const Particle &p : particle_list) {
       if(p.GetMCId() == id) return p;
     }
-    std::cout << "GetMCParticle" << std::endl;
+    std::cerr << "GetMCParticle" << std::endl;
     throw 8;
   }
   
@@ -253,7 +270,7 @@ namespace selection{
     else if(GeneralAnalysisHelper::ParticleHasAMatch(e, particle) == 2){
       return GeneralAnalysisHelper::GetMCParticleEnergy(e, particle);
     }
-    std::cout << "GetBestMCParticle" << std::endl;
+    std::cerr << "GetBestMCParticle" << std::endl;
     throw 9;
   }
   

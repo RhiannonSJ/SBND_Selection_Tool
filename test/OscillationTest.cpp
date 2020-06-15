@@ -40,7 +40,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string file_location  = "../Output_Selection_Tool/files/";
+  std::string file_location  = "../Output_Selection_Tool/files/newfiducial/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -59,7 +59,7 @@ int MainTest(){
   // Variables to get
   bool iscc, isnc;  // Charged or neutral current event current
   int nu_pdg, mode; // Neutrino pdg code and scattering mode
-  double enu_true, enu_reco, qsqr; // Neutrino kinematics, truth and reco
+  double enu_true, enu_reco, enu_reco_mc, qsqr; // Neutrino kinematics, truth and reco
   double mu_momentum, mu_cos_z; // Muon kinematics, reco
   int nkaons, npip, npim, npi0; // Particle counting, truth
   // Enumeration (all CC):
@@ -78,11 +78,15 @@ int MainTest(){
   TTree *t_subrun = new TTree("subrun_tree"," Tree to hold subrun variables, such as POT");
   t_run->SetDirectory(0);
   t_subrun->SetDirectory(0);
-  
+ 
+  TH1D *h_ccinc_e_true = new TH1D("h_ccinc_e_true","Neutrino energy distribution for a true CC Inclusive final state",100, 0, 3);
+  TH1D *h_ccinc_e_sig  = new TH1D("h_ccinc_e_sig", "Neutrino energy distribution for a signal CC Inclusive final state",100, 0, 3);
+
   t_run->Branch("iscc",          &iscc,          "iscc/O");
   t_run->Branch("isnc",          &isnc,          "isnc/O");
   t_run->Branch("nu_pdg",        &nu_pdg,        "nu_pdg/I");
   t_run->Branch("enu_true",      &enu_true,      "enu_true/D");
+  t_run->Branch("enu_reco_mc",   &enu_reco_mc,   "enu_reco_mc/D");
   t_run->Branch("enu_reco",      &enu_reco,      "enu_reco/D");
   t_run->Branch("mu_momentum",   &mu_momentum,   "mu_momentum/D");
   t_run->Branch("mu_cos_z",      &mu_cos_z,      "mu_cos_z/D");
@@ -116,10 +120,12 @@ int MainTest(){
     s_exc.clear();
   }
 
+  /*
   std::cout << " Skipping files in directory : " << std::endl;
   for(const int & ex : exceptions)
     std::cout << " - " << ex << " - ";
   std::cout << std::endl;
+  */
 
   LoadAllEvents(events, total_files, start, pot, exceptions);
   
@@ -132,7 +138,8 @@ int MainTest(){
     bool bad_event = false;
 
     // TPC track criteria
-    if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
+    if(!e.IsSBNDRecoFiducial()) continue;
+    if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
     iscc     = e.GetIsCC();
     isnc     = !e.GetIsCC();
     nu_pdg   = e.GetNeutrinoPdgCode();
@@ -141,11 +148,12 @@ int MainTest(){
     mode     = e.GetPhysicalProcess();
 
     // Start the counters
-    nkaons = 0;
-    npip   = 0;
-    npim   = 0;
-    npi0   = 0;
-    enu_reco = 0.;
+    nkaons      = 0;
+    npip        = 0;
+    npim        = 0;
+    npi0        = 0;
+    enu_reco    = 0.;
+    enu_reco_mc = 0.;
     
     // Particles 
     ParticleList mc   = e.GetMCParticleList();
@@ -157,7 +165,7 @@ int MainTest(){
         if(!bad_event){
           for(const Particle &p : reco){
             if(p.GetKineticEnergy() <= 0.) continue;
-            if(p.GetKineticEnergy() > 10.) {
+            if(p.GetKineticEnergy() > 10) { // Higher than 10 GeV
               bad_event = true;
               bad_events++;
               std::cerr << " Badly defined energy of the particle, skipping event " << std::endl;
@@ -174,7 +182,17 @@ int MainTest(){
             if(p.GetPdgCode() ==  211) npip++;
             if(p.GetPdgCode() == -211) npim++;
             if(p.GetPdgCode() ==  111) npi0++; 
+            
+            // MC reconstructed neutrino energy 
+            double mass = 0.;
+            if(p.GetPdgCode() == 211  || 
+               p.GetPdgCode() == -211 ||
+               p.GetPdgCode() == 13){
+              mass = p.GetMass();
+            } // Pdgcodes
+            enu_reco_mc += (p.GetKineticEnergy() + mass);
           } // Particles
+
           if(e.CheckRecoTopology(cc0pi))
             reco_topology = 0;
           else if(e.CheckRecoTopology(cc1pi))
@@ -198,17 +216,41 @@ int MainTest(){
           t_run->Fill();
         } // Bad event
       } // Topology
+      // Check all true CC Inclusive events and plot the reconstructed energy of them
+      if(e.CheckMCTopology(ccinc)){
+        if(bad_event) continue;
+        double enu_mc_reco = 0.;
+        for(const Particle &p : e.GetMCParticleList()){
+          // Calculate the reconstructed energy from the reco kinetic (visible) + the true particle mass (cheating)
+          double mass = 0.;
+          if(p.GetPdgCode() == 211  || 
+             p.GetPdgCode() == -211 ||
+             p.GetPdgCode() == 13)
+            mass = p.GetMass();
+          enu_mc_reco += (p.GetKineticEnergy() + mass);
+        } // Particles
+        h_ccinc_e_true->Fill(enu_mc_reco);
+        if(e.CheckRecoTopology(ccinc)){
+          h_ccinc_e_sig->Fill(enu_mc_reco);
+        } // Signal CCInclusive
+      } // Topology
     } // Fiducial
   } // Events
   std::cout << " Total events with particles with bad energy : " << bad_events << std::endl;
-  
   // Print the total pot from all the samples
   std::cout << " Total POT in the samples is: " << pot << std::endl;
   t_subrun->Fill();
 
-  // Output TFile
-  TFile f((file_location+"test_ccinc_selection.root").c_str(), "RECREATE");
+  // Write histograms to file and external files
+  TH1D *h_ccinc_e_eff = (TH1D*)h_ccinc_e_sig->Clone("h_ccinc_e_eff");
+  h_ccinc_e_eff->Divide(h_ccinc_e_true);
 
+  // Output TFile
+  TFile f((file_location+"fixed_mass_ccinc_selection.root").c_str(), "RECREATE");
+
+  h_ccinc_e_true->Write();
+  h_ccinc_e_sig->Write();
+  h_ccinc_e_eff->Write();
   t_run->Write();
   t_subrun->Write();
 
@@ -247,7 +289,10 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
 //    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
