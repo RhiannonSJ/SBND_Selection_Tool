@@ -53,11 +53,20 @@ namespace selection{
       exit(1);
     }
 
-    TTree *t_event    = (TTree*) f.Get("event_tree");
-    TTree *t_subrun   = (TTree*) f.Get("subrun_tree");
-    TTree *t_particle = (TTree*) f.Get("particle_tree");
-    TTree *t_track    = (TTree*) f.Get("recotrack_tree");
-    TTree *t_shower   = (TTree*) f.Get("recoshower_tree");
+    TTree *t_event    = (TTree*) f.Get("selectionTree/event_tree");
+    TTree *t_subrun   = (TTree*) f.Get("selectionTree/subrun_tree");
+    TTree *t_particle = (TTree*) f.Get("selectionTree/particle_tree");
+    TTree *t_track    = (TTree*) f.Get("selectionTree/recotrack_tree");
+    TTree *t_shower   = (TTree*) f.Get("selectionTree/recoshower_tree");
+    
+    UIdToTrackListMap all_tracks;
+    LoadTracks(t_track,all_tracks);  
+
+    UIdToShowerListMap all_showers;
+    LoadShowers(t_shower,all_showers);  
+
+    UIdToParticleListMap all_mcparticles;
+    LoadMCParticles(t_particle,all_mcparticles);  
 
     TBranch *b_event_id        = t_event->GetBranch("event_id");
     TBranch *b_time_now        = t_event->GetBranch("time_now");
@@ -65,6 +74,7 @@ namespace selection{
     TBranch *b_t_vertex        = t_event->GetBranch("t_vertex");
     TBranch *b_t_interaction   = t_event->GetBranch("t_interaction");
     TBranch *b_t_scatter       = t_event->GetBranch("t_scatter");
+    TBranch *b_t_baseline      = t_event->GetBranch("t_baseline");
     TBranch *b_t_iscc          = t_event->GetBranch("t_iscc");
     TBranch *b_t_nu_pdgcode    = t_event->GetBranch("t_nu_pdgcode");
     TBranch *b_t_charged_pions = t_event->GetBranch("t_charged_pions");
@@ -75,10 +85,6 @@ namespace selection{
     pot = EventSelectionTool::GetPOT(t_subrun);
     
     unsigned int n_events = t_event->GetEntries();
-
-    unsigned int start_tracks      = 0;
-    unsigned int start_showers     = 0;
-    unsigned int start_mcparticles = 0;
 
     for(unsigned int j = 0; j < n_events; ++j){
 
@@ -93,6 +99,7 @@ namespace selection{
       bool iscc(false);
       float neu_energy;
       float neu_qsqr;
+      float baseline;
 
       t_event->GetEntry(j);
 
@@ -106,6 +113,7 @@ namespace selection{
       t_vertex[2]  = b_t_vertex->GetLeaf("t_vertex")->GetValue(2);
       interaction  = b_t_interaction->GetLeaf("t_interaction")->GetValue();
       scatter      = b_t_scatter->GetLeaf("t_scatter")->GetValue();
+      baseline     = b_t_baseline->GetLeaf("t_baseline")->GetValue();
       iscc         = b_t_iscc->GetLeaf("t_iscc")->GetValue();
       neutrino_pdg = b_t_nu_pdgcode->GetLeaf("t_nu_pdgcode")->GetValue();
       pions_ch     = b_t_charged_pions->GetLeaf("t_charged_pions")->GetValue();
@@ -113,11 +121,24 @@ namespace selection{
       neu_energy   = b_t_vertex_energy->GetLeaf("t_vertex_energy")->GetValue();
       neu_qsqr     = b_t_neutrino_qsqr->GetLeaf("t_qsqr")->GetValue();
    
-      std::pair<int,int> event_identification(event_id,time_now);
+      const UniqueId event_identification(event_id,time_now);
 
-      EventSelectionTool::GetTrackList(start_tracks, t_track, event_identification, tracks);
-      EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
-      EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
+//      EventSelectionTool::GetTrackList(start_tracks, t_track, event_identification, tracks);
+//      EventSelectionTool::GetShowerList(start_showers, t_shower, event_identification, showers);
+//      EventSelectionTool::GetMCParticleList(start_mcparticles, t_particle, event_identification, mcparticles);
+
+      const auto track_itr = all_tracks.find(event_identification);
+      if(track_itr != all_tracks.end())
+        tracks = track_itr->second;
+
+      const auto shower_itr = all_showers.find(event_identification);
+      if(shower_itr != all_showers.end())
+        showers = shower_itr->second;
+
+      const auto mcparticle_itr = all_mcparticles.find(event_identification);
+      if(mcparticle_itr != all_mcparticles.end())
+        mcparticles = mcparticle_itr->second;
+
       
       if(tracks.size() != 0) EventSelectionTool::GetRecoParticleFromTrack(tracks, recoparticles);
       if(showers.size() != 0) EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles);
@@ -125,12 +146,243 @@ namespace selection{
       // Check if any particles should be flipped
       EventSelectionTool::CheckAndFlip(r_vertex, recoparticles);
 
-      event_list.push_back(Event(mcparticles, recoparticles, interaction, scatter, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy, neu_qsqr, file, event_id));
-
-      start_tracks      += tracks.size();
-      start_showers     += showers.size();
-      start_mcparticles += mcparticles.size();
+      event_list.emplace_back(mcparticles, recoparticles, interaction, scatter, neutrino_pdg, pions_ch, pions_neu, iscc, t_vertex, r_vertex, neu_energy, neu_qsqr, file, event_id, baseline);
     }
+  }
+  //------------------------------------------------------------------------------------------ 
+  void EventSelectionTool::LoadMCParticles(TTree *mcparticle_tree, UIdToParticleListMap &mcparticles){
+  
+    TBranch *b_event_id = mcparticle_tree->GetBranch("event_id");
+    TBranch *b_time_now = mcparticle_tree->GetBranch("time_now");
+    TBranch *b_id       = mcparticle_tree->GetBranch("p_id");
+    TBranch *b_n_hits   = mcparticle_tree->GetBranch("p_n_hits");
+    TBranch *b_pdgcode  = mcparticle_tree->GetBranch("p_pdgcode");
+    TBranch *b_status   = mcparticle_tree->GetBranch("p_status");
+    TBranch *b_mass     = mcparticle_tree->GetBranch("p_mass");
+    TBranch *b_energy   = mcparticle_tree->GetBranch("p_energy");
+    TBranch *b_vertex   = mcparticle_tree->GetBranch("p_vertex");
+    TBranch *b_end      = mcparticle_tree->GetBranch("p_end");
+    TBranch *b_momentum = mcparticle_tree->GetBranch("p_momentum");
+    
+    unsigned int n_entries = mcparticle_tree->GetEntries();
+
+      for(unsigned int i = 0; i < n_entries; ++i){
+    
+      mcparticle_tree->GetEntry(i);
+      
+      int event_id          = b_event_id->GetLeaf("event_id")->GetValue();
+      int time_now          = b_time_now->GetLeaf("time_now")->GetValue();
+      const UniqueId id(event_id,time_now);
+      
+      double temp_vertex[3];
+      double temp_end[3];
+      double temp_momentum[3];
+      
+      int p_id              = b_id->GetLeaf("p_id")->GetValue();
+      int pdgcode           = b_pdgcode->GetLeaf("p_pdgcode")->GetValue();
+      int statuscode        = b_status->GetLeaf("p_status")->GetValue();
+      int n_hits            = b_n_hits->GetLeaf("p_n_hits")->GetValue();
+      float mass            = b_mass->GetLeaf("p_mass")->GetValue();
+      float energy          = b_energy->GetLeaf("p_energy")->GetValue();
+      temp_vertex[0]        = b_vertex->GetLeaf("p_vertex")->GetValue(0);
+      temp_vertex[1]        = b_vertex->GetLeaf("p_vertex")->GetValue(1);
+      temp_vertex[2]        = b_vertex->GetLeaf("p_vertex")->GetValue(2);
+      temp_end[0]           = b_end->GetLeaf("p_end")->GetValue(0);
+      temp_end[1]           = b_end->GetLeaf("p_end")->GetValue(1);
+      temp_end[2]           = b_end->GetLeaf("p_end")->GetValue(2);
+      temp_momentum[0]      = b_momentum->GetLeaf("p_momentum")->GetValue(0);
+      temp_momentum[1]      = b_momentum->GetLeaf("p_momentum")->GetValue(1);
+      temp_momentum[2]      = b_momentum->GetLeaf("p_momentum")->GetValue(2);
+ 
+      TVector3 vertex(temp_vertex);
+      TVector3 end(temp_end);
+      TVector3 momentum(temp_momentum);
+
+      mcparticles[id].emplace_back(p_id, pdgcode, statuscode, n_hits, mass, energy, vertex, end, momentum);
+    }
+  }
+  //------------------------------------------------------------------------------------------ 
+  void EventSelectionTool::LoadShowers(TTree *shower_tree, UIdToShowerListMap &showers){
+  
+    TBranch *b_event_id   = shower_tree->GetBranch("event_id");
+    TBranch *b_time_now   = shower_tree->GetBranch("time_now");
+    TBranch *b_n_hits     = shower_tree->GetBranch("sh_n_hits");
+    TBranch *b_vertex     = shower_tree->GetBranch("sh_start");
+    TBranch *b_direction  = shower_tree->GetBranch("sh_direction");
+    TBranch *b_open_angle = shower_tree->GetBranch("sh_open_angle");
+    TBranch *b_length     = shower_tree->GetBranch("sh_length");
+    TBranch *b_energy     = shower_tree->GetBranch("sh_energy");
+    
+    unsigned int n_entries = shower_tree->GetEntries();
+
+    for(unsigned int i = 0; i < n_entries; ++i){
+    
+      shower_tree->GetEntry(i);
+
+      int event_id      = b_event_id->GetLeaf("event_id")->GetValue();
+      int time_now      = b_time_now->GetLeaf("time_now")->GetValue();
+      const UniqueId id(event_id,time_now);
+      
+      double temp_vertex[3];
+      double temp_direction[3];
+      
+      temp_vertex[0]    = b_vertex->GetLeaf("sh_start")->GetValue(0);
+      temp_vertex[1]    = b_vertex->GetLeaf("sh_start")->GetValue(1);
+      temp_vertex[2]    = b_vertex->GetLeaf("sh_start")->GetValue(2);
+      temp_direction[0] = b_direction->GetLeaf("sh_direction")->GetValue(0);
+      temp_direction[1] = b_direction->GetLeaf("sh_direction")->GetValue(1);
+      temp_direction[2] = b_direction->GetLeaf("sh_direction")->GetValue(2);
+      float open_angle  = b_open_angle->GetLeaf("sh_open_angle")->GetValue();
+      float length      = b_length->GetLeaf("sh_length")->GetValue();
+      float energy      = b_energy->GetLeaf("sh_energy")->GetValue();
+      int n_hits        = b_n_hits->GetLeaf("sh_n_hits")->GetValue();
+ 
+      TVector3 vertex(temp_vertex);
+      TVector3 direction(temp_direction);
+
+      showers[id].emplace_back(n_hits, vertex, direction, open_angle, length, energy);
+    } 
+  }
+  //------------------------------------------------------------------------------------------ 
+  void EventSelectionTool::LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks){
+
+    TBranch *b_event_id         = track_tree->GetBranch("event_id");
+    TBranch *b_time_now         = track_tree->GetBranch("time_now");
+    TBranch *b_id_charge        = track_tree->GetBranch("tr_id_charge");
+    TBranch *b_id_energy        = track_tree->GetBranch("tr_id_energy");
+    TBranch *b_id_hits          = track_tree->GetBranch("tr_id_hits");
+    TBranch *b_n_hits           = track_tree->GetBranch("tr_n_hits");
+    TBranch *b_vertex           = track_tree->GetBranch("tr_vertex");
+    TBranch *b_end              = track_tree->GetBranch("tr_end");
+    TBranch *b_pida             = track_tree->GetBranch("tr_pida");
+    TBranch *b_chi2_mu          = track_tree->GetBranch("tr_chi2_mu");
+    TBranch *b_chi2_pi          = track_tree->GetBranch("tr_chi2_pi");
+    TBranch *b_chi2_pr          = track_tree->GetBranch("tr_chi2_pr");
+    TBranch *b_chi2_ka          = track_tree->GetBranch("tr_chi2_ka");
+    TBranch *b_length           = track_tree->GetBranch("tr_length");
+    TBranch *b_kinetic_energy   = track_tree->GetBranch("tr_kinetic_energy");
+    TBranch *b_mcs_mom_muon     = track_tree->GetBranch("tr_mcs_mom_muon");
+    TBranch *b_range_mom_muon   = track_tree->GetBranch("tr_range_mom_muon");
+    TBranch *b_range_mom_proton = track_tree->GetBranch("tr_range_mom_proton");
+    // Do not process the following branches
+    track_tree->SetBranchStatus("tr_dedx_size",0);      
+    track_tree->SetBranchStatus("tr_residual_range",0); 
+    track_tree->SetBranchStatus("tr_dedx",0);           
+    //TBranch *b_size             = track_tree->GetBranch("tr_dedx_size");      
+    //TBranch *b_residual_range   = track_tree->GetBranch("tr_residual_range"); 
+    //TBranch *b_dedx             = track_tree->GetBranch("tr_dedx");           
+    
+    unsigned int n_entries = track_tree->GetEntries();
+
+    for(unsigned int i = 0; i < n_entries; ++i){
+      track_tree->GetEntry(i);
+
+      int event_id         = b_event_id->GetLeaf("event_id")->GetValue();
+      int time_now         = b_time_now->GetLeaf("time_now")->GetValue();
+      const UniqueId id(event_id,time_now);
+      
+      double temp_vertex[3];
+      double temp_end[3];
+
+      int id_charge          = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
+      int id_energy          = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
+      int id_hits            = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
+      int n_hits             = b_n_hits->GetLeaf("tr_n_hits")->GetValue();
+      temp_vertex[0]         = b_vertex->GetLeaf("tr_vertex")->GetValue(0);
+      temp_vertex[1]         = b_vertex->GetLeaf("tr_vertex")->GetValue(1);
+      temp_vertex[2]         = b_vertex->GetLeaf("tr_vertex")->GetValue(2);
+      temp_end[0]            = b_end->GetLeaf("tr_end")->GetValue(0);
+      temp_end[1]            = b_end->GetLeaf("tr_end")->GetValue(1);
+      temp_end[2]            = b_end->GetLeaf("tr_end")->GetValue(2);
+      float pida             = b_pida->GetLeaf("tr_pida")->GetValue();
+      float chi2_mu          = b_chi2_mu->GetLeaf("tr_chi2_mu")->GetValue();
+      float chi2_pi          = b_chi2_pi->GetLeaf("tr_chi2_pi")->GetValue();
+      float chi2_pr          = b_chi2_pr->GetLeaf("tr_chi2_pr")->GetValue();
+      float chi2_ka          = b_chi2_ka->GetLeaf("tr_chi2_ka")->GetValue();
+      float length           = b_length->GetLeaf("tr_length")->GetValue();
+      float kinetic_energy   = b_kinetic_energy->GetLeaf("tr_kinetic_energy")->GetValue();
+      float mcs_mom_muon     = b_mcs_mom_muon->GetLeaf("tr_mcs_mom_muon")->GetValue();
+      float range_mom_muon   = b_range_mom_muon->GetLeaf("tr_range_mom_muon")->GetValue();
+      float range_mom_proton = b_range_mom_proton->GetLeaf("tr_range_mom_proton")->GetValue();
+
+      TVector3 vertex(temp_vertex);
+      TVector3 end(temp_end);
+      
+      float vertex_x = temp_vertex[0];                        
+      float vertex_y = temp_vertex[1];                        
+      float vertex_z = temp_vertex[2];                        
+      float end_x    = temp_end[0];                        
+      float end_y    = temp_end[1];                        
+      float end_z    = temp_end[2];                        
+                                                                                   
+      // Co-ordinate offset in cm
+      float sbnd_length_x = 400;
+      float sbnd_length_y = 400;
+      float sbnd_length_z = 500;
+      
+      float sbnd_offset_x = 200;
+      float sbnd_offset_y = 200;
+      float sbnd_offset_z = 0;
+
+      float sbnd_border_x_min1 = 8.25;
+      float sbnd_border_x_max1 = 5.6;
+      float sbnd_border_x_min2 = 10.9;
+      float sbnd_border_x_max2 = 8.25;
+      float sbnd_border_y      = 15.;
+      float sbnd_border_z_min  = 15.;
+      float sbnd_border_z_max  = 85.;
+
+      bool not_contained = 
+        (     (vertex_x > (sbnd_length_x - sbnd_offset_x)) 
+           || (vertex_x < (-sbnd_offset_x))          
+           || (vertex_y > (sbnd_length_y - sbnd_offset_y)) 
+           || (vertex_y < (-sbnd_offset_y + sbnd_border_y))          
+           || (vertex_z > (sbnd_length_z - sbnd_offset_z)) 
+           || (vertex_z < (-sbnd_offset_z))
+           || (end_x    > (sbnd_length_x - sbnd_offset_x)) 
+           || (end_x    < (-sbnd_offset_x))          
+           || (end_y    > (sbnd_length_y - sbnd_offset_y)) 
+           || (end_y    < (-sbnd_offset_y))          
+           || (end_z    > (sbnd_length_z - sbnd_offset_z)) 
+           || (end_z    < (-sbnd_offset_z))); 
+
+      bool does_vtx_escape = 
+        (     (vertex_x > (sbnd_length_x - sbnd_offset_x)) 
+           || (vertex_x < (-sbnd_offset_x))          
+           || (vertex_y > (sbnd_length_y - sbnd_offset_y)) 
+           || (vertex_y < (-sbnd_offset_y + sbnd_border_y))          
+           || (vertex_z > (sbnd_length_z - sbnd_offset_z)) 
+           || (vertex_z < (-sbnd_offset_z)));
+
+      bool does_end_escape = 
+        (     (end_x    > (sbnd_length_x - sbnd_offset_x)) 
+           || (end_x    < (-sbnd_offset_x))          
+           || (end_y    > (sbnd_length_y - sbnd_offset_y)) 
+           || (end_y    < (-sbnd_offset_y))          
+           || (end_z    > (sbnd_length_z - sbnd_offset_z)) 
+           || (end_z    < (-sbnd_offset_z))); 
+
+      bool one_end_escapes = true;
+      if(does_vtx_escape && does_end_escape) one_end_escapes   = false;
+      if(!does_vtx_escape && !does_end_escape) one_end_escapes = false;
+
+      std::vector<float> dedx;
+      std::vector<float> residual_range;
+      /*
+      double n_dedx = b_size->GetLeaf("tr_dedx_size")->GetValue(); // Get the number of entries for the dedx & residual range branches
+      dedx.clear();
+      residual_range.clear();
+      for(unsigned int j = 0; j < n_dedx; ++j){
+        b_dedx->GetEntry(j);
+        b_residual_range->GetEntry(j);
+        dedx.push_back(b_dedx->GetLeaf("tr_dedx")->GetValue());
+        residual_range.push_back(b_residual_range->GetLeaf("tr_residual_range")->GetValue());
+      }
+      */
+
+      tracks[id].emplace_back(id_charge, id_energy, id_hits, n_hits, pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, mcs_mom_muon, range_mom_muon, range_mom_proton,vertex, end, !not_contained, one_end_escapes, dedx, residual_range);
+    
+    } 
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -290,41 +542,6 @@ namespace selection{
     planes.emplace_back(TVector3(0, -fid_h, front_l),      TVector3(fid_w, 0, 0), TVector3(0,      0,  half_fiducial_l)); // 3 = -y
     planes.emplace_back(TVector3(0, 0, lmin_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));    // 4 = min z
     planes.emplace_back(TVector3(0, 0, (2*l)-lmax_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));    // 5 = max z
-  }
-
-  //------------------------------------------------------------------------------------------ 
-  
-  void EventSelectionTool::GetUniqueEventList(TTree *event_tree, UniqueEventIdList &unique_event_list){
-  
-    TBranch *b_event_id = event_tree->GetBranch("event_id");
-    TBranch *b_time_now = event_tree->GetBranch("time_now");
-    
-    unsigned int n_events = event_tree->GetEntries();
-
-    for(unsigned int i = 0; i < n_events; ++i){
-   
-      event_tree->GetEntry(i);
-
-      int event_id_a = b_event_id->GetLeaf("event_id")->GetValue();
-      int time_now_a = b_time_now->GetLeaf("time_now")->GetValue();
-  
-      bool shouldAdd(true);
-    
-      for(unsigned int j = 0; j < n_events; ++j){
-        event_tree->GetEntry(j);
-
-        int event_id_b = b_event_id->GetLeaf("event_id")->GetValue();
-        int time_now_b = b_time_now->GetLeaf("time_now")->GetValue();
-        
-        if (event_id_a == event_id_b && time_now_a == time_now_b && i != j){
-          shouldAdd = false;
-          break;
-        }
-      }
-       
-      if (shouldAdd)
-        unique_event_list.push_back(std::pair<int, int>(event_id_a, time_now_a));
-    }        
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -600,7 +817,8 @@ namespace selection{
             if(!EventSelectionTool::CheckIfTrackIntersectsPlane(plane, trk)) continue;
             distance_to_intersection_point = EventSelectionTool::GetDistanceFromTrackToPlane(plane,trk);
             // Make sure the distance to the escaping border is big enough 
-            if(distance_to_intersection_point > 35){
+            // Run Contianment Main to determine this value from mu-pi comparison plot
+            if(distance_to_intersection_point > 60){
               contained_and_passes_distance_cut = true;
               break;
             }

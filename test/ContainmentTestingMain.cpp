@@ -5,6 +5,8 @@
 #include "../include/Plane.h"
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 #include <numeric>
 #include <time.h>
 #include <stdexcept>
@@ -26,7 +28,7 @@
 
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions);
 
 int MainTest(){
   
@@ -39,17 +41,15 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
-  std::string plots_location = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/escaping_track/";
-  std::string feb_location   = "../Output_Selection_Tool/plots/newfiducial_mcp0_9/vertices/";
+  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/";
+  std::string plots_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/";
+  std::string tmva_location   = "/sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
   //------------------------------------------------------------------------------------------
   
-  // Initialise event list and the topology maps
-  EventSelectionTool::EventList events;
-  
+  // Initialise topology maps
   TopologyMap numu_signal_map  = GeneralAnalysisHelper::GetNuMuTopologyMap();
   TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
@@ -58,36 +58,27 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 991;
+  unsigned int total_files = 149;
   double pot = 0.; 
 
   std::vector<int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
-  std::string s_exc;
-  while (std::getline(exception_file, s_exc)) {
-    int i_exc;
-    std::istringstream ss_exc(s_exc);
-    ss_exc >> i_exc;
-    exceptions.push_back(i_exc); 
-    ss_exc.str(std::string());
-    s_exc.clear();
+  std::fstream exception_file("exceptions.txt");
+  if(!exception_file)
+    std::cout << " No exceptions file given" << std::endl;
+  else{
+    std::string s_exc;
+    while (std::getline(exception_file, s_exc)) {
+      unsigned int i_exc;
+      std::istringstream ss_exc(s_exc);
+      ss_exc >> i_exc;
+      exceptions.push_back(i_exc);
+      ss_exc.str(std::string());
+      s_exc.clear();
+    }
   }
-
-  /*std::cout << " Skipping files ending in : " << std::endl;
-  for(const int & ex : exceptions)
-    std::cout << " - " << ex << " - ";
-  std::cout << std::endl;*/
-
-  LoadAllEvents(events, total_files, start, pot, exceptions);
-
-  /*
-   *
-   *      TESTING
-   *
-   */
   // Counter for total number of escaping tracks
   unsigned int reco_vertex_contained          = 0;
   unsigned int reco_and_true_vertex_contained = 0;
@@ -95,22 +86,6 @@ int MainTest(){
   unsigned int too_many_escape                = 0;
   unsigned int too_many_true_contained        = 0;
   unsigned int too_many_true_escaping         = 0;
-
-  for(const Event &e : events){
-    //Counter for event-based track counting
-    if(!e.IsSBNDRecoFiducial()) continue;
-    reco_vertex_contained++;
-    if(e.IsSBNDRecoFiducial()) reco_and_true_vertex_contained++;
-
-    if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
-      too_many_escape++;
-      if(e.IsSBNDTrueFiducial()) too_many_true_contained++;
-      else too_many_true_escaping++;
-    }
-    else{
-      max_one_escapes++;
-    }
-  }
 
   // Plot histograms for events with only 1 escaping tracks
   //    Plot for both scenarios when the escaping track is the longest and isn't the longest
@@ -142,9 +117,9 @@ int MainTest(){
   // Tree for TMVA calculation
   bool signal;
   float length, chi2p, chi2mu, dist, energy, costheta, longest_track_length_fraction, energy_per_length, total_energy_fraction, length_costheta;
-  TFile f("../Output_Selection_Tool/tmva/trees/TMVA_input.root","RECREATE");
+  // TFile for TMVA variable
+  TFile *f = new TFile((tmva_location+"TMVA_input.root").c_str(),"RECREATE");
   TTree *escaping_muon_pid = new TTree("escaping_muon_pid", "TTree to hold variables which might distinguish an escaping track as a muon");
-  TTree *all_particle_pid  = new TTree("all_particle_pid",  "TTree to hold variables which might distinguish an escaping track as a muon");
   escaping_muon_pid->Branch("dist",                          &dist,                          "dist/F");
   escaping_muon_pid->Branch("chi2p",                         &chi2p,                         "chi2p/F");
   escaping_muon_pid->Branch("chi2mu",                        &chi2mu,                        "chi2mu/F");
@@ -177,225 +152,245 @@ int MainTest(){
   unsigned int longest_escaping_not_muon                 = 0;
   unsigned int longest_true_muon_over_100_escapes        = 0;
   unsigned int longest_not_muon_over_100_escapes         = 0;
+  unsigned int n_events_total                            = 0;
 
+  for( unsigned int i = 0; i < total_files; ++i ){
+    EventSelectionTool::EventList events;
+    LoadAllEventsInFile(events, i, pot, exceptions);
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
 
-  double escaping_track_length = -1.;
+    for(const Event &e : events){
+      n_events_total++;
+      //Counter for event-based track counting
+      if(e.IsSBNDRecoFiducial()){
+        reco_vertex_contained++;
+        if(e.IsSBNDTrueFiducial()) reco_and_true_vertex_contained++;
 
-  for(const Event &e : events){
-    // Define the escaping plane in the event
-    double total_energy        = 0.; 
-    int escaping_plane         = -1;
-    bool longest_track_escapes = false;
-    bool muon_escapes          = false;
-    // Only look at events with 1 escaping track
-
-    if(!e.IsSBNDRecoFiducial()) continue;
-    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
-    events_with_1_escaping_track++;
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
-    
-    bool contained_and_passes_distance_cut = false;
-    for(const Particle &p : e.GetRecoParticleList()){
-      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
-        float distance_to_intersection_point = -std::numeric_limits<float>::max();
-        // Loop over the fiducial planes and find out which the escaping particle passed through
-        PlaneList planes;
-        EventSelectionTool::GetSBNDFiducialPlanes(planes);
-        for(const Plane &plane : planes){
-          escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
-          if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
-          distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
-          if(distance_to_intersection_point > 50){
-            contained_and_passes_distance_cut = true;
-            if(p.GetLength() >= 100)
-              events_with_1_escaping_track_with_cut_100++;
-            break;
-          }
+        if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
+          too_many_escape++;
+          if(e.IsSBNDTrueFiducial()) too_many_true_contained++;
+          else too_many_true_escaping++;
+        }
+        else{
+          max_one_escapes++;
         }
       }
-    }
-    if(contained_and_passes_distance_cut) {
-      events_with_1_escaping_track_with_cut++;
-      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap()))
-        ccinc_with_1_escaping_track_with_cut++;
-    }
+      
+      // Define the escaping plane in the event
+      double total_energy          = 0.; 
+      double escaping_track_length = -999.;;
+      int escaping_plane           = -1;
+      bool longest_track_escapes   = false;
+      bool muon_escapes            = false;
+      // Only look at events with 1 escaping track
 
-    // Now plot some things
-    // Find the ID of the longest track
-    // Calculate the total kinetic energy deposited in the event by 
-    // all reconstructed particles
-    double max = -std::numeric_limits<double>::max();
-    int max_id = -1;
-    for(const Particle &p : e.GetRecoParticleList()){
-      if(p.GetFromRecoTrack()){
-        total_energy += p.GetKineticEnergy();
-        if(p.GetLength() > max){
-          max_id = p.GetMCParticleIdHits();
-          max = p.GetLength();
-        }
-      }
-    }
-    if(max_id == -1) continue;
+      if(!e.IsSBNDRecoFiducial()) continue;
+      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+      events_with_1_escaping_track++;
+      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
 
-    // Plot
-    for(const Particle &p : e.GetRecoParticleList()){
-      if(p.GetFromRecoTrack() && p.GetMCParticleIdHits() == max_id && p.GetOneEndTrackContained()){
-        h_length_longest->Fill(p.GetLength());
-        longest_escapes++;
-        longest_track_escapes = true;
-        for(const Particle &mcp : e.GetMCParticleList()){
-          if(mcp.GetMCId() == max_id && mcp.GetPdgCode() == 13){
-            longest_escaping_true_muon++;
-            if(p.GetLength() > 100) longest_true_muon_over_100_escapes++;
-          }  
-          else if(mcp.GetMCId() == max_id && mcp.GetPdgCode() != 13){
-            longest_escaping_not_muon++;
-            if(p.GetLength() > 100) longest_not_muon_over_100_escapes++;
-          }
-        }
-        if(p.GetLength() > 100) longest_over_100_escapes++;
-      }
-      else if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) 
-        h_length_not->Fill(p.GetLength());
-          
-      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
-        for(const Particle &mcp : e.GetMCParticleList()){
-          if(mcp.GetPdgCode() == 13 && mcp.GetOneEndTrackContained()){
-            h_length_muon->Fill(p.GetLength());
-            escaping_track_length = p.GetLength();
-            true_muon_escapes++;
-            muon_escapes = true;
-            if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_escapes++;
-            if(contained_and_passes_distance_cut) {
-              true_muon_distance_cut++; 
-              h_exiting_plane_muon->Fill(escaping_plane);
-              if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_distance_cut++;
+      bool contained_and_passes_distance_cut = false;
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+          float distance_to_intersection_point = -std::numeric_limits<float>::max();
+          // Loop over the fiducial planes and find out which the escaping particle passed through
+          PlaneList planes;
+          EventSelectionTool::GetSBNDFiducialPlanes(planes);
+          for(const Plane &plane : planes){
+            escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
+            if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
+            distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
+            if(distance_to_intersection_point > 50){
+              contained_and_passes_distance_cut = true;
+              if(p.GetLength() >= 100)
+                events_with_1_escaping_track_with_cut_100++;
+              break;
             }
           }
-          else if(mcp.GetOneEndTrackContained()){
-            h_length_not_muon->Fill(p.GetLength());
-            escaping_track_length = p.GetLength();
-            if(contained_and_passes_distance_cut && (mcp.GetPdgCode() == 211 || mcp.GetPdgCode() == -211))
-              h_exiting_plane_not->Fill(escaping_plane);
+        }
+      }
+      if(contained_and_passes_distance_cut) {
+        events_with_1_escaping_track_with_cut++;
+        if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap()))
+          ccinc_with_1_escaping_track_with_cut++;
+      }
+
+      // Now plot some things
+      // Find the ID of the longest track
+      // Calculate the total kinetic energy deposited in the event by 
+      // all reconstructed particles
+      double max = -std::numeric_limits<double>::max();
+      int max_id = -1;
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(p.GetFromRecoTrack()){
+          total_energy += p.GetKineticEnergy();
+          if(p.GetLength() > max){
+            max_id = p.GetMCParticleIdHits();
+            max = p.GetLength();
           }
         }
       }
-    }
-    
-    /*
-     *
-     *  VERTEX DISTANCE
-     *
-     */
-    // Fiducial volume parameters 
-    float min_fid_x = e.GetMinimumFiducialDimensions()[0];
-    float min_fid_y = e.GetMinimumFiducialDimensions()[1];
-    float min_fid_z = e.GetMinimumFiducialDimensions()[2];
-    float max_fid_x = e.GetMaximumFiducialDimensions()[0];
-    float max_fid_y = e.GetMaximumFiducialDimensions()[1];
-    float max_fid_z = e.GetMaximumFiducialDimensions()[2];
-    
-    // Neutrino vertex
-    float nu_vtx_x = e.GetRecoNuVertex()[0];
-    float nu_vtx_y = e.GetRecoNuVertex()[1];
-    float nu_vtx_z = e.GetRecoNuVertex()[2];
+      if(max_id == -1) continue;
 
-    // Find out which the neutrino vertex is closest to, minimum or maximum
-    //    Call the minimum distance delta(x,y,z)
-    float delta_x = std::min(std::abs(max_fid_x - nu_vtx_x), std::abs(nu_vtx_x - min_fid_x));
-    float delta_y = std::min(std::abs(max_fid_y - nu_vtx_y), std::abs(nu_vtx_y - min_fid_y));
-    float delta_z = std::min(std::abs(max_fid_z - nu_vtx_z), std::abs(nu_vtx_z - min_fid_z));
-
-    float delta_min = std::min(delta_x, std::min(delta_y, delta_z));
-
-    if(longest_track_escapes){
-      h_dist_x_longest->Fill(delta_x);
-      h_dist_y_longest->Fill(delta_y);
-      h_dist_z_longest->Fill(delta_z);
-      h_closest_longest->Fill(delta_min);
-    }
-    else{
-      h_dist_x_not->Fill(delta_x);
-      h_dist_y_not->Fill(delta_y);
-      h_dist_z_not->Fill(delta_z);
-      h_closest_not->Fill(delta_min);
-    }
-    if(muon_escapes){
-      h_length_dist_muon->Fill(delta_min, escaping_track_length);
-      h_closest_muon->Fill(delta_min);
-    }
-    else{
-      h_length_dist_not->Fill(delta_min, escaping_track_length);
-      h_closest_not_muon->Fill(delta_min);
-    }
-
-    /*
-     *
-     *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
-     *
-     */
-    
-    PlaneList planes;
-    EventSelectionTool::GetSBNDFiducialPlanes(planes);
-
-    // Find the location at which the escaping track leaves the TPC
-    for(const Particle &p : e.GetRecoParticleList()){
-      // Check that we are looking at the escaping track
-      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
-        float distance_to_intersection_point = -std::numeric_limits<float>::max();
-        // Loop over the fiducial planes and find out which the escaping particle passed through
-        for(const Plane &plane : planes){
-          if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
-          distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
-          break;
+      // Plot
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(p.GetFromRecoTrack() && p.GetMCParticleIdHits() == max_id && p.GetOneEndTrackContained()){
+          h_length_longest->Fill(p.GetLength());
+          longest_escapes++;
+          longest_track_escapes = true;
+          for(const Particle &mcp : e.GetMCParticleList()){
+            if(mcp.GetMCId() == max_id && mcp.GetPdgCode() == 13){
+              longest_escaping_true_muon++;
+              if(p.GetLength() > 100) longest_true_muon_over_100_escapes++;
+            }  
+            else if(mcp.GetMCId() == max_id && mcp.GetPdgCode() != 13){
+              longest_escaping_not_muon++;
+              if(p.GetLength() > 100) longest_not_muon_over_100_escapes++;
+            }
+          }
+          if(p.GetLength() > 100) longest_over_100_escapes++;
         }
-        if(muon_escapes) {
-          h_escaping_dist_muon->Fill(distance_to_intersection_point);
+        else if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) 
+          h_length_not->Fill(p.GetLength());
 
-          // Fill the TMVA tree 
-          signal                        = 1;
-          dist                          = distance_to_intersection_point;
-          chi2p                         = p.GetChi2P();
-          chi2mu                        = p.GetChi2Mu();
-          length                        = p.GetLength();
-          energy                        = p.GetKineticEnergy();
-          costheta                      = p.GetCosTheta();
-          length_costheta               = length * costheta;
-          energy_per_length             = energy / double(length);
-          total_energy_fraction         = energy / double(total_energy);
-          longest_track_length_fraction = length / double(max);
+        if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+          for(const Particle &mcp : e.GetMCParticleList()){
+            if(mcp.GetPdgCode() == 13 && mcp.GetOneEndTrackContained()){
+              h_length_muon->Fill(p.GetLength());
+              escaping_track_length = p.GetLength();
+              true_muon_escapes++;
+              muon_escapes = true;
+              if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_escapes++;
+              if(contained_and_passes_distance_cut) {
+                true_muon_distance_cut++; 
+                h_exiting_plane_muon->Fill(escaping_plane);
+                if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_true_muon_distance_cut++;
+              }
+            }
+            else if(mcp.GetOneEndTrackContained()){
+              h_length_not_muon->Fill(p.GetLength());
+              escaping_track_length = p.GetLength();
+              if(contained_and_passes_distance_cut && (mcp.GetPdgCode() == 211 || mcp.GetPdgCode() == -211))
+                h_exiting_plane_not->Fill(escaping_plane);
+            }
+          }
         }
-        else {
-          h_escaping_dist_not_muon->Fill(distance_to_intersection_point);
+      }
 
-          // Fill the TMVA tree 
-          signal = 0;
-          dist                          = distance_to_intersection_point;
-          chi2p                         = p.GetChi2P();
-          chi2mu                        = p.GetChi2Mu();
-          length                        = p.GetLength();
-          energy                        = p.GetKineticEnergy();
-          costheta                      = p.GetCosTheta();
-          length_costheta               = length * costheta;
-          energy_per_length             = energy / double(length);
-          total_energy_fraction         = energy / double(total_energy);
-          longest_track_length_fraction = length / double(max);
+      /*
+       *
+       *  VERTEX DISTANCE
+       *
+       */
+      // Fiducial volume parameters 
+      float min_fid_x = e.GetMinimumFiducialDimensions()[0];
+      float min_fid_y = e.GetMinimumFiducialDimensions()[1];
+      float min_fid_z = e.GetMinimumFiducialDimensions()[2];
+      float max_fid_x = e.GetMaximumFiducialDimensions()[0];
+      float max_fid_y = e.GetMaximumFiducialDimensions()[1];
+      float max_fid_z = e.GetMaximumFiducialDimensions()[2];
+
+      // Neutrino vertex
+      float nu_vtx_x = e.GetRecoNuVertex()[0];
+      float nu_vtx_y = e.GetRecoNuVertex()[1];
+      float nu_vtx_z = e.GetRecoNuVertex()[2];
+
+      // Find out which the neutrino vertex is closest to, minimum or maximum
+      //    Call the minimum distance delta(x,y,z)
+      float delta_x = std::min(std::abs(max_fid_x - nu_vtx_x), std::abs(nu_vtx_x - min_fid_x));
+      float delta_y = std::min(std::abs(max_fid_y - nu_vtx_y), std::abs(nu_vtx_y - min_fid_y));
+      float delta_z = std::min(std::abs(max_fid_z - nu_vtx_z), std::abs(nu_vtx_z - min_fid_z));
+
+      float delta_min = std::min(delta_x, std::min(delta_y, delta_z));
+
+      if(longest_track_escapes){
+        h_dist_x_longest->Fill(delta_x);
+        h_dist_y_longest->Fill(delta_y);
+        h_dist_z_longest->Fill(delta_z);
+        h_closest_longest->Fill(delta_min);
+      }
+      else{
+        h_dist_x_not->Fill(delta_x);
+        h_dist_y_not->Fill(delta_y);
+        h_dist_z_not->Fill(delta_z);
+        h_closest_not->Fill(delta_min);
+      }
+      if(muon_escapes){
+        h_length_dist_muon->Fill(delta_min, escaping_track_length);
+        h_closest_muon->Fill(delta_min);
+      }
+      else{
+        h_length_dist_not->Fill(delta_min, escaping_track_length);
+        h_closest_not_muon->Fill(delta_min);
+      }
+
+      /*
+       *
+       *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
+       *
+       */
+
+      PlaneList planes;
+      EventSelectionTool::GetSBNDFiducialPlanes(planes);
+
+      // Find the location at which the escaping track leaves the TPC
+      for(const Particle &p : e.GetRecoParticleList()){
+        // Check that we are looking at the escaping track
+        if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+          float distance_to_intersection_point = -std::numeric_limits<float>::max();
+          // Loop over the fiducial planes and find out which the escaping particle passed through
+          for(const Plane &plane : planes){
+            if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
+            distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
+            break;
+          }
+          if(muon_escapes) {
+            h_escaping_dist_muon->Fill(distance_to_intersection_point);
+
+            // Fill the TMVA tree 
+            signal                        = 1;
+            dist                          = distance_to_intersection_point;
+            chi2p                         = p.GetChi2P();
+            chi2mu                        = p.GetChi2Mu();
+            length                        = p.GetLength();
+            energy                        = p.GetKineticEnergy();
+            costheta                      = p.GetCosTheta();
+            length_costheta               = length * costheta;
+            energy_per_length             = energy / double(length);
+            total_energy_fraction         = energy / double(total_energy);
+            longest_track_length_fraction = length / double(max);
+          }
+          else {
+            h_escaping_dist_not_muon->Fill(distance_to_intersection_point);
+
+            // Fill the TMVA tree 
+            signal = 0;
+            dist                          = distance_to_intersection_point;
+            chi2p                         = p.GetChi2P();
+            chi2mu                        = p.GetChi2Mu();
+            length                        = p.GetLength();
+            energy                        = p.GetKineticEnergy();
+            costheta                      = p.GetCosTheta();
+            length_costheta               = length * costheta;
+            energy_per_length             = energy / double(length);
+            total_energy_fraction         = energy / double(total_energy);
+            longest_track_length_fraction = length / double(max);
+          }
+          escaping_muon_pid->Fill();
         }
-        escaping_muon_pid->Fill();
       }
     }
   }
 
   escaping_muon_pid->Write();
-  f.Close();
+  f->Close();
 
   /*
    *
    *      OUTPUTS
    *
    */
-  // Length vs dist 2D plot
-  TCanvas *c = new TCanvas("c","",800,600);
+  TCanvas *c = new TCanvas("c","",700,900);
 
   h_exiting_plane_muon->SetFillColor(kSpring-3);
   h_exiting_plane_muon->SetFillStyle(3001);
@@ -403,11 +398,17 @@ int MainTest(){
   h_exiting_plane_not->SetFillColor(kOrange+7);
   h_exiting_plane_not->SetFillStyle(3001);
   h_exiting_plane_not->SetLineColor(kOrange+7);
-  h_exiting_plane_muon->Scale(1./double(h_exiting_plane_muon->Integral()));
-  h_exiting_plane_not->Scale(1./double(h_exiting_plane_not->Integral()));
+  if(h_exiting_plane_muon->Integral() > 0)
+    h_exiting_plane_muon->Scale(1./double(h_exiting_plane_muon->Integral()));
+  else
+    std::cout << " Integral is 0 so cannot scale" << std::endl;
+  if(h_exiting_plane_not->Integral() > 0)
+    h_exiting_plane_not->Scale(1./double(h_exiting_plane_not->Integral()));
+  else
+    std::cout << " Integral is 0 so cannot scale" << std::endl;
 
   // Legend
-  TLegend *l      = new TLegend(0.58,0.68,0.88,0.88);
+  TLegend *l = new TLegend(0.58,0.68,0.88,0.88);
   l->AddEntry(h_exiting_plane_muon,  "#mu exits",  "f");
   l->AddEntry(h_exiting_plane_not,   "#pi exits",  "f");
   l->SetLineWidth(0);
@@ -431,9 +432,9 @@ int MainTest(){
   h_exiting_plane_muon->Draw("hist same");
   l->Draw("same");
 
-  c->SaveAs((feb_location+"exiting_plane.root").c_str());
+  c->SaveAs((plots_location+"exiting_plane.png").c_str());
+  c->SaveAs((plots_location+"exiting_plane.root").c_str());
   c->Clear();
-
 
   h_length_dist_muon->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
   h_length_dist_muon->GetYaxis()->SetTitle("Length of the escaping track [cm]");
@@ -442,7 +443,6 @@ int MainTest(){
 
   c->SaveAs((plots_location+"length_dist_muon.png").c_str());
   c->SaveAs((plots_location+"length_dist_muon.root").c_str());
-
   c->Clear();
   
   h_length_dist_not->GetXaxis()->SetTitle("Distance to closest fiducial border [cm]");
@@ -452,7 +452,6 @@ int MainTest(){
 
   c->SaveAs((plots_location+"length_dist_not.png").c_str());
   c->SaveAs((plots_location+"length_dist_not.root").c_str());
-
   c->Clear();
 
   TLegend *leg = new TLegend(0.43,0.68,0.88,0.88);
@@ -689,7 +688,7 @@ int MainTest(){
   file.open(stats_location+"distance_cut_containment_testing.txt");
 
   file << "=====================================================================" << std::endl;
-  file << " Total number of events                                             : " << events.size()   << std::endl;
+  file << " Total number of events                                             : " << n_events_total << std::endl;
   file << " Reconstructed vertex contained                                     : " << reco_vertex_contained << std::endl;
   file << " Reconstructed and true vertices contained                          : " << reco_and_true_vertex_contained << std::endl;
   file << " Number of events with maximum one escaping track                   : " << max_one_escapes << std::endl;
@@ -732,37 +731,24 @@ int MainTest(){
   struct tm * timeinfo_end;
   time (&rawtime_end);
   timeinfo_end = localtime (&rawtime_end);
+  time_t total_time = rawtime_end-rawtime;
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " End: Local time and date:  " << asctime(timeinfo_end) << std::endl;
+  std::cout << " Total time taken         :  " << total_time/static_cast<double>(60) << " minutes" << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
 
   return 0;
 
 } // MainTest()
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
-  double total_pot = 0;
-  std::vector<int>::iterator it;
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total_files; ++i ){
-    it = std::find(exceptions.begin(), exceptions.end(),i);
-    if(it != exceptions.end()) continue;
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-      name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
+void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions) {
+  std::vector<int>::const_iterator it = std::find(exceptions.begin(), exceptions.end(),file_index);
+  if(it != exceptions.end()) return;
+  
+  // Get the filenames
+  const std::string name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/"+std::to_string(file_index)+"/selection_tree.root";
 
-    double temp_pot = 0.;
-    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
-    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
-    total_pot += temp_pot;
-  }
-  std::cout << std::endl;
-  pot = total_pot;
-} // LoadAllEvents
+  double temp_pot = 0.;
+  EventSelectionTool::LoadEventList(name, events, file_index, temp_pot);
+  pot += temp_pot;
+} // LoadAllEventsInFile

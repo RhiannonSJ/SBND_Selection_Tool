@@ -27,9 +27,14 @@
 
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions);
+void LoadAllEvents(EventSelectionTool::EventList &events, 
+                   const unsigned int &start_file, 
+                   const unsigned int &end_file, 
+                   const int &start_time, 
+                   double &pot, 
+                   std::vector<unsigned int> &exceptions);
 
-int MainTest(){
+int MainTest(const unsigned int &start_file = 0, const unsigned int &end_file = 1){
   
   time_t rawtime;
   struct tm * timeinfo;
@@ -40,7 +45,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string file_location  = "../Output_Selection_Tool/files/newfiducial/";
+  std::string file_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/files/valor/cut75cm/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -59,6 +64,7 @@ int MainTest(){
   // Variables to get
   bool iscc, isnc;  // Charged or neutral current event current
   int nu_pdg, mode; // Neutrino pdg code and scattering mode
+  double baseline; // Baseline of the neutrino from the flux
   double enu_true, enu_reco, enu_reco_mc, qsqr; // Neutrino kinematics, truth and reco
   double mu_momentum, mu_cos_z; // Muon kinematics, reco
   int nkaons, npip, npim, npi0; // Particle counting, truth
@@ -84,6 +90,7 @@ int MainTest(){
 
   t_run->Branch("iscc",          &iscc,          "iscc/O");
   t_run->Branch("isnc",          &isnc,          "isnc/O");
+  t_run->Branch("baseline",      &baseline,      "baseline/D");
   t_run->Branch("nu_pdg",        &nu_pdg,        "nu_pdg/I");
   t_run->Branch("enu_true",      &enu_true,      "enu_true/D");
   t_run->Branch("enu_reco_mc",   &enu_reco_mc,   "enu_reco_mc/D");
@@ -102,22 +109,23 @@ int MainTest(){
   t_subrun->Branch("pot",        &pot,           "pot/D");
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 991;
   std::vector<unsigned int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
   std::fstream exception_file("exceptions.txt");
   if(!exception_file)
-    std::cout << " File not open! " << std::endl;
-  std::string s_exc;
-  while (std::getline(exception_file, s_exc)) {
-    unsigned int i_exc;
-    std::istringstream ss_exc(s_exc);
-    ss_exc >> i_exc;
-    exceptions.push_back(i_exc);
-    ss_exc.str(std::string());
-    s_exc.clear();
+    std::cout << " No exceptions file given" << std::endl;
+  else{
+    std::string s_exc;
+    while (std::getline(exception_file, s_exc)) {
+      unsigned int i_exc;
+      std::istringstream ss_exc(s_exc);
+      ss_exc >> i_exc;
+      exceptions.push_back(i_exc);
+      ss_exc.str(std::string());
+      s_exc.clear();
+    }
   }
 
   /*
@@ -127,8 +135,7 @@ int MainTest(){
   std::cout << std::endl;
   */
 
-  LoadAllEvents(events, total_files, start, pot, exceptions);
-  
+  LoadAllEvents(events, start_file, end_file, start, pot, exceptions);
 
   // Counter to quantify how many events have strange particle energies in them
   int bad_events = 0;
@@ -146,6 +153,7 @@ int MainTest(){
     enu_true = e.GetTrueNuEnergy();
     qsqr     = e.GetTrueNuQ2();
     mode     = e.GetPhysicalProcess();
+    baseline = e.GetBaseline();
 
     // Start the counters
     nkaons      = 0;
@@ -168,14 +176,24 @@ int MainTest(){
             if(p.GetKineticEnergy() > 10) { // Higher than 10 GeV
               bad_event = true;
               bad_events++;
-              std::cerr << " Badly defined energy of the particle, skipping event " << std::endl;
+              std::cerr << " Badly defined energy of the particle (>10GeV), skipping event " << std::endl;
               break;
             }
             if(p.GetPdgCode() == 13){
               mu_momentum = p.GetModulusMomentum();
               mu_cos_z    = p.GetCosTheta();
             } 
-            enu_reco += (p.GetKineticEnergy() + p.GetMass());
+            double mass = 0.;
+            if(p.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e,p) >= 0) {
+              if(GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 211  || 
+                  GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == -211 ||
+                  GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 13){
+                mass = GeneralAnalysisHelper::GetBestMCParticle(e,p).GetMass();
+              }
+            }
+            // Calculate the reconstructed energy from the reco kinetic (visible) + mass of outgoing particles 
+            // Do not include hadron mass since the interaction didn't *produce* a hadron, it was *with* a hadron
+            enu_reco += (p.GetKineticEnergy() + mass);
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
@@ -246,7 +264,7 @@ int MainTest(){
   h_ccinc_e_eff->Divide(h_ccinc_e_true);
 
   // Output TFile
-  TFile f((file_location+"fixed_mass_ccinc_selection.root").c_str(), "RECREATE");
+  TFile f((file_location+"ccinc_selection_180620_"+std::to_string(start_file)+"-"+std::to_string(end_file)+".root").c_str(), "RECREATE");
 
   h_ccinc_e_true->Write();
   h_ccinc_e_sig->Write();
@@ -277,29 +295,31 @@ int MainTest(){
 
 } // MainTest
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<unsigned int> &exceptions) {
+void LoadAllEvents(EventSelectionTool::EventList &events, 
+                   const unsigned int &start_file, 
+                   const unsigned int &end_file, 
+                   const int &start_time, 
+                   double &pot, 
+                   std::vector<unsigned int> &exceptions){
   double total_pot = 0;
   std::vector<unsigned int>::iterator it;
   // Load the events into the event list
-  for( unsigned int i = 0; i < total_files; ++i ){
+  for( unsigned int i = start_file; i < end_file; ++i ){
     it = std::find(exceptions.begin(), exceptions.end(),i);
     if(it != exceptions.end()) continue;
     // Get the filenames
     std::string name;
     name.clear();
     char file_name[1024];
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
-    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/sbnd/app/users/rsjones/LArSoft_v08_54_00/test/output_file.root";
+    name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_170620/selection/"+std::to_string(i)+"/output_file.root";
+    //name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     double temp_pot = 0.;
+    unsigned int total_files = end_file - start_file;
     EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
-    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
+    EventSelectionTool::GetTimeLeft(start_time,total_files,i-start_file);
     total_pot += temp_pot;
   }
   std::cout << std::endl;

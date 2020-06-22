@@ -177,7 +177,12 @@ namespace selection{
        */
       static TopologyMap GetCCPi0TopologyMap();
 
-      /*8
+      /**
+       * @brief  Get CC 1Pi0 1PiC topology map
+       */
+      static TopologyMap GetCCPi0PiCTopologyMap();
+
+      /*
        * @brief  Get the NuE topology map
        */
       static TopologyMap GetNuETopologyMap();

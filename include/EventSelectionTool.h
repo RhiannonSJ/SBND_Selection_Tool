@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <map>
 #include <vector>
 #include <utility>
 #include "TTree.h"
@@ -26,12 +27,16 @@ namespace selection{
 
     public : 
 
-      typedef std::vector<std::pair<int,int> > UniqueEventIdList;
-      typedef std::vector<Plane>               PlaneList;
-      typedef std::vector<Particle>            ParticleList;
-      typedef std::vector<Event>               EventList;
-      typedef std::vector<Track>               TrackList;
-      typedef std::vector<Shower>              ShowerList;
+//      typedef std::vector<std::pair<int,int>> UniqueEventIdList;
+      typedef std::vector<Plane>                 PlaneList;
+      typedef std::vector<Particle>              ParticleList;
+      typedef std::vector<Event>                 EventList;
+      typedef std::vector<Track>                 TrackList;
+      typedef std::vector<Shower>                ShowerList;
+      typedef std::pair<int,int>                 UniqueId;
+      typedef std::map<UniqueId, TrackList>      UIdToTrackListMap;
+      typedef std::map<UniqueId, ShowerList>     UIdToShowerListMap;
+      typedef std::map<UniqueId, ParticleList>   UIdToParticleListMap;
       
       /**
        * @brief get the pot corresponding to each individual file
@@ -63,6 +68,33 @@ namespace selection{
        *
        */
       static void GetTimeLeft(const int start_time, const int total, const unsigned int i);
+      
+      /**
+       * @brief  Load mcparticles
+       *
+       * @param  mcparticle_tree  
+       * @param  map between unique event identifier and list of mcparticle objects
+       *
+       */
+      static void LoadMCParticles(TTree *mcparticle_tree, UIdToParticleListMap &mcparticles);
+
+      /**
+       * @brief  Load showers
+       *
+       * @param  shower_tree  
+       * @param  map between unique event identifier and list of shower objects
+       *
+       */
+      static void LoadShowers(TTree *shower_tree, UIdToShowerListMap &showers);
+
+      /**
+       * @brief  Load tracks
+       *
+       * @param  track_tree  
+       * @param  map between unique event identifier and list of track objects
+       *
+       */
+      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks);
       
       /**
        * @brief  The the distance between a particle and a defined plane
@@ -159,15 +191,6 @@ namespace selection{
        */
       static void CheckAndFlip(const TVector3 &vtx, ParticleList &particles);
       
-      /**
-       * @brief  get a list of event IDs which are entirely unique
-       *
-       * @param  event_tree the event tree from the root file
-       * @param  unique_event_list list of unique events to fill
-       *
-       */
-      static void GetUniqueEventList(TTree *event_tree, UniqueEventIdList &unique_event_list);
-
       /**
        * @brief  get the list of track objects
        *

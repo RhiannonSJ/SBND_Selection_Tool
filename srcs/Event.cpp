@@ -2,7 +2,7 @@
 #include "../include/EventSelectionTool.h"
 namespace selection{
   
-  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id) :
+  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id, const float &baseline) :
     m_mc_particles(mc_particles),
     m_reco_particles(reco_particles),
     m_interaction(interaction),
@@ -16,9 +16,26 @@ namespace selection{
     m_neutrino_energy(neutrino_energy),
     m_neutrino_qsqr(neutrino_qsqr),
     m_file(file),
-    m_id(id) {
+    m_id(id),
+    m_baseline(baseline){
     
       // Co-ordinate offset in cm
+      /*
+      m_sbnd_half_length_x = 730;
+      m_sbnd_half_length_y = 320;
+      m_sbnd_half_length_z = 1900;
+      m_sbnd_offset_x      = 365;
+      m_sbnd_offset_y      = 173;
+      m_sbnd_offset_z      = 1000;
+      m_sbnd_border_x_min1 = 0.;
+      m_sbnd_border_x_max1 = 0.;
+      m_sbnd_border_x_min2 = 0.;
+      m_sbnd_border_x_max2 = 0.;
+      m_sbnd_border_y      = 0.;
+      m_sbnd_border_z_min  = 0.;
+      m_sbnd_border_z_max  = 0.;
+      */
+
       m_sbnd_half_length_x = 400;
       m_sbnd_half_length_y = 400;
       m_sbnd_half_length_z = 500;
@@ -294,12 +311,23 @@ namespace selection{
     return m_neutrino_energy;
 
   }
+
+  //------------------------------------------------------------------------------------------ 
+  
   float Event::GetTrueNuQ2() const{
   
     return m_neutrino_qsqr;
 
   }
   
+  //------------------------------------------------------------------------------------------ 
+  
+  float Event::GetBaseline() const{
+    
+    return m_baseline;
+
+  }
+
   //------------------------------------------------------------------------------------------ 
 
   unsigned int Event::CountParticlesWithPdg(const int pdg, const ParticleList &particle_list) const{

@@ -23,6 +23,8 @@
 
 using namespace selection;
 
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+
 int MainTest(){
   
   time_t rawtime;
@@ -30,12 +32,15 @@ int MainTest(){
   time (&rawtime);
   timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)          << std::endl;
+  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/";
+  std::string plots = "/sbnd/data/users/rsjones/Output_Selection_Tool/plots/mcp2/cut75cm/";
 
+  //------------------------------------------------------------------------------------------
+  //                                       Load events
+  //------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------
   //                                       Load events
   //------------------------------------------------------------------------------------------
@@ -44,23 +49,38 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total = 10;
+  unsigned int total_files = 824;
+  double pot = 0.; 
 
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total; ++i ){
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
+  std::vector<int> exceptions;
+  exceptions.clear();
 
-    EventSelectionTool::LoadEventList(file_name, events, i);
-    EventSelectionTool::GetTimeLeft(start,total,i);
+  // Read in txt file of list of empty input directories
+  std::fstream exception_file("exceptions.txt");
+  if(!exception_file)
+    std::cout << " No exceptions file given" << std::endl;
+  else{
+    std::string s_exc;
+    while (std::getline(exception_file, s_exc)) {
+      unsigned int i_exc;
+      std::istringstream ss_exc(s_exc);
+      ss_exc >> i_exc;
+      exceptions.push_back(i_exc);
+      ss_exc.str(std::string());
+      s_exc.clear();
+    }
   }
-  std::cout << std::endl;
- 
+
+  LoadAllEvents(events, total_files, start, pot, exceptions);
+  
+  time_t rawtime_afterload;
+  struct tm * timeinfo_afterload;
+  time (&rawtime_afterload);
+  timeinfo_afterload = localtime (&rawtime_afterload);
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  std::cout << " After loading events local time and date:  " << asctime(timeinfo_afterload) << std::endl;
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
   /*
    * Proton loss and mis-identification energy and length study
    *
@@ -88,7 +108,8 @@ int MainTest(){
 
   std::vector<float> signal_energy, signal_length, background_energy, background_length, missed_energy, missed_length;
   std::vector<int>   signal_hits, background_hits, missed_hits;
-  unsigned int missed = 0;
+  unsigned int total           = 0;
+  unsigned int missed          = 0;
   unsigned int missed_below_25 = 0;
   unsigned int missed_below_10 = 0;
 
@@ -97,14 +118,29 @@ int MainTest(){
   unsigned int ccmec = 0;
   unsigned int ccres = 0;
   unsigned int ccdis = 0;
+  unsigned int ccoth = 0;
   unsigned int ncany = 0;
+  
+  unsigned int ccqe_reco = 0;
+  unsigned int ccmec_reco = 0;
+  unsigned int ccres_reco = 0;
+  unsigned int ccdis_reco = 0;
+  unsigned int ccoth_reco = 0;
+  unsigned int ncany_reco = 0;
   
   TH1D *h_ccqe  = new TH1D("h_ccqe",  "Proton multiplicity", 10, 0, 9);
   TH1D *h_ccmec = new TH1D("h_ccmec", "Proton multiplicity", 10, 0, 9);
   TH1D *h_ccres = new TH1D("h_ccres", "Proton multiplicity", 10, 0, 9);
   TH1D *h_ccdis = new TH1D("h_ccdis", "Proton multiplicity", 10, 0, 9);
+  TH1D *h_ccoth = new TH1D("h_ccoth", "Proton multiplicity", 10, 0, 9);
   TH1D *h_nc    = new TH1D("h_nc",    "Proton multiplicity", 10, 0, 9);
-  std::vector<TH1D*> signal;
+
+  TH1D *hr_ccqe  = new TH1D("hr_ccqe",  "Proton multiplicity", 10, 0, 9);
+  TH1D *hr_ccmec = new TH1D("hr_ccmec", "Proton multiplicity", 10, 0, 9);
+  TH1D *hr_ccres = new TH1D("hr_ccres", "Proton multiplicity", 10, 0, 9);
+  TH1D *hr_ccdis = new TH1D("hr_ccdis", "Proton multiplicity", 10, 0, 9);
+  TH1D *hr_ccoth = new TH1D("hr_ccoth", "Proton multiplicity", 10, 0, 9);
+  TH1D *hr_nc    = new TH1D("hr_nc",    "Proton multiplicity", 10, 0, 9);
 
   for(const Event &e : events){
 
@@ -143,31 +179,61 @@ int MainTest(){
         if(p_true.GetNumberOfHits() < 25) missed_below_25++;
         if(p_true.GetNumberOfHits() < 10) missed_below_10++;
       }
+      else if(p_true.GetPdgCode() == 2212 && GeneralAnalysisHelper::HasBeenReconstructed(e, p_true) && p_true.GetNumberOfHits() >= 5)
+        total++;
     }
     if(e.CheckMCTopology(cc0pi)){
       for(const Particle &mc : true_particles){
         if(mc.GetPdgCode() == 2212 && mc.GetNumberOfHits() >= 5){
           if(e.GetPhysicalProcess() == 1 && e.GetIsCC())  ccqe++;
-          if(e.GetPhysicalProcess() == 3 && e.GetIsCC())  ccdis++;
-          if(e.GetPhysicalProcess() == 4 && e.GetIsCC())  ccres++;
-          if(e.GetPhysicalProcess() == 10 && e.GetIsCC()) ccmec++;
+          else if(e.GetPhysicalProcess() == 3 && e.GetIsCC())  ccdis++;
+          else if(e.GetPhysicalProcess() == 4 && e.GetIsCC())  ccres++;
+          else if(e.GetPhysicalProcess() == 10 && e.GetIsCC()) ccmec++;
+          else if(e.GetIsCC()) ccoth++;
           if(!e.GetIsCC()) ncany++;
         }
       }
-    }
-    if(e.CheckMCTopology(cc0pi)){
       h_ccqe->Fill(ccqe);
       h_ccmec->Fill(ccmec);
       h_ccres->Fill(ccres);
       h_ccdis->Fill(ccdis);
+      h_ccoth->Fill(ccoth);
       h_nc->Fill(ncany);
-      signal.push_back(h_ccqe);
-      signal.push_back(h_ccmec);
-      signal.push_back(h_ccres);
-      signal.push_back(h_ccdis);
-      signal.push_back(h_nc);
+    }
+    if(e.CheckRecoTopology(cc0pi)){
+      for(const Particle &reco : reco_particles){
+        if(reco.GetPdgCode() == 2212 && reco.GetNumberOfHits() >= 5){
+          if(e.GetPhysicalProcess() == 1 && e.GetIsCC())  ccqe_reco++;
+          else if(e.GetPhysicalProcess() == 3 && e.GetIsCC())  ccdis_reco++;
+          else if(e.GetPhysicalProcess() == 4 && e.GetIsCC())  ccres_reco++;
+          else if(e.GetPhysicalProcess() == 10 && e.GetIsCC()) ccmec_reco++;
+          else if(e.GetIsCC()) ccoth_reco++;
+          if(!e.GetIsCC()) ncany_reco++;
+        }
+      }
+      hr_ccqe->Fill(ccqe_reco);
+      hr_ccmec->Fill(ccmec_reco);
+      hr_ccres->Fill(ccres_reco);
+      hr_ccdis->Fill(ccdis_reco);
+      hr_ccoth->Fill(ccoth_reco);
+      hr_nc->Fill(ncany_reco);
     }
   }
+  std::vector<TH1D*> signal;
+  signal.push_back(h_ccqe);
+  signal.push_back(h_ccmec);
+  signal.push_back(h_ccres);
+  signal.push_back(h_ccdis);
+  signal.push_back(h_ccoth);
+  signal.push_back(h_nc);
+
+  std::vector<TH1D*> signal_reco;
+  signal_reco.push_back(hr_ccqe);
+  signal_reco.push_back(hr_ccmec);
+  signal_reco.push_back(hr_ccres);
+  signal_reco.push_back(hr_ccdis);
+  signal_reco.push_back(hr_ccoth);
+  signal_reco.push_back(hr_nc);
 
   /*
    *
@@ -208,56 +274,74 @@ int MainTest(){
    * Stack
    *
    */
-  int pal[5];
-  pal[0]  = kRed - 4;
-  pal[1]  = kSpring - 3;
-  pal[2]  = kViolet - 4;
-  pal[3]  = kCyan + 1;
-  pal[4]  = kOrange + 7;
-  
-  gStyle->SetPalette(5, pal);
+  TCanvas *c = new TCanvas("c","",700,900);
+  TLegend *l = new TLegend( 0.68, 0.53, 0.88, 0.88 );
+  THStack *hsT = new THStack("hsT","True CC 0#pi proton multiplicity pre-FSI");
+  THStack *hsR = new THStack("hsR","Reco CC 0#pi proton multiplicity pre-FSI");
+
+  int pal[6];
+  pal[0]  = kPink+5;
+  pal[1]  = kOrange+1;
+  pal[2]  = kAzure+7;
+  pal[3]  = kTeal-5;
+  pal[4]  = kYellow-3;
+  pal[5]  = kViolet+6;
+
   gStyle->SetTitleOffset(1.2, "Y");
   gStyle->SetTitleFont(132, "X");
   gStyle->SetTitleFont(132, "Y");
   gStyle->SetLabelFont(132, "X");
   gStyle->SetLabelFont(132, "Y");
   gStyle->SetOptStat(0);
+  gStyle->SetPalette(6, pal);
   
-  TCanvas *c = new TCanvas("c","",800,600);
-  TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
-  THStack *hsT = new THStack("hsT","pre-FSI");
-
-  double norm = 0;
+  double norm      = 0;
+  double norm_reco = 0;
   
+  assert(signal.size() == signal_reco.size());
   for (unsigned int i = 0; i < signal.size(); ++i){
-      norm += signal[i]->Integral();
+      norm      += signal[i]->Integral();
+      norm_reco += signal_reco[i]->Integral();
   }
 
   for ( unsigned int i = 0; i < signal.size(); ++i ){
     if(norm > 0){
       signal[i]->SetFillColor(pal[i]);
+      signal[i]->SetFillStyle(3001);
       signal[i]->SetLineColor(pal[i]);
       signal[i]->Scale(1/norm);
     }
+    if(norm_reco > 0){
+      signal_reco[i]->SetFillColor(pal[i]);
+      signal_reco[i]->SetFillStyle(3001);
+      signal_reco[i]->SetLineColor(pal[i]);
+      signal_reco[i]->Scale(1/norm_reco);
+    }
   }
-  l->AddEntry(h_ccqe,  "CC QE",   "f");
-  l->AddEntry(h_ccres, "CC RES",  "f");
-  l->AddEntry(h_ccmec, "CC MEC",  "f");
-  l->AddEntry(h_ccdis, "CC DIS",  "f");
-  l->AddEntry(h_nc,    "NC",      "f");
-  l->SetLineWidth(0);
-  l->SetTextAlign(22);
-  l->SetTextFont(132);
   
-  
+  for ( unsigned int i = 0; i < signal.size(); ++i ){
+    hsT->Add(signal[i]);
+    hsR->Add(signal_reco[i]);
+  }
+
+
   /*
    *
    * Draw
    *
    */
-  for ( unsigned int i = 0; i < signal.size(); ++i )
-    hsT->Add(signal[i]);
-
+  l->AddEntry(h_ccqe,  "CC QE",    "f");
+  l->AddEntry(h_ccres, "CC RES",   "f");
+  l->AddEntry(h_ccmec, "CC MEC",   "f");
+  l->AddEntry(h_ccdis, "CC DIS",   "f");
+  l->AddEntry(h_ccoth, "CC Other", "f");
+  l->AddEntry(h_nc,    "NC",       "f");
+  l->SetLineWidth(0);
+  l->SetTextAlign(22);
+  l->SetTextFont(132);
+  
+  gROOT->ForceStyle();
+  c->UseCurrentStyle();
   hsT->Draw("hist");
   l->Draw("same");
   const char *x_label = "Proton multiplicity";
@@ -265,8 +349,31 @@ int MainTest(){
   hsT->GetXaxis()->SetTitle(x_label);   
   hsT->GetYaxis()->SetTitle(y_label);   
   
-  c->SaveAs((plots+"multiplicity_pre_fsi.png").c_str());
-  c->SaveAs((plots+"multiplicity_pre_fsi.root").c_str());
+  c->SaveAs((plots+"true_multiplicity_pre_fsi.png").c_str());
+  c->SaveAs((plots+"true_multiplicity_pre_fsi.root").c_str());
+
+  l->Clear();
+  c->Clear();
+  
+  l->AddEntry(hr_ccqe,  "CC QE",    "f");
+  l->AddEntry(hr_ccres, "CC RES",   "f");
+  l->AddEntry(hr_ccmec, "CC MEC",   "f");
+  l->AddEntry(hr_ccdis, "CC DIS",   "f");
+  l->AddEntry(hr_ccoth, "CC Other", "f");
+  l->AddEntry(hr_nc,    "NC",       "f");
+  l->SetLineWidth(0);
+  l->SetTextAlign(22);
+  l->SetTextFont(132);
+  
+  gROOT->ForceStyle();
+  c->UseCurrentStyle();
+  hsR->Draw("hist");
+  l->Draw("same");
+  hsR->GetXaxis()->SetTitle(x_label);   
+  hsR->GetYaxis()->SetTitle(y_label);   
+  
+  c->SaveAs((plots+"reco_multiplicity_pre_fsi.png").c_str());
+  c->SaveAs((plots+"reco_multiplicity_pre_fsi.root").c_str());
 
   l->Clear();
   c->Clear();
@@ -357,10 +464,11 @@ int MainTest(){
   c->SaveAs((plots+"proton_hits.png").c_str());
   c->Clear();
 
-  std::cout << " Missed protons :                                      " << missed << std::endl;
-  std::cout << " Missed protons with less than 25 hits :               " << missed_below_25 << std::endl;
+  std::cout << " Total number of reconstructed protons :                " << total << std::endl;
+  std::cout << " Missed protons :                                       " << missed << std::endl;
+  std::cout << " Missed protons with less than 25 hits :                " << missed_below_25 << std::endl;
   std::cout << " Missed protons with less than 10 hits  :               " << missed_below_10 << std::endl;
-  std::cout << " Percentage of missed protons with less than 25 hits : " << missed_below_25 / double(missed) << std::endl;
+  std::cout << " Percentage of missed protons with less than 25 hits :  " << missed_below_25 / double(missed) << std::endl;
   std::cout << " Percentage of missed protons with less than 10 hits  : " << missed_below_10 / double(missed) << std::endl;
 
   time_t rawtime_end;
@@ -374,3 +482,26 @@ int MainTest(){
   return 0;
 
 } // MainTest()
+
+void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
+  double total_pot = 0;
+  std::vector<int>::iterator it;
+  // Load the events into the event list
+  for( unsigned int i = 0; i < total_files; ++i ){
+    it = std::find(exceptions.begin(), exceptions.end(),i);
+    if(it != exceptions.end()) continue;
+    // Get the filenames
+    std::string name;
+    name.clear();
+    char file_name[1024];
+    name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_150620/selection/"+std::to_string(i)+"/output_file.root";
+    strcpy( file_name, name.c_str() );
+
+    double temp_pot = 0.;
+    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
+    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
+    total_pot += temp_pot;
+  }
+  std::cout << std::endl;
+  pot = total_pot;
+} // LoadAllEvents

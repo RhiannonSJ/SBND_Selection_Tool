@@ -23,7 +23,8 @@
 
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions);
+//void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
 
 int MainTest(){
   
@@ -36,7 +37,7 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
+  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -46,7 +47,7 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 991;
+  unsigned int total_files = 149;
   double pot = 0.; 
 
   std::vector<int> exceptions;
@@ -54,22 +55,25 @@ int MainTest(){
 
   // Read in txt file of list of empty input directories
   std::fstream exception_file("/sbnd/app/users/rsjones/Selection_Tool_SBND/exceptions.txt");
-  std::string s_exc;
-  while (std::getline(exception_file, s_exc)) {
-    int i_exc;
-    std::istringstream ss_exc(s_exc);
-    ss_exc >> i_exc;
-    exceptions.push_back(i_exc); 
-    ss_exc.str(std::string());
-    s_exc.clear();
+  if(!exception_file)
+    std::cout << " No exceptions file given" << std::endl;
+  else{
+    std::string s_exc;
+    while (std::getline(exception_file, s_exc)) {
+      unsigned int i_exc;
+      std::istringstream ss_exc(s_exc);
+      ss_exc >> i_exc;
+      exceptions.push_back(i_exc);
+      ss_exc.str(std::string());
+      s_exc.clear();
+    }
   }
 
-  std::cout << " Skipping files ending in : " << std::endl;
   for(const int & ex : exceptions)
     std::cout << " - " << ex << " - ";
   std::cout << std::endl;
 
-  LoadAllEvents(events, total_files, start, pot, exceptions);
+  //LoadAllEvents(events, total_files, start, pot, exceptions);
 
   // COUNTERS
   unsigned int nue_true  = 0; 
@@ -166,123 +170,129 @@ int MainTest(){
   std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
 
   // First, ensure all tracks are contained
-  for(const Event &e : events){
- 
-    // Check the true vertex is in the fiducial volume
-    if(e.IsSBNDTrueFiducial() && e.IsSBNDRecoFiducial()){
-//      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
-      if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
-      max_one_escaping_track++;
- 
-      if(e.CheckRecoTopology(maps[0])){
-        if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) ccinc_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) ccinc_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) ccinc_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) ccinc_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) ccinc_nue++;
-      }
-      if(e.CheckRecoTopology(maps[1])){
-        if(e.CheckMCTopology(maps[1]))      cc0pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) cc0pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) cc0pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) cc0pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
-        if(e.CheckRecoTopology(maps[3])){
-          if(e.CheckMCTopology(maps[1]))      cc0pi2p_cc0pi++;
-          else if(e.CheckMCTopology(maps[2])) cc0pi2p_cc1pi++;
-          else if(e.CheckMCTopology(maps[0])) cc0pi2p_ccoth++;
-          else if(e.CheckMCTopology(maps[5])) cc0pi2p_nc0pi++;
-          else if(e.CheckMCTopology(maps[6])) cc0pi2p_nc1pi++;
-          else if(e.CheckMCTopology(maps[4])) cc0pi2p_ncoth++;
-        else if(e.CheckMCTopology(maps[7]))   cc0pi2p_nue++;
-        }
-      }
-      if(e.CheckRecoTopology(maps[2])){
-        if(e.CheckMCTopology(maps[1]))      cc1pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) cc1pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) cc1pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) cc1pi_nue++;
-      }
-      if(e.CheckRecoTopology(maps[4])){
-        if(e.CheckMCTopology(maps[1]))      ncinc_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) ncinc_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) ncinc_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) ncinc_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) ncinc_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) ncinc_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) ncinc_nue++;
-      }
-      if(e.CheckRecoTopology(maps[5])){
-        if(e.CheckMCTopology(maps[1]))      nc0pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) nc0pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) nc0pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) nc0pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) nc0pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) nc0pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) nc0pi_nue++;
-      }
-      if(e.CheckRecoTopology(maps[6])){
-        if(e.CheckMCTopology(maps[1]))      nc1pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) nc1pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) nc1pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) nc1pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) nc1pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) nc1pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) nc1pi_nue++;
-      }
-      // Overall efficiencies 
-      if(e.CheckMCTopology(maps[0])){
-        ccinc_true++;
-        if(e.CheckRecoTopology(maps[0])) ccinc_sig++;
-      }
-      if(e.CheckMCTopology(maps[1])){
-        cc0pi_true++;
-        if(e.CheckRecoTopology(maps[1])) cc0pi_sig++;
-      }
-      if(e.CheckMCTopology(maps[2])) {
-        cc1pi_true++;
-        if(e.CheckRecoTopology(maps[2])) cc1pi_sig++;
-      }
-      if(e.CheckMCTopology(maps[3])){
-        cc0pi2p_true++;
-        if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
-      }
-      if(e.CheckMCTopology(maps[4])){
-        ncinc_true++;
-        if(e.CheckRecoTopology(maps[4])) ncinc_sig++;
-      }
-      if(e.CheckMCTopology(maps[5])){
-        nc0pi_true++;
-        if(e.CheckRecoTopology(maps[5])) nc0pi_sig++;
-      }
-      if(e.CheckMCTopology(maps[6])){
-        nc1pi_true++;
-        if(e.CheckRecoTopology(maps[6])) nc1pi_sig++;
-      }
-      if(e.CheckMCTopology(maps[7])) nue_true++;
+  for( unsigned int i = 0; i < total_files; ++i ){
+    EventSelectionTool::EventList events;
+    LoadAllEventsInFile(events, i, pot, exceptions);
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
 
-      // Overall purities
-      if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
-      if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
-      if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
-      if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
-      if(e.CheckRecoTopology(maps[4])) ncinc_sel++;
-      if(e.CheckRecoTopology(maps[5])) nc0pi_sel++;
-      if(e.CheckRecoTopology(maps[6])) nc1pi_sel++;
+    for(const Event &e : events){
+
+      // Check the true vertex is in the fiducial volume
+      if(e.IsSBNDTrueFiducial() && e.IsSBNDRecoFiducial()){
+        //      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 0) continue;
+        if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
+        max_one_escaping_track++;
+
+        if(e.CheckRecoTopology(maps[0])){
+          if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) ccinc_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) ccinc_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) ccinc_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) ccinc_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) ccinc_nue++;
+        }
+        if(e.CheckRecoTopology(maps[1])){
+          if(e.CheckMCTopology(maps[1]))      cc0pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) cc0pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) cc0pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) cc0pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
+          if(e.CheckRecoTopology(maps[3])){
+            if(e.CheckMCTopology(maps[1]))      cc0pi2p_cc0pi++;
+            else if(e.CheckMCTopology(maps[2])) cc0pi2p_cc1pi++;
+            else if(e.CheckMCTopology(maps[0])) cc0pi2p_ccoth++;
+            else if(e.CheckMCTopology(maps[5])) cc0pi2p_nc0pi++;
+            else if(e.CheckMCTopology(maps[6])) cc0pi2p_nc1pi++;
+            else if(e.CheckMCTopology(maps[4])) cc0pi2p_ncoth++;
+            else if(e.CheckMCTopology(maps[7]))   cc0pi2p_nue++;
+          }
+        }
+        if(e.CheckRecoTopology(maps[2])){
+          if(e.CheckMCTopology(maps[1]))      cc1pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) cc1pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) cc1pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) cc1pi_nue++;
+        }
+        if(e.CheckRecoTopology(maps[4])){
+          if(e.CheckMCTopology(maps[1]))      ncinc_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) ncinc_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) ncinc_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) ncinc_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) ncinc_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) ncinc_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) ncinc_nue++;
+        }
+        if(e.CheckRecoTopology(maps[5])){
+          if(e.CheckMCTopology(maps[1]))      nc0pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) nc0pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) nc0pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) nc0pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) nc0pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) nc0pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) nc0pi_nue++;
+        }
+        if(e.CheckRecoTopology(maps[6])){
+          if(e.CheckMCTopology(maps[1]))      nc1pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) nc1pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) nc1pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) nc1pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) nc1pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) nc1pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) nc1pi_nue++;
+        }
+        // Overall efficiencies 
+        if(e.CheckMCTopology(maps[0])){
+          ccinc_true++;
+          if(e.CheckRecoTopology(maps[0])) ccinc_sig++;
+        }
+        if(e.CheckMCTopology(maps[1])){
+          cc0pi_true++;
+          if(e.CheckRecoTopology(maps[1])) cc0pi_sig++;
+        }
+        if(e.CheckMCTopology(maps[2])) {
+          cc1pi_true++;
+          if(e.CheckRecoTopology(maps[2])) cc1pi_sig++;
+        }
+        if(e.CheckMCTopology(maps[3])){
+          cc0pi2p_true++;
+          if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
+        }
+        if(e.CheckMCTopology(maps[4])){
+          ncinc_true++;
+          if(e.CheckRecoTopology(maps[4])) ncinc_sig++;
+        }
+        if(e.CheckMCTopology(maps[5])){
+          nc0pi_true++;
+          if(e.CheckRecoTopology(maps[5])) nc0pi_sig++;
+        }
+        if(e.CheckMCTopology(maps[6])){
+          nc1pi_true++;
+          if(e.CheckRecoTopology(maps[6])) nc1pi_sig++;
+        }
+        if(e.CheckMCTopology(maps[7])) nue_true++;
+
+        // Overall purities
+        if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
+        if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
+        if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
+        if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
+        if(e.CheckRecoTopology(maps[4])) ncinc_sel++;
+        if(e.CheckRecoTopology(maps[5])) nc0pi_sel++;
+        if(e.CheckRecoTopology(maps[6])) nc1pi_sel++;
+      }
     }
   }
 
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"full_breakdown_reco_truth_topologies2.txt");
+  file.open(stats_location+"full_topological_breakdown.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
@@ -324,37 +334,24 @@ int MainTest(){
   struct tm * timeinfo_end;
   time (&rawtime_end);
   timeinfo_end = localtime (&rawtime_end);
+  time_t total_time = rawtime_end-rawtime;
   std::cout << "-----------------------------------------------------------" << std::endl;
   std::cout << " End: Local time and date:  " << asctime(timeinfo_end) << std::endl;
+  std::cout << " Total time taken         :  " << total_time/static_cast<double>(60) << " minutes" << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
 
   return 0;
 
 } // MainTest()
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
-  double total_pot = 0;
-  std::vector<int>::iterator it;
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total_files; ++i ){
-    it = std::find(exceptions.begin(), exceptions.end(),i);
-    if(it != exceptions.end()) continue;
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/test/output_file.root";
-      name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//      name = "/home/rhiannon/Samples/LocalSamples/analysis/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
+void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions) {
+  std::vector<int>::const_iterator it = std::find(exceptions.begin(), exceptions.end(),file_index);
+  if(it != exceptions.end()) return;
+  
+  // Get the filenames
+  const std::string name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/"+std::to_string(file_index)+"/selection_tree.root";
 
-    double temp_pot = 0.;
-    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
-    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
-    total_pot += temp_pot;
-  }
-  std::cout << std::endl;
-  pot = total_pot;
-} // LoadAllEvents
+  double temp_pot = 0.;
+  EventSelectionTool::LoadEventList(name, events, file_index, temp_pot);
+  pot += temp_pot;
+} // LoadAllEventsInFile

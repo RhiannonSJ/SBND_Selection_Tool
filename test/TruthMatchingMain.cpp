@@ -32,8 +32,7 @@ int MainTest(){
   std::cout << endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/newfiducial_mcp0_9/";
-  std::string plots_location  = "../Output_Selection_Tool/plots/newfiducial_mcp0_9";
+  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -43,25 +42,27 @@ int MainTest(){
   EventSelectionTool::EventList events;
   
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 100;
+  unsigned int total_files = 1;
   double pot = 0.; 
 
   std::vector<int> exceptions;
   exceptions.clear();
 
   // Read in txt file of list of empty input directories
-  std::fstream exception_file("/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/exceptions.txt");
-  std::string s_exc;
-  while (std::getline(exception_file, s_exc)) {
-    int i_exc;
-    std::istringstream ss_exc(s_exc);
-    ss_exc >> i_exc;
-    exceptions.push_back(i_exc); 
-    ss_exc.str(std::string());
-    s_exc.clear();
+  std::fstream exception_file("exceptions.txt");
+  if(!exception_file)
+    std::cout << " No exceptions file given" << std::endl;
+  else{
+    std::string s_exc;
+    while (std::getline(exception_file, s_exc)) {
+      unsigned int i_exc;
+      std::istringstream ss_exc(s_exc);
+      ss_exc >> i_exc;
+      exceptions.push_back(i_exc);
+      ss_exc.str(std::string());
+      s_exc.clear();
+    }
   }
-
-  std::cout << " Skipping files ending in : " << std::endl;
   for(const int & ex : exceptions)
     std::cout << " - " << ex << " - ";
   std::cout << std::endl;
@@ -84,10 +85,10 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"particle_stats_small.txt");
+  all_file.open(stats_location+"icarus_particle_stats.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"mis_identification_stats_small.txt");
+  mis_id_file.open(stats_location+"icarus_mis_identification_stats.txt");
 
   GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
   GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);
@@ -127,7 +128,9 @@ void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &to
     name.clear();
     char file_name[1024];
 //    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
-    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
+    name = "/sbnd/app/users/rsjones/LArSoft_v08_30_00_SBN/test/icarus_output_file.root";
+//    name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_150620/selection/"+std::to_string(i)+"/output_file.root";
+//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     double temp_pot = 0.;

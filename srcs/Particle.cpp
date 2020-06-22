@@ -21,6 +21,22 @@ namespace selection{
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
       
       // Co-ordinate offset in cm
+      /*
+      m_sbnd_length_x = 730;
+      m_sbnd_length_y = 320;
+      m_sbnd_length_z = 1900;
+      m_sbnd_offset_x      = 365;
+      m_sbnd_offset_y      = 173;
+      m_sbnd_offset_z      = 1000;
+      m_sbnd_border_x_min1 = 0.;
+      m_sbnd_border_x_max1 = 0.;
+      m_sbnd_border_x_min2 = 0.;
+      m_sbnd_border_x_max2 = 0.;
+      m_sbnd_border_y      = 0.;
+      m_sbnd_border_z_min  = 0.;
+      m_sbnd_border_z_max  = 0.;
+      */
+
       m_sbnd_length_x = 400;
       m_sbnd_length_y = 400;
       m_sbnd_length_z = 500;

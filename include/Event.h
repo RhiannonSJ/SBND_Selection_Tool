@@ -41,8 +41,9 @@ namespace selection{
        * @param  neutrino_qsqr qsqr of the neutrino
        * @param  file the file number the event was from
        * @param  id the id of the event
+       * @param  baseline 
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id);
+      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id, const float &baseline);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -193,6 +194,11 @@ namespace selection{
       float GetTrueNuQ2() const;
       
       /**
+       * @brief  Get the baseline 
+       */
+      float GetBaseline() const;
+      
+      /**
        * @brief  Get the most energetic reconstructed particle
        *
        * @return Particle most energetic reco
@@ -282,6 +288,7 @@ namespace selection{
       TVector3     m_mc_vertex;          ///< reconstructed neutrino vertex
       float        m_neutrino_energy;    ///< true neutrino energy
       float        m_neutrino_qsqr;      ///< true neutrino qsqr
+      float        m_baseline;           ///< true baseline of the event from the flux
       int          m_file;               ///< file id
       int          m_id;                 ///< event id
       float        m_sbnd_border_x_min1; ///< fiducial border in x for the sbnd detector

@@ -33,8 +33,8 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/breakdown/";
-  std::string plots_location  = "../Output_Selection_Tool/plots/breakdown/";
+  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/mcp2/";
+  std::string plots_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/plots/mcp2/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
