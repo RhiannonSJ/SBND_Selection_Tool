@@ -1,0 +1,26 @@
+# SBND configuration file for all analyses
+
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/
+InputFileName     = selection_tree.root
+
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/
+
+TotalFiles        = 149
+
+MinXAV  = -199.15
+MinYAV  = -200.0
+MinZAV  = 0.
+MaxXAV  = 199.15
+MaxYAV  = 200.0
+MaxZAV  = 500.0
+
+MinXFid = -190.9, 10.9
+MinYFid = -185.0, -185.0
+MinZFid = 15.0, 15.0
+MaxXFid = 5.6, 190.9
+MaxYFid = 185.0, 185.0
+MaxZFid = 415.0, 415.0
+

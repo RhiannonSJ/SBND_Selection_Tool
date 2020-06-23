@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include "TVector3.h"
+#include "Geometry.h"
 
 namespace selection{
   
@@ -27,9 +28,19 @@ namespace selection{
        * @param  vertex start point of the track
        * @param  end end of the track
        * @param  momentum momentum of the track
+       * @param  geometry detector geometry
        *
        */
-      Particle(const int mc_id, const int pdg, const int status, const int n_hits, const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum);
+      Particle(const int mc_id, 
+               const int pdg, 
+               const int status, 
+               const int n_hits,  
+               const float mass, 
+               const float energy,
+               const TVector3 &vertex,
+               const TVector3 &end,
+               const TVector3 &momentum,
+               const Geometry &g); 
 
       /**
        * @brief  Constructor for reconstructed tracks 
@@ -51,9 +62,27 @@ namespace selection{
        * @param  chi2pi chi2 under the pion hypothesis
        * @param  dedx dEdx of the particle
        * @param  residual_range Residual range of the particle
+       * @param  geometry detector geometry
        *
        */
-      Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi, const std::vector<float> &dedx, const std::vector<float> &residual_range);
+      Particle(const int mc_id_charge, 
+               const int mc_id_energy, 
+               const int mc_id_hits, 
+               const int pdg, 
+               const int n_hits, 
+               const float kinetic_energy, 
+               const float mcs_momentum_muon, 
+               const float range_momentum_muon, 
+               const float range_momentum_proton, 
+               const float length, 
+               const TVector3 &vertex, 
+               const TVector3 &end, 
+               const float &chi2p, 
+               const float &chi2mu, 
+               const float &chi2pi, 
+               const std::vector<float> &dedx, 
+               const std::vector<float> &residual_range, 
+               const Geometry &g);
 
       /**
        * @brief  Constructor for reconstructed showers 
@@ -63,9 +92,15 @@ namespace selection{
        * @param  vertex start point of the shower
        * @param  end end of the shower
        * @param  energy energy of the shower
+       * @param  geometry detector geometry
        *
        */
-      Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end, const float &energy);
+      Particle(const int pdg, 
+               const int n_hits, 
+               const TVector3 &vertex, 
+               const TVector3 &end, 
+               const float &energy,
+               const Geometry &g);
 
       /**
        * @brief  Get the mass from the pdg code
@@ -251,20 +286,7 @@ namespace selection{
       TVector3 m_vertex;                   ///< particle start position
       TVector3 m_end;                      ///< particle end position
       TVector3 m_momentum;                 ///< particle momentum
-      float    m_sbnd_border_x_min1;       ///< fiducial border in x for the sbnd detector
-      float    m_sbnd_border_x_min2;       ///< fiducial border in x for the sbnd detector
-      float    m_sbnd_border_x_max1;       ///< fiducial border in x for the sbnd detector
-      float    m_sbnd_border_x_max2;       ///< fiducial border in x for the sbnd detector
-      float    m_sbnd_border_y;            ///< fiducial border in y for the sbnd detector
-      float    m_sbnd_border_z_min;        ///< fiducial border in z for the sbnd detector
-      float    m_sbnd_border_z_max;        ///< fiducial border in z for the sbnd detector
-      float    m_sbnd_offset_x;            ///< offset in x for the sbnd detector
-      float    m_sbnd_offset_y;            ///< offset in y for the sbnd detector
-      float    m_sbnd_offset_z;            ///< offset in z for the sbnd detector
-      float    m_sbnd_length_x;            ///< detector half length in x
-      float    m_sbnd_length_y;            ///< detector half length in y
-      float    m_sbnd_length_z;            ///< detector half length in z
-
+      Geometry m_geometry;                 ///< detector geometry, active volume for track containment checks
 
   }; // Particle
 } // Selection

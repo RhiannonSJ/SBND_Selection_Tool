@@ -1,6 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "Geometry.h"
 #include "Plane.h"
 #include "Particle.h"
 #include "TVector3.h"
@@ -41,9 +42,25 @@ namespace selection{
        * @param  neutrino_qsqr qsqr of the neutrino
        * @param  file the file number the event was from
        * @param  id the id of the event
-       * @param  baseline 
+       * @param  baseline
+       * @param  geometry fiducial volume of the detector for neutrino vertex checks
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id, const float &baseline);
+      Event(const ParticleList &mc_particles, 
+            const ParticleList &reco_particles, 
+            const unsigned int interaction, 
+            const unsigned int scatter, 
+            const int neutrino_pdg, 
+            const unsigned int charged_pi, 
+            const unsigned int neutral_pi, 
+            const bool is_cc, 
+            const TVector3 &mc_vertex, 
+            const TVector3 &reco_vertex, 
+            const float neutrino_energy, 
+            const float neutrino_qsqr, 
+            const int &file, 
+            const int &id, 
+            const float &baseline,
+            const Geometry &g);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -224,7 +241,7 @@ namespace selection{
        *
        * @return pair of the central x border positions
        */
-      std::pair<float,float> GetCentralFiducialDimensions() const;
+//      std::pair<float,float> GetCentralFiducialDimensions() const;
 
       /**
        * @brief  Get the maximum x,y,z positions of the SBND fiducial volume
@@ -291,21 +308,7 @@ namespace selection{
       float        m_baseline;           ///< true baseline of the event from the flux
       int          m_file;               ///< file id
       int          m_id;                 ///< event id
-      float        m_sbnd_border_x_min1; ///< fiducial border in x for the sbnd detector
-      float        m_sbnd_border_x_min2; ///< fiducial border in x for the sbnd detector
-      float        m_sbnd_border_x_max1; ///< fiducial border in x for the sbnd detector
-      float        m_sbnd_border_x_max2; ///< fiducial border in x for the sbnd detector
-      float        m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
-      float        m_sbnd_border_z_min;  ///< fiducial border in z for the sbnd detector
-      float        m_sbnd_border_z_max;  ///< fiducial border in z for the sbnd detector
-      float        m_sbnd_offset_x;      ///< offset in x for the sbnd detector
-      float        m_sbnd_offset_y;      ///< offset in y for the sbnd detector
-      float        m_sbnd_offset_z;      ///< offset in z for the sbnd detector
-      float        m_sbnd_half_length_x; ///< detector half length in x
-      float        m_sbnd_half_length_y; ///< detector half length in y
-      float        m_sbnd_half_length_z; ///< detector half length in z
-                                                                               
-
+      Geometry     m_geometry;           ///< fiducial geometry of the detector
   }; // Event
 } // selection
 

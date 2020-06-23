@@ -6,7 +6,16 @@
 
 namespace selection{
 
-  Particle::Particle(const int mc_id, const int pdg, const int status, const int n_hits,  const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
+  Particle::Particle(const int mc_id, 
+                     const int pdg, 
+                     const int status, 
+                     const int n_hits,  
+                     const float mass, 
+                     const float energy,
+                     const TVector3 &vertex,
+                     const TVector3 &end,
+                     const TVector3 &momentum,
+                     const Geometry &g) : 
     m_mc_id(mc_id), 
     m_pdg(pdg),
     m_status(status),
@@ -17,47 +26,31 @@ namespace selection{
     m_from_reco_track(false),
     m_vertex(vertex),
     m_end(end),
-    m_momentum(momentum){
+    m_momentum(momentum),
+    m_geometry(g){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
-      
-      // Co-ordinate offset in cm
-      /*
-      m_sbnd_length_x = 730;
-      m_sbnd_length_y = 320;
-      m_sbnd_length_z = 1900;
-      m_sbnd_offset_x      = 365;
-      m_sbnd_offset_y      = 173;
-      m_sbnd_offset_z      = 1000;
-      m_sbnd_border_x_min1 = 0.;
-      m_sbnd_border_x_max1 = 0.;
-      m_sbnd_border_x_min2 = 0.;
-      m_sbnd_border_x_max2 = 0.;
-      m_sbnd_border_y      = 0.;
-      m_sbnd_border_z_min  = 0.;
-      m_sbnd_border_z_max  = 0.;
-      */
-
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x_min1 = 8.25;
-      m_sbnd_border_x_max1 = 5.6;
-      m_sbnd_border_x_min2 = 10.9;
-      m_sbnd_border_x_max2 = 8.25;
-      m_sbnd_border_y      = 15.;
-      m_sbnd_border_z_min  = 15.;
-      m_sbnd_border_z_max  = 85.;
-
-  }
+    }
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi, const std::vector<float> &dedx, const std::vector<float> &residual_range) :
+  Particle::Particle(const int mc_id_charge, 
+                     const int mc_id_energy, 
+                     const int mc_id_hits, 
+                     const int pdg, 
+                     const int n_hits, 
+                     const float kinetic_energy, 
+                     const float mcs_momentum_muon, 
+                     const float range_momentum_muon, 
+                     const float range_momentum_proton, 
+                     const float length, 
+                     const TVector3 &vertex, 
+                     const TVector3 &end, 
+                     const float &chi2p, 
+                     const float &chi2mu, 
+                     const float &chi2pi, 
+                     const std::vector<float> &dedx, 
+                     const std::vector<float> &residual_range, 
+                     const Geometry &g) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
@@ -76,40 +69,25 @@ namespace selection{
     m_chi2mu(chi2mu),
     m_chi2pi(chi2pi),
     m_dedx(dedx),
-    m_residual_range(residual_range){
+    m_residual_range(residual_range),
+    m_geometry(g){
       // Set member variables
       m_mass   = this->GetMassFromPdg(pdg);
       m_energy = m_mass + (kinetic_energy/1000.);
-      /*for(unsigned int i = 0; i < dedx.size(); ++i){
-        m_energy          = (m_dedx[i] * (1./residual_range[i]) /1000.);
-      }*/
       
       // Get the magnitude of the momentum
       double momentum_magnitude = sqrt(pow(m_energy,2) - pow(m_mass,2));
       m_momentum = momentum_magnitude * (m_end - m_vertex)*(1/double((m_end-m_vertex).Mag()));
-      
-      // Co-ordinate offset in cm
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x_min1 = 8.25;
-      m_sbnd_border_x_max1 = 5.6;
-      m_sbnd_border_x_min2 = 10.9;
-      m_sbnd_border_x_max2 = 8.25;
-      m_sbnd_border_y      = 15.;
-      m_sbnd_border_z_min  = 15.;
-      m_sbnd_border_z_max  = 85.;
-
     }
 
   //------------------------------------------------------------------------------------------ 
 
-  Particle::Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end, const float &energy) :
+  Particle::Particle(const int pdg, 
+                     const int n_hits, 
+                     const TVector3 &vertex, 
+                     const TVector3 &end, 
+                     const float &energy,
+                     const Geometry &g) :
     m_pdg(pdg),
     m_n_hits(n_hits),
     m_mass(this->GetMassFromPdg(pdg)),
@@ -117,29 +95,11 @@ namespace selection{
     m_from_reco_track(false),
     m_vertex(vertex),
     m_end(end),
-    m_energy(energy){
-    m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
-      
-      // Co-ordinate offset in cm
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x_min1 = 8.25;
-      m_sbnd_border_x_max1 = 5.6;
-      m_sbnd_border_x_min2 = 10.9;
-      m_sbnd_border_x_max2 = 8.25;
-      m_sbnd_border_y      = 15.;
-      m_sbnd_border_z_min  = 15.;
-      m_sbnd_border_z_max  = 85.;
-
+    m_energy(energy),
+    m_geometry(g){
+      m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
     }
 
-  
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetMassFromPdg(const int pdg) const{
@@ -389,19 +349,21 @@ namespace selection{
     float end_x    = m_end[0];                        
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
-                                                                                 
-    if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (vertex_x < (-m_sbnd_offset_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (vertex_z < (-m_sbnd_offset_z))
-         || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (end_x    < (-m_sbnd_offset_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (end_y    < (-m_sbnd_offset_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (end_z    < (-m_sbnd_offset_z))) return false; 
+   
+    // Get the outermost faces of the detector
+    float min_x = *std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end());
+    float min_y = *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end());
+    float min_z = *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end());
+    float max_x = *std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end());
+    float max_y = *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end());
+    float max_z = *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end());
+
+    if(vertex_x < min_x || vertex_x > max_x ||
+       vertex_y < min_y || vertex_y > max_y ||
+       vertex_z < min_z || vertex_z > max_z ||
+       end_x    < min_x || end_x    > max_x ||
+       end_y    < min_y || end_y    > max_y ||
+       end_z    < min_z || end_z    > max_z) return false;
 
     return true;
   }
@@ -421,39 +383,23 @@ namespace selection{
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
    
-    /*
-    bool does_vtx_escape = 
-      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z)));
+    // Get the outermost faces of the detector
+    float min_x = *std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end());
+    float min_y = *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end());
+    float min_z = *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end());
+    float max_x = *std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end());
+    float max_y = *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end());
+    float max_z = *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end());
 
-    bool does_end_escape = 
-      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z)));
-    */
     bool does_vtx_escape = 
-      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (vertex_x < (-m_sbnd_offset_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (vertex_z < (-m_sbnd_offset_z)));
-
+      (vertex_x < min_x || vertex_x > max_x ||
+       vertex_y < min_y || vertex_y > max_y ||
+       vertex_z < min_z || vertex_z > max_z);
     bool does_end_escape = 
-      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (end_x    < (-m_sbnd_offset_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (end_y    < (-m_sbnd_offset_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (end_z    < (-m_sbnd_offset_z))); 
-    
+      (end_x    < min_x || end_x    > max_x ||
+       end_y    < min_y || end_y    > max_y ||
+       end_z    < min_z || end_z    > max_z);
+
     if(does_vtx_escape && does_end_escape) return false;
     if(!does_vtx_escape && !does_end_escape) return false;
 

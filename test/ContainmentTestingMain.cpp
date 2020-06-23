@@ -1,54 +1,78 @@
 #include "../include/CC0piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
-#include "../include/Event.h"
+#include "../include/Geometry.h"
 #include "../include/Plane.h"
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <numeric>
-#include <time.h>
-#include <stdexcept>
-#include "TROOT.h"
-#include "TMath.h"
-#include "TVector3.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TLatex.h"
-#include "TStyle.h"
-#include "TColor.h"
-#include "TObjArray.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "TLeaf.h"
+#include "../include/Event.h"
+#include "../include/Particle.h"
+#include "../include/Setup.h"
+#include "../include/ConfigReader.h"
 
+using namespace cppsecrets;
 using namespace selection;
 
-void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions);
-
-int MainTest(){
+int MainTest(const char *config){
   
   time_t rawtime;
-  struct tm * timeinfo;
-  time (&rawtime);
-  timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
+  GetTime(rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
- 
-  // Output file location
-  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/";
-  std::string plots_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/";
-  std::string tmva_location   = "/sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/";
 
   //------------------------------------------------------------------------------------------
-  //                                       Load events
+  //                                    Configure
   //------------------------------------------------------------------------------------------
   
+  // Create object of the class ConfigReader
+  // Parse the configuration file
+  // Dump map on the console after parsing it
+  ConfigReader* p = ConfigReader::getInstance();
+  p->parseFile(config);
+  std::cout << " Variables from configuration file: " << std::endl;
+  p->dumpFileValues();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
+  // Get variables from config
+  std::string input_location  = "";
+  std::string input_filename  = "";
+  std::string exceptions_file = "";
+  std::string stats_location  = "";
+  std::string plots_location  = "";
+  std::string tmva_location   = "";
+  unsigned int total_files = 0;
+  std::vector<double> minx_fid, miny_fid, minz_fid;
+  std::vector<double> maxx_fid, maxy_fid, maxz_fid;
+  std::vector<double> minx_av, miny_av, minz_av;
+  std::vector<double> maxx_av, maxy_av, maxz_av;
+
+  p->getValue("InputFileLocation",input_location);
+  p->getValue("InputFileName",    input_filename);
+  p->getValue("ExceptionsFile",   exceptions_file);
+  p->getValue("StatFileLocation", stats_location); 
+  p->getValue("PlotFileLocation", plots_location);
+  p->getValue("TMVAFileLocation", tmva_location);
+  p->getValue("TotalFiles",       total_files);
+  p->getValue("MinXFid",          minx_fid);
+  p->getValue("MinYFid",          miny_fid);
+  p->getValue("MinZFid",          minz_fid);
+  p->getValue("MaxXFid",          maxx_fid);
+  p->getValue("MaxYFid",          maxy_fid);
+  p->getValue("MaxZFid",          maxz_fid);
+  p->getValue("MinXAV",           minx_av);
+  p->getValue("MinYAV",           miny_av);
+  p->getValue("MinZAV",           minz_av);
+  p->getValue("MaxXAV",           maxx_av);
+  p->getValue("MaxYAV",           maxy_av);
+  p->getValue("MaxZAV",           maxz_av);
+
+  //------------------------------------------------------------------------------------------
+  //                                    Initialise
+  //------------------------------------------------------------------------------------------
+
+  // Get the active and fiducial geometry objects
+  Geometry fiducial(minx_fid,miny_fid,minz_fid,maxx_fid,maxy_fid,maxz_fid,true);
+  Geometry active(minx_av,miny_av,minz_av,maxx_av,maxy_av,maxz_av,false);
+  PlaneList planes = active.GetExternalPlaneList();
+
   // Initialise topology maps
   TopologyMap numu_signal_map  = GeneralAnalysisHelper::GetNuMuTopologyMap();
   TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
@@ -58,27 +82,11 @@ int MainTest(){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 149;
   double pot = 0.; 
 
   std::vector<int> exceptions;
-  exceptions.clear();
+  FillExceptions(exceptions_file.c_str(),exceptions);
 
-  // Read in txt file of list of empty input directories
-  std::fstream exception_file("exceptions.txt");
-  if(!exception_file)
-    std::cout << " No exceptions file given" << std::endl;
-  else{
-    std::string s_exc;
-    while (std::getline(exception_file, s_exc)) {
-      unsigned int i_exc;
-      std::istringstream ss_exc(s_exc);
-      ss_exc >> i_exc;
-      exceptions.push_back(i_exc);
-      ss_exc.str(std::string());
-      s_exc.clear();
-    }
-  }
   // Counter for total number of escaping tracks
   unsigned int reco_vertex_contained          = 0;
   unsigned int reco_and_true_vertex_contained = 0;
@@ -154,9 +162,13 @@ int MainTest(){
   unsigned int longest_not_muon_over_100_escapes         = 0;
   unsigned int n_events_total                            = 0;
 
+  //------------------------------------------------------------------------------------------
+  //                                Load events & analyse
+  //------------------------------------------------------------------------------------------
+  
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
-    LoadAllEventsInFile(events, i, pot, exceptions);
+    LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
     EventSelectionTool::GetTimeLeft(start,total_files,i);
 
     for(const Event &e : events){
@@ -175,7 +187,7 @@ int MainTest(){
           max_one_escapes++;
         }
       }
-      
+     
       // Define the escaping plane in the event
       double total_energy          = 0.; 
       double escaping_track_length = -999.;;
@@ -194,8 +206,6 @@ int MainTest(){
         if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
           float distance_to_intersection_point = -std::numeric_limits<float>::max();
           // Loop over the fiducial planes and find out which the escaping particle passed through
-          PlaneList planes;
-          EventSelectionTool::GetSBNDFiducialPlanes(planes);
           for(const Plane &plane : planes){
             escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
             if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
@@ -329,10 +339,6 @@ int MainTest(){
        *      VERTEX DISTANCE FROM ESCAPING TRACK LOCATION
        *
        */
-
-      PlaneList planes;
-      EventSelectionTool::GetSBNDFiducialPlanes(planes);
-
       // Find the location at which the escaping track leaves the TPC
       for(const Particle &p : e.GetRecoParticleList()){
         // Check that we are looking at the escaping track
@@ -382,6 +388,7 @@ int MainTest(){
     }
   }
 
+  f->cd();
   escaping_muon_pid->Write();
   f->Close();
 
@@ -719,36 +726,14 @@ int MainTest(){
   file << " Percentage of events where the true muon escapes in cc inc.        : " << 100 * ccinc_true_muon_distance_cut/double(events_with_1_escaping_track_with_cut) << std::endl;
   file << "=====================================================================" << std::endl;
 
-  time_t rawtime_afterload;
-  struct tm * timeinfo_afterload;
-  time (&rawtime_afterload);
-  timeinfo_afterload = localtime (&rawtime_afterload);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " After loading events local time and date:  " << asctime(timeinfo_afterload) << std::endl;
-  std::cout << "-----------------------------------------------------------" << std::endl;
-
   time_t rawtime_end;
-  struct tm * timeinfo_end;
-  time (&rawtime_end);
-  timeinfo_end = localtime (&rawtime_end);
-  time_t total_time = rawtime_end-rawtime;
+  GetTime(rawtime_end);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " End: Local time and date:  " << asctime(timeinfo_end) << std::endl;
-  std::cout << " Total time taken         :  " << total_time/static_cast<double>(60) << " minutes" << std::endl;
+  GetTotalTime(rawtime, rawtime_end);
   std::cout << "-----------------------------------------------------------" << std::endl;
 
   return 0;
 
 } // MainTest()
 
-void LoadAllEventsInFile(EventSelectionTool::EventList &events, const unsigned int &file_index, double &pot, std::vector<int> &exceptions) {
-  std::vector<int>::const_iterator it = std::find(exceptions.begin(), exceptions.end(),file_index);
-  if(it != exceptions.end()) return;
-  
-  // Get the filenames
-  const std::string name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/"+std::to_string(file_index)+"/selection_tree.root";
-
-  double temp_pot = 0.;
-  EventSelectionTool::LoadEventList(name, events, file_index, temp_pot);
-  pot += temp_pot;
-} // LoadAllEventsInFile

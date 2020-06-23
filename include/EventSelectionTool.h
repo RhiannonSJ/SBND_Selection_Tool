@@ -27,7 +27,6 @@ namespace selection{
 
     public : 
 
-//      typedef std::vector<std::pair<int,int>> UniqueEventIdList;
       typedef std::vector<Plane>                 PlaneList;
       typedef std::vector<Particle>              ParticleList;
       typedef std::vector<Event>                 EventList;
@@ -55,9 +54,11 @@ namespace selection{
        * @param  event_list vector of events to fill
        * @param  file number of the file of the current event
        * @param  pot from the current file
+       * @param  fid fiducial volume of this detector
+       * @param  av active volume of this detector
        *
        */
-      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot);
+      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av);
 
       /**
        * @brief  Output the length of time left in the running
@@ -74,9 +75,10 @@ namespace selection{
        *
        * @param  mcparticle_tree  
        * @param  map between unique event identifier and list of mcparticle objects
+       * @param  g active volume of the detector
        *
        */
-      static void LoadMCParticles(TTree *mcparticle_tree, UIdToParticleListMap &mcparticles);
+      static void LoadMCParticles(TTree *mcparticle_tree, UIdToParticleListMap &mcparticles, const Geometry &g);
 
       /**
        * @brief  Load showers
@@ -92,9 +94,10 @@ namespace selection{
        *
        * @param  track_tree  
        * @param  map between unique event identifier and list of track objects
+       * @param  g active volume of the detector
        *
        */
-      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks);
+      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g);
       
       /**
        * @brief  The the distance between a particle and a defined plane
@@ -172,12 +175,12 @@ namespace selection{
       /*
        * @brief Get the list of planes for the sbnd active volume
        */
-      static void GetSBNDAVPlanes(PlaneList &planes);
+//      static void GetSBNDAVPlanes(PlaneList &planes);
 
       /*
        * @brief Get the list of planes for the sbnd fiducial volume
        */
-      static void GetSBNDFiducialPlanes(PlaneList &planes);
+//      static void GetSBNDFiducialPlanes(PlaneList &planes);
 
 
     private :
@@ -217,27 +220,30 @@ namespace selection{
        * @param  mc particle_tree tree to take mc particle information from
        * @param  unique_event_list list of unique events to take mc particle information from
        * @param  mc particle_list vector of mc particles to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list);
+      static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list, const Geometry &g);
 
       /**
        * @brief  get a list of reconstructed particles from track objects
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
       
       /**
        * @brief  get a list of reconstructed particles from track objects using original method
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromShower(const ShowerList &shower_list, const TVector3 &reco_vertex, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromShower(const ShowerList &shower_list, const TVector3 &reco_vertex, ParticleList &recoparticle_list, const Geometry &g);
 
       /**
        * @brief  get the particle id based on its chi2 value

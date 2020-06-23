@@ -2,7 +2,22 @@
 #include "../include/EventSelectionTool.h"
 namespace selection{
   
-  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const float neutrino_qsqr, const int &file, const int &id, const float &baseline) :
+  Event::Event(const ParticleList &mc_particles, 
+               const ParticleList &reco_particles, 
+               const unsigned int interaction, 
+               const unsigned int scatter, 
+               const int neutrino_pdg, 
+               const unsigned int charged_pi, 
+               const unsigned int neutral_pi, 
+               const bool is_cc, 
+               const TVector3 &mc_vertex, 
+               const TVector3 &reco_vertex, 
+               const float neutrino_energy, 
+               const float neutrino_qsqr, 
+               const int &file, 
+               const int &id, 
+               const float &baseline,
+               const Geometry &g) :
     m_mc_particles(mc_particles),
     m_reco_particles(reco_particles),
     m_interaction(interaction),
@@ -17,40 +32,8 @@ namespace selection{
     m_neutrino_qsqr(neutrino_qsqr),
     m_file(file),
     m_id(id),
-    m_baseline(baseline){
-    
-      // Co-ordinate offset in cm
-      /*
-      m_sbnd_half_length_x = 730;
-      m_sbnd_half_length_y = 320;
-      m_sbnd_half_length_z = 1900;
-      m_sbnd_offset_x      = 365;
-      m_sbnd_offset_y      = 173;
-      m_sbnd_offset_z      = 1000;
-      m_sbnd_border_x_min1 = 0.;
-      m_sbnd_border_x_max1 = 0.;
-      m_sbnd_border_x_min2 = 0.;
-      m_sbnd_border_x_max2 = 0.;
-      m_sbnd_border_y      = 0.;
-      m_sbnd_border_z_min  = 0.;
-      m_sbnd_border_z_max  = 0.;
-      */
-
-      m_sbnd_half_length_x = 400;
-      m_sbnd_half_length_y = 400;
-      m_sbnd_half_length_z = 500;
-      m_sbnd_offset_x      = 200;
-      m_sbnd_offset_y      = 200;
-      m_sbnd_offset_z      = 0;
-      m_sbnd_border_x_min1 = 8.25;
-      m_sbnd_border_x_max1 = 5.6;
-      m_sbnd_border_x_min2 = 10.9;
-      m_sbnd_border_x_max2 = 8.25;
-      m_sbnd_border_y      = 15.;
-      m_sbnd_border_z_min  = 15.;
-      m_sbnd_border_z_max  = 85.;
-
-    }
+    m_baseline(baseline),
+    m_geometry(g){}
 
   //------------------------------------------------------------------------------------------ 
     
@@ -170,24 +153,25 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMinimumFiducialDimensions() const{
-    return TVector3((-m_sbnd_offset_x + m_sbnd_border_x_min1), 
-                    (-m_sbnd_offset_y + m_sbnd_border_y), 
-                    (-m_sbnd_offset_z + m_sbnd_border_z_min));
+    return TVector3(*std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end()),
+                    *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end()),
+                    *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end()));
   }
 
   //------------------------------------------------------------------------------------------ 
   
+  /*
   std::pair<float, float> Event::GetCentralFiducialDimensions() const{
     std::pair<float, float> central(-m_sbnd_border_x_max1, m_sbnd_border_x_min2);
     return central;
-  }
+  }*/
 
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMaximumFiducialDimensions() const{
-    return TVector3((m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x_max2), 
-                    (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y), 
-                    (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z_max));
+    return TVector3(*std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end()),
+                    *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end()),
+                    *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end()));
   }
   
   //------------------------------------------------------------------------------------------ 
@@ -195,28 +179,24 @@ namespace selection{
   bool Event::IsSBNDTrueFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
-    std::pair<float,float> central_x(Event::GetCentralFiducialDimensions());
-    float nu_vertex_x   = m_mc_vertex[0];                        
-    float nu_vertex_y   = m_mc_vertex[1];                        
-    float nu_vertex_z   = m_mc_vertex[2];                
-    float min_fid_x     = Event::GetMinimumFiducialDimensions()[0];
-    float min_fid_y     = Event::GetMinimumFiducialDimensions()[1];
-    float min_fid_z     = Event::GetMinimumFiducialDimensions()[2];
-    float max_fid_x     = Event::GetMaximumFiducialDimensions()[0];
-    float max_fid_y     = Event::GetMaximumFiducialDimensions()[1];
-    float max_fid_z     = Event::GetMaximumFiducialDimensions()[2];
-    float central_x_min = central_x.first;
-    float central_x_max = central_x.second;
+    float vertex_x = m_mc_vertex[0];                        
+    float vertex_y = m_mc_vertex[1];                        
+    float vertex_z = m_mc_vertex[2];
 
-    if (   (nu_vertex_x > max_fid_x)  
-        || (nu_vertex_x < min_fid_x)
-        || ((nu_vertex_x > central_x_min) && (nu_vertex_x < central_x_max))
-        || (nu_vertex_y > max_fid_y)
-        || (nu_vertex_y < min_fid_y)
-        || (nu_vertex_z > max_fid_z)
-        || (nu_vertex_z < min_fid_z)) return false;
-
-    return true;
+    bool in_fiducial = false;
+    for(unsigned int n = 0; n < m_geometry.GetNTPCs(); ++n){
+      float min_x = m_geometry.GetMinX().at(n);
+      float min_y = m_geometry.GetMinY().at(n);
+      float min_z = m_geometry.GetMinZ().at(n);
+      float max_x = m_geometry.GetMaxX().at(n);
+      float max_y = m_geometry.GetMaxY().at(n);
+      float max_z = m_geometry.GetMaxZ().at(n);
+      
+      if(vertex_x >= min_x && vertex_x <= max_x &&
+         vertex_y >= min_y && vertex_y <= max_y &&
+         vertex_z >= min_z && vertex_z <= max_z) in_fiducial = true;
+    }
+    return in_fiducial;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -224,28 +204,24 @@ namespace selection{
   bool Event::IsSBNDRecoFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
-    std::pair<float,float> central_x(Event::GetCentralFiducialDimensions());
-    float nu_vertex_x   = m_reco_vertex[0];                        
-    float nu_vertex_y   = m_reco_vertex[1];                        
-    float nu_vertex_z   = m_reco_vertex[2];                
-    float min_fid_x     = Event::GetMinimumFiducialDimensions()[0];
-    float min_fid_y     = Event::GetMinimumFiducialDimensions()[1];
-    float min_fid_z     = Event::GetMinimumFiducialDimensions()[2];
-    float max_fid_x     = Event::GetMaximumFiducialDimensions()[0];
-    float max_fid_y     = Event::GetMaximumFiducialDimensions()[1];
-    float max_fid_z     = Event::GetMaximumFiducialDimensions()[2];
-    float central_x_min = central_x.first;
-    float central_x_max = central_x.second;
+    float vertex_x = m_reco_vertex[0];                        
+    float vertex_y = m_reco_vertex[1];                        
+    float vertex_z = m_reco_vertex[2];                
+   
+    bool in_fiducial = false;
+    for(unsigned int n = 0; n < m_geometry.GetNTPCs(); ++n){
+      float min_x = m_geometry.GetMinX().at(n);
+      float min_y = m_geometry.GetMinY().at(n);
+      float min_z = m_geometry.GetMinZ().at(n);
+      float max_x = m_geometry.GetMaxX().at(n);
+      float max_y = m_geometry.GetMaxY().at(n);
+      float max_z = m_geometry.GetMaxZ().at(n);
 
-    if (   (nu_vertex_x > max_fid_x)  
-        || (nu_vertex_x < min_fid_x)
-        || ((nu_vertex_x > central_x_min) && (nu_vertex_x < central_x_max))
-        || (nu_vertex_y > max_fid_y)
-        || (nu_vertex_y < min_fid_y)
-        || (nu_vertex_z > max_fid_z)
-        || (nu_vertex_z < min_fid_z)) return false;
-
-    return true;
+      if(vertex_x >= min_x && vertex_x <= max_x &&
+         vertex_y >= min_y && vertex_y <= max_y &&
+         vertex_z >= min_z && vertex_z <= max_z) in_fiducial = true;
+    }
+    return in_fiducial;
   }
 
   //------------------------------------------------------------------------------------------ 
