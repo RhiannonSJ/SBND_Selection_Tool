@@ -74,5 +74,28 @@ namespace selection{
    *
    */
   void GetTotalTime(time_t &starttime, time_t &endtime);
+
+  /**
+   * @brief Set the style of a vector of histograms
+   *
+   * @param  hists the vector of histograms to style
+   * @param  fillstyle fill style
+   * @param  linestyle line style
+   * @param  fillcolour fill colour
+   * @param  linecolour line colour
+   * @param  linewidth line width
+   * @param  font font
+   * @param  scale boolean for whether to scale to the shape
+   */
+  void SetHistogramStyle(std::vector<TH1D*> hists, 
+                         const int &fillstyle, 
+                         const int &linestyle, 
+                         const int &fillcolour,
+                         const int &linecolour,
+                         const int &linewidth,
+                         const int &font,
+                         const double &xoffset,
+                         const double &yoffset,
+                         const bool &scale);
 } // namespace
 

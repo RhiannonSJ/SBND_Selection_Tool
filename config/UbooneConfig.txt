@@ -1,0 +1,30 @@
+#
+# MicroBooNE configuration file 
+# Should be suitable for use with all analysis macros
+#
+# June 2020
+#
+
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/uboone_selection_doms_files_190620/selection/
+InputFileName     = selection_tree.root
+
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/uboone/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/uboone/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/uboone/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/uboone/
+
+TotalFiles        = 124
+
+MinXAV  = -1.55
+MinYAV  = -115.53
+MinZAV  = 0.1
+MaxXAV  = 254.8
+MaxYAV  = 117.47
+MaxZAV  = 1036.9
+
+MinXFid = 13.45
+MinYFid = -100.53
+MinZFid = 15.1
+MaxXFid = 239.8
+MaxYFid = 102.47
+MaxZFid = 956.9

@@ -1,11 +1,16 @@
-# SBND configuration file for all analyses
+#
+# SBND configuration file 
+# Should be suitable for use with all analysis macros
+#
+# June 2020
+#
 
 InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/
 InputFileName     = selection_tree.root
 
 StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/
-PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/
-TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/sbnd/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/
 
 TotalFiles        = 149

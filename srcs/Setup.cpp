@@ -64,4 +64,36 @@ namespace selection{
     std::cout                             << std::setw(4) << minutes << " minutes, ";
     std::cout                             << std::setw(4) << seconds << " seconds." << std::endl;
   } // GetTotalTime
+  // --------------------------------------------------------------------------------------------------------------------------------------------------
+  void SetHistogramStyle(std::vector<TH1D*> hists, 
+                         const int &fillstyle, 
+                         const int &linestyle, 
+                         const int &fillcolour,
+                         const int &linecolour,
+                         const int &linewidth,
+                         const int &font,
+                         const double &xoffset,
+                         const double &yoffset,
+                         const bool &scale){
+    // Loop over the histograms and get styling!
+    for(TH1D *h : hists){
+      h->SetStats(0);
+      h->SetFillStyle(fillstyle);
+      h->SetLineStyle(linestyle);
+      h->SetFillColor(fillcolour);
+      h->SetLineColor(linecolour);
+      h->SetLineWidth(linewidth);
+      h->GetXaxis()->SetTitleFont(font);
+      h->GetXaxis()->SetLabelFont(font);
+      h->GetYaxis()->SetTitleFont(font);
+      h->GetYaxis()->SetLabelFont(font);
+      h->GetXaxis()->SetTitleOffset(xoffset);
+      h->GetYaxis()->SetTitleOffset(yoffset);
+      if(h->Integral() > 0)
+        h->Scale(1/h->Integral());
+      else
+        std::cout << " Can't scale this histogram: The integral is 0" << std::endl;
+    }
+  }
+  // --------------------------------------------------------------------------------------------------------------------------------------------------
 }

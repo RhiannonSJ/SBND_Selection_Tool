@@ -121,7 +121,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNuETopologyMap() {
     TopologyMap signal_map_nue;
-    signal_map_nue.insert(TopologyMap::value_type({11},1));
+    signal_map_nue.insert(TopologyMap::value_type({12},1));
     return signal_map_nue;
   } 
 
@@ -278,7 +278,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
     // Check if the event is a selected event
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
     }
     else return 0;  
@@ -288,7 +288,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
     // Check if the event is a signal event
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology) && e.CheckMCTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology) && e.CheckMCTopology(topology)){
       return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
     }
     else return 0;
@@ -338,7 +338,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMCParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountMCParticlesWithPdg(pdg);
     }
     return 0;
@@ -347,7 +347,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMCParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
       return e.CountMCParticlesWithPdg(pdg);
     }
     return 0;
@@ -356,7 +356,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountRecoParticlesWithPdg(pdg);
     }
     return 0;
@@ -365,7 +365,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
       return e.CountRecoParticlesWithPdg(pdg);
     }
     return 0;
@@ -374,7 +374,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
     }
     return 0;
@@ -383,7 +383,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
   
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
       return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
     }
     return 0;
@@ -436,7 +436,7 @@ namespace selection{
 
     for(const Event &e : ev_list){
       
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
 
       mc_selected_muons     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
       mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
@@ -562,7 +562,7 @@ namespace selection{
     unsigned int selected_proton_pion = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
       selected_muon        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 13);
@@ -662,7 +662,7 @@ namespace selection{
     unsigned int charged_pions      = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
       mc_muons           += e.CountMCParticlesWithPdg(13);
       mc_charged_pions   += e.CountMCParticlesWithPdg(211);
@@ -737,7 +737,7 @@ namespace selection{
     unsigned int proton_pion = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
       muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13);
       muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13);

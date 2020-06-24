@@ -101,26 +101,28 @@ int MainTest(const char *config){
   //    - Distance from closest face
   //      - x, y, z
   //    Also get the percentage of time that the escaping track is the longest
-  TH1D *h_length_muon            = new TH1D("h_length_muon","Length of the escaping track", 50, 0, 400);
-  TH1D *h_length_not_muon        = new TH1D("h_length_not_muon","Length of the escaping track", 50, 0, 400);
-  TH1D *h_length_longest         = new TH1D("h_length_longest","Length of the escaping track", 50, 0, 400);
-  TH1D *h_length_not             = new TH1D("h_length_not","Length of the escaping track", 50, 0, 400);
-  TH1D *h_dist_x_longest         = new TH1D("h_dist_x_longest","Distance of the neutrino vertex from the nearest X face", 50, 0, 200);
-  TH1D *h_dist_x_not             = new TH1D("h_dist_x_not","Distance of the neutrino vertex from the nearest X face", 50, 0, 200);
-  TH1D *h_dist_y_longest         = new TH1D("h_dist_y_longest","Distance of the neutrino vertex from the nearest Y face", 50, 0, 200);
-  TH1D *h_dist_y_not             = new TH1D("h_dist_y_not","Distance of the neutrino vertex from the nearest Y face", 50, 0, 200);
-  TH1D *h_dist_z_longest         = new TH1D("h_dist_z_longest","Distance of the neutrino vertex from the nearest Z face", 50, 0, 200);
-  TH1D *h_dist_z_not             = new TH1D("h_dist_z_not","Distance of the neutrino vertex from the nearest Z face", 50, 0, 200);
-  TH1D *h_closest_longest        = new TH1D("h_closest_longest","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
-  TH1D *h_closest_not            = new TH1D("h_closest_not","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
-  TH1D *h_closest_muon           = new TH1D("h_closest_muon","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
-  TH1D *h_closest_not_muon       = new TH1D("h_closest_not_muon","Distance of the neutrino vertex from the nearest fiducial border", 50, 0, 200);
-  TH2D *h_length_dist_muon       = new TH2D("h_length_dist_muon", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
-  TH2D *h_length_dist_not        = new TH2D("h_length_dist_not", "Length of the escaping track vs. distance from closest border", 50,0,200,20,0,400);
+  TH1D *h_length_muon            = new TH1D("h_length_muon","Length of the escaping track", 40, 0, 400);
+  TH1D *h_length_not_muon        = new TH1D("h_length_not_muon","Length of the escaping track", 40, 0, 400);
+  TH1D *h_length_longest         = new TH1D("h_length_longest","Length of the escaping track", 40, 0, 400);
+  TH1D *h_length_not             = new TH1D("h_length_not","Length of the escaping track", 40, 0, 400);
+  TH1D *h_dist_x_longest         = new TH1D("h_dist_x_longest","Distance of the neutrino vertex from the nearest X face", 40, 0, 200);
+  TH1D *h_dist_x_not             = new TH1D("h_dist_x_not","Distance of the neutrino vertex from the nearest X face", 40, 0, 200);
+  TH1D *h_dist_y_longest         = new TH1D("h_dist_y_longest","Distance of the neutrino vertex from the nearest Y face", 40, 0, 200);
+  TH1D *h_dist_y_not             = new TH1D("h_dist_y_not","Distance of the neutrino vertex from the nearest Y face", 40, 0, 200);
+  TH1D *h_dist_z_longest         = new TH1D("h_dist_z_longest","Distance of the neutrino vertex from the nearest Z face", 40, 0, 200);
+  TH1D *h_dist_z_not             = new TH1D("h_dist_z_not","Distance of the neutrino vertex from the nearest Z face", 40, 0, 200);
+  TH1D *h_closest_longest        = new TH1D("h_closest_longest","Distance of the neutrino vertex from the nearest fiducial border", 40, 0, 200);
+  TH1D *h_closest_not            = new TH1D("h_closest_not","Distance of the neutrino vertex from the nearest fiducial border", 40, 0, 200);
+  TH1D *h_closest_muon           = new TH1D("h_closest_muon","Distance of the neutrino vertex from the nearest fiducial border", 40, 0, 200);
+  TH1D *h_closest_not_muon       = new TH1D("h_closest_not_muon","Distance of the neutrino vertex from the nearest fiducial border", 40, 0, 200);
+  TH2D *h_length_dist_muon       = new TH2D("h_length_dist_muon", "Length of the escaping track vs. distance from closest border", 40,0,200,20,0,400);
+  TH2D *h_length_dist_not        = new TH2D("h_length_dist_not", "Length of the escaping track vs. distance from closest border", 40,0,200,20,0,400);
   TH1D *h_escaping_dist_muon     = new TH1D("h_escaping_dist_muon","Distance of the neutrino vertex from the escaping fiducial border", 100, 0, 500);
   TH1D *h_escaping_dist_not_muon = new TH1D("h_escaping_dist_not_muon","Distance of the neutrino vertex from the escaping fiducial border", 100, 0, 500);
   TH1D *h_exiting_plane_muon     = new TH1D("h_exiting_plane_muon","Plane from which the escaping muon leaves the detector", 6, 0, 6);
   TH1D *h_exiting_plane_not      = new TH1D("h_exiting_plane_not","Plane from which the escaping particle leaves the detector", 6, 0, 6);
+  TH1D *h_longest_length_muon    = new TH1D("h_longest_length_muon","Length of the longest track", 40, 0, 600);
+  TH1D *h_longest_length_other   = new TH1D("h_longest_length_other","Length of the longest track", 40, 0, 600);
 
   // Tree for TMVA calculation
   bool signal;
@@ -161,6 +163,8 @@ int MainTest(const char *config){
   unsigned int longest_true_muon_over_100_escapes        = 0;
   unsigned int longest_not_muon_over_100_escapes         = 0;
   unsigned int n_events_total                            = 0;
+  unsigned int longest_track_true_muon                   = 0;
+  unsigned int longest_track_true_other                  = 0;
 
   //------------------------------------------------------------------------------------------
   //                                Load events & analyse
@@ -174,13 +178,13 @@ int MainTest(const char *config){
     for(const Event &e : events){
       n_events_total++;
       //Counter for event-based track counting
-      if(e.IsSBNDRecoFiducial()){
+      if(e.IsRecoFiducial()){
         reco_vertex_contained++;
-        if(e.IsSBNDTrueFiducial()) reco_and_true_vertex_contained++;
+        if(e.IsTrueFiducial()) reco_and_true_vertex_contained++;
 
         if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
           too_many_escape++;
-          if(e.IsSBNDTrueFiducial()) too_many_true_contained++;
+          if(e.IsTrueFiducial()) too_many_true_contained++;
           else too_many_true_escaping++;
         }
         else{
@@ -194,38 +198,7 @@ int MainTest(const char *config){
       int escaping_plane           = -1;
       bool longest_track_escapes   = false;
       bool muon_escapes            = false;
-      // Only look at events with 1 escaping track
 
-      if(!e.IsSBNDRecoFiducial()) continue;
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
-      events_with_1_escaping_track++;
-      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
-
-      bool contained_and_passes_distance_cut = false;
-      for(const Particle &p : e.GetRecoParticleList()){
-        if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
-          float distance_to_intersection_point = -std::numeric_limits<float>::max();
-          // Loop over the fiducial planes and find out which the escaping particle passed through
-          for(const Plane &plane : planes){
-            escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
-            if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
-            distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
-            if(distance_to_intersection_point > 50){
-              contained_and_passes_distance_cut = true;
-              if(p.GetLength() >= 100)
-                events_with_1_escaping_track_with_cut_100++;
-              break;
-            }
-          }
-        }
-      }
-      if(contained_and_passes_distance_cut) {
-        events_with_1_escaping_track_with_cut++;
-        if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap()))
-          ccinc_with_1_escaping_track_with_cut++;
-      }
-
-      // Now plot some things
       // Find the ID of the longest track
       // Calculate the total kinetic energy deposited in the event by 
       // all reconstructed particles
@@ -241,6 +214,51 @@ int MainTest(const char *config){
         }
       }
       if(max_id == -1) continue;
+
+      if(!e.IsRecoFiducial() || !e.IsTrueFiducial()) continue;
+
+      // Get information about the longest track
+      for(const Particle &p : e.GetMCParticleList()){
+        if(p.GetMCId() == max_id){
+          if(p.GetPdgCode() == 13){
+            longest_track_true_muon++;
+            h_longest_length_muon->Fill(p.GetLength());
+          }
+          else{
+            longest_track_true_other++;
+            h_longest_length_other->Fill(p.GetLength());
+          }
+        }
+      }
+
+      // From now on, only look at events with 1 escaping track
+      if(GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
+      events_with_1_escaping_track++;
+      if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) ccinc_with_1_escaping_track++;
+
+      bool contained_and_passes_distance_cut = false;
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+          float distance_to_intersection_point = -std::numeric_limits<float>::max();
+          // Loop over the fiducial planes and find out which the escaping particle passed through
+          for(const Plane &plane : planes){
+            escaping_plane++; // incremement from -1 to find the plane number, from 0-5 ==> +/-x, +/-y +/-z
+            if(!EventSelectionTool::CheckIfParticleIntersectsPlane(plane, p)) continue;
+            distance_to_intersection_point = EventSelectionTool::GetDistanceFromParticleToPlane(plane,p);
+            if(distance_to_intersection_point > 75){
+              contained_and_passes_distance_cut = true;
+              if(p.GetLength() >= 100)
+                events_with_1_escaping_track_with_cut_100++;
+              break;
+            }
+          }
+        }
+      }
+      if(contained_and_passes_distance_cut) {
+        events_with_1_escaping_track_with_cut++;
+        if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap()))
+          ccinc_with_1_escaping_track_with_cut++;
+      }
 
       // Plot
       for(const Particle &p : e.GetRecoParticleList()){
@@ -399,6 +417,46 @@ int MainTest(const char *config){
    */
   TCanvas *c = new TCanvas("c","",700,900);
 
+  TLegend *leg = new TLegend(0.43,0.68,0.88,0.88);
+  leg->AddEntry(h_longest_length_muon, "True #mu longest", "f");
+  leg->AddEntry(h_longest_length_other, "True #mu not longest", "f");
+  leg->SetLineWidth(0);
+
+  h_longest_length_muon->SetFillColor(kSpring-3);
+  h_longest_length_muon->SetFillStyle(3001);
+  h_longest_length_muon->SetLineColor(kSpring-3);
+  h_longest_length_other->SetFillColor(kOrange+7);
+  h_longest_length_other->SetFillStyle(3001);
+  h_longest_length_other->SetLineColor(kOrange+7);
+  
+  double int_longest_muon  = h_longest_length_muon->Integral();
+  double int_longest_other = h_longest_length_other->Integral();
+  h_longest_length_muon->Scale(1./int_longest_muon);
+  h_longest_length_other->Scale(1./int_longest_other);
+ 
+  double maxlongestmu = 1.1*std::max(h_longest_length_muon->GetMaximum(), h_longest_length_other->GetMaximum());
+
+  h_longest_length_muon->SetStats(0);
+  h_longest_length_muon->GetXaxis()->SetTitle("Longest track length [cm]");
+  h_longest_length_muon->GetYaxis()->SetTitle("Normalised event rate");
+  h_longest_length_muon->GetXaxis()->SetTitleFont(132);
+  h_longest_length_muon->GetXaxis()->SetLabelFont(132);
+  h_longest_length_muon->GetYaxis()->SetTitleFont(132);
+  h_longest_length_muon->GetYaxis()->SetLabelFont(132);
+  h_longest_length_muon->GetYaxis()->SetTitleOffset(1.2);
+  h_longest_length_muon->GetYaxis()->SetMaxDigits(3);
+  h_longest_length_muon->GetYaxis()->SetRangeUser(0, maxlongestmu);
+  h_longest_length_muon->Draw("hist");
+  h_longest_length_other->Draw("hist same");
+  leg->Draw("same");
+  h_longest_length_muon->SetStats(0);
+  
+  c->SaveAs((plots_location+"longest_track_length_all.png").c_str());
+  c->SaveAs((plots_location+"longest_track_length_all.root").c_str());
+
+  leg->Clear();
+  c->Clear();
+
   h_exiting_plane_muon->SetFillColor(kSpring-3);
   h_exiting_plane_muon->SetFillStyle(3001);
   h_exiting_plane_muon->SetLineColor(kSpring-3);
@@ -461,7 +519,6 @@ int MainTest(const char *config){
   c->SaveAs((plots_location+"length_dist_not.root").c_str());
   c->Clear();
 
-  TLegend *leg = new TLegend(0.43,0.68,0.88,0.88);
   leg->AddEntry(h_escaping_dist_muon, "True #mu escapes", "f");
   leg->AddEntry(h_escaping_dist_not_muon, "True #mu doesn't escape", "f");
   leg->SetLineWidth(0);
@@ -698,6 +755,8 @@ int MainTest(const char *config){
   file << " Total number of events                                             : " << n_events_total << std::endl;
   file << " Reconstructed vertex contained                                     : " << reco_vertex_contained << std::endl;
   file << " Reconstructed and true vertices contained                          : " << reco_and_true_vertex_contained << std::endl;
+  file << " Longest track is a true muon                                       : " << longest_track_true_muon << std::endl;
+  file << " Longest track is not a true muon                                   : " << longest_track_true_other << std::endl;
   file << " Number of events with maximum one escaping track                   : " << max_one_escapes << std::endl;
   file << " Number of events with exactly one escaping track                   : " << events_with_1_escaping_track << std::endl;
   file << " Number of events with exactly one escaping track with distance cut : " << events_with_1_escaping_track_with_cut << std::endl;

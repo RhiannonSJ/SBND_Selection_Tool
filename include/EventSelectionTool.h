@@ -172,17 +172,6 @@ namespace selection{
        */
       static bool IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane);
       
-      /*
-       * @brief Get the list of planes for the sbnd active volume
-       */
-//      static void GetSBNDAVPlanes(PlaneList &planes);
-
-      /*
-       * @brief Get the list of planes for the sbnd fiducial volume
-       */
-//      static void GetSBNDFiducialPlanes(PlaneList &planes);
-
-
     private :
 
       /**
@@ -226,14 +215,34 @@ namespace selection{
       static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list, const Geometry &g);
 
       /**
-       * @brief  get a list of reconstructed particles from track objects
+       * @brief  get a list of reconstructed particles from track objects in SBND
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
        * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      static void GetRecoParticleFromTrackSBND(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      
+      /**
+       * @brief  get a list of reconstructed particles from track objects in MicroBooNE
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
+       *
+       */
+      static void GetRecoParticleFromTrackMicroBooNE(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      
+      /**
+       * @brief  get a list of reconstructed particles from track objects in ICARUS
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
+       *
+       */
+      static void GetRecoParticleFromTrackICARUS(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
       
       /**
        * @brief  get a list of reconstructed particles from track objects using original method
@@ -340,8 +349,8 @@ namespace selection{
            * @param  kinetic_energy track kinetic energy
            * @param  vertex vertex of the track
            * @param  end end point of the track
-           * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
-           * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
+           * @param  contained whether or not the reconstructed track is contained within the  fiducial volume
+           * @param  one_end_contained whether or not the reconstructed track has one end contained within the  fiducial volume
            *
            */
           Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained, const std::vector<float> &dedx, const std::vector<float> &residual_range);

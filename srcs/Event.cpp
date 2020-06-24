@@ -176,7 +176,7 @@ namespace selection{
   
   //------------------------------------------------------------------------------------------ 
   
-  bool Event::IsSBNDTrueFiducial() const{
+  bool Event::IsTrueFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
     float vertex_x = m_mc_vertex[0];                        
@@ -201,7 +201,7 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  bool Event::IsSBNDRecoFiducial() const{
+  bool Event::IsRecoFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
     float vertex_x = m_reco_vertex[0];                        

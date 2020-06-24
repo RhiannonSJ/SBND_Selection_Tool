@@ -169,16 +169,16 @@ namespace selection{
       int GetNNeutralPions() const;
       
       /**
-       * @brief  Get whether the true neutrino interaction happened within the SBND fiducial 
+       * @brief  Get whether the true neutrino interaction happened within the  fiducial 
        *         volume
        */
-      bool IsSBNDTrueFiducial() const;
+      bool IsTrueFiducial() const;
       
       /**
-       * @brief  Get whether the reco neutrino interaction happened within the SBND fiducial 
+       * @brief  Get whether the reco neutrino interaction happened within the  fiducial 
        *         volume
        */
-      bool IsSBNDRecoFiducial() const;
+      bool IsRecoFiducial() const;
 
       /**
        * @brief  Get whether all the reconstructed tracks in an event are contained
@@ -230,21 +230,21 @@ namespace selection{
       Particle GetMostEnergeticTrueParticle() const;
 
       /**
-       * @brief  Get the minimum x,y,z positions of the SBND fiducial volume
+       * @brief  Get the minimum x,y,z positions of the  fiducial volume
        *
        * @return Vector of lowest x,y,z positions
        */
       TVector3 GetMinimumFiducialDimensions() const;
 
       /**
-       * @brief  Get the central x border of the SBND fiducial volume
+       * @brief  Get the central x border of the  fiducial volume
        *
        * @return pair of the central x border positions
        */
 //      std::pair<float,float> GetCentralFiducialDimensions() const;
 
       /**
-       * @brief  Get the maximum x,y,z positions of the SBND fiducial volume
+       * @brief  Get the maximum x,y,z positions of the  fiducial volume
        *
        * @return Vector of highest x,y,z positions
        */

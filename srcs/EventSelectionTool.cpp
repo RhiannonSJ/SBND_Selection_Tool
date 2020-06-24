@@ -81,6 +81,7 @@ namespace selection{
     TBranch *b_t_neutral_pions = t_event->GetBranch("t_neutral_pions");
     TBranch *b_t_vertex_energy = t_event->GetBranch("t_vertex_energy");
     TBranch *b_t_neutrino_qsqr = t_event->GetBranch("t_qsqr");
+    TBranch *b_detector        = t_subrun->GetBranch("detector_enum");
     
     pot = EventSelectionTool::GetPOT(t_subrun);
     
@@ -94,7 +95,7 @@ namespace selection{
       ShowerList   showers;
 
       TVector3 r_vertex, t_vertex;
-      unsigned int interaction, pions_ch, pions_neu, scatter;
+      unsigned int interaction, pions_ch, pions_neu, scatter, det;
       int neutrino_pdg;
       bool iscc(false);
       float neu_energy;
@@ -120,6 +121,9 @@ namespace selection{
       pions_neu    = b_t_neutral_pions->GetLeaf("t_neutral_pions")->GetValue();
       neu_energy   = b_t_vertex_energy->GetLeaf("t_vertex_energy")->GetValue();
       neu_qsqr     = b_t_neutrino_qsqr->GetLeaf("t_qsqr")->GetValue();
+      
+      t_subrun->GetEntry(j);
+      det = b_detector->GetLeaf("detector_enum")->GetValue();
    
       const UniqueId event_identification(event_id,time_now);
 
@@ -136,7 +140,17 @@ namespace selection{
         mcparticles = mcparticle_itr->second;
 
       
-      if(tracks.size() != 0) EventSelectionTool::GetRecoParticleFromTrack(tracks, recoparticles, av);
+      if(tracks.size() != 0) {
+        EventSelectionTool::GetRecoParticleFromTrackSBND(tracks, recoparticles, av);
+        /*
+        if(det == 0)
+          EventSelectionTool::GetRecoParticleFromTrackSBND(tracks, recoparticles, av);
+        if(det == 1)
+          EventSelectionTool::GetRecoParticleFromTrackMicroBooNE(tracks, recoparticles, av);
+        if(det == 2)
+          EventSelectionTool::GetRecoParticleFromTrackICARUS(tracks, recoparticles, av);
+          */
+      }
       if(showers.size() != 0) EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles, av);
      
       // Check if any particles should be flipped
@@ -450,70 +464,6 @@ namespace selection{
   }
 
   //------------------------------------------------------------------------------------------ 
-
-  /*
-  void EventSelectionTool::GetSBNDAVPlanes(PlaneList &planes) {
-    // Define the fiducial planes of the detector
-    //  The order: +/-x, +/-y, +/-z
-    //
-    // To take into account the fiducial border define 
-    //    Half with fiducial   = Half width  - width fiducial border 
-    //    Half height fiducial = Half height - height fiducial border
-    //    Half length fiducial = Half length - length fiducial border
-    float w = 200; // half full detector width (x)
-    float h = 200; // half full detector height (y)
-    float l = 250; // half full detector length (z)
-    float w_border = 0; // width fiducial border
-    float h_border = 0; // height fiducial border
-    float l_border = 0; // length fiducial border
-    float fid_w = w - w_border; // fiducial half width
-    float fid_h = h - h_border; // fiducial half height
-    float fid_l = l - l_border; // fiducial half length
-
-    // Define the ficudial planes of the detector
-    planes.emplace_back(TVector3( fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0,  fid_l));
-    planes.emplace_back(TVector3(-fid_w, 0, l),         TVector3(0, fid_h, 0), TVector3(0, 0, -fid_l));
-    planes.emplace_back(TVector3(0,  fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0, -fid_l));
-    planes.emplace_back(TVector3(0, -fid_h, l),         TVector3(fid_w, 0, 0), TVector3(0, 0,  fid_l));
-    planes.emplace_back(TVector3(0, 0, l_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));
-    planes.emplace_back(TVector3(0, 0, (2*l)-l_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));
-  }*/
-
-  //------------------------------------------------------------------------------------------ 
- 
-  /*
-  void EventSelectionTool::GetSBNDFiducialPlanes(PlaneList &planes) {
-    // Define the fiducial planes of the detector
-    //  The order: +/-x, +/-y, +/-z
-    //
-    // To take into account the fiducial border define 
-    //    Half with fiducial   = Half width  - width fiducial border 
-    //    Half height fiducial = Half height - height fiducial border
-    //    Half length fiducial = Half length - length fiducial border
-    float w               = 200; // half full detector width (x)
-    float h               = 200; // half full detector height (y)
-    float l               = 250; // half full detector length (z)
-    float w_border        = 8.25; // width fiducial border
-    float h_border        = 15.; // height fiducial border
-    float lmin_border     = 15.; // length fiducial border min
-    float lmax_border     = 85.; // length fiducial border max
-    float fid_w           = w - w_border; // fiducial half width
-    float fid_h           = h - h_border; // fiducial half height
-    float fid_lmin        = l - lmin_border; // fiducial half length
-    float fid_lmax        = l - lmax_border; // fiducial half length
-    float half_fiducial_l = ((2*l)-lmin_border-lmax_border)/2.; // Half the fiducial length (z)
-    float front_l         = lmin_border+half_fiducial_l; // Distance from front of the detector to half the fiducial length (z)
-
-    // Define the ficudial planes of the detector
-    planes.emplace_back(TVector3( fid_w, 0, front_l),      TVector3(0, fid_h, 0), TVector3(0,      0,  half_fiducial_l)); // 0 = +x
-    planes.emplace_back(TVector3(-fid_w, 0, front_l),      TVector3(0, fid_h, 0), TVector3(0,      0, -half_fiducial_l)); // 1 = -x
-    planes.emplace_back(TVector3(0,  fid_h, front_l),      TVector3(fid_w, 0, 0), TVector3(0,      0, -half_fiducial_l)); // 2 = +y
-    planes.emplace_back(TVector3(0, -fid_h, front_l),      TVector3(fid_w, 0, 0), TVector3(0,      0,  half_fiducial_l)); // 3 = -y
-    planes.emplace_back(TVector3(0, 0, lmin_border),       TVector3(fid_w, 0, 0), TVector3(0,  fid_h, 0));    // 4 = min z
-    planes.emplace_back(TVector3(0, 0, (2*l)-lmax_border), TVector3(fid_w, 0, 0), TVector3(0, -fid_h, 0));    // 5 = max z
-  }*/
-
-  //------------------------------------------------------------------------------------------ 
   
   void EventSelectionTool::GetTrackList(unsigned int start, TTree *track_tree, const std::pair<int, int> &unique_event, TrackList &track_list){
    
@@ -755,7 +705,7 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
-  void EventSelectionTool::GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){
+  void EventSelectionTool::GetRecoParticleFromTrackSBND(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){
 
     // Assign ridiculously short length to initiate the longest track length
     float longest_track_length      = -std::numeric_limits<float>::max();
@@ -786,7 +736,7 @@ namespace selection{
             distance_to_intersection_point = EventSelectionTool::GetDistanceFromTrackToPlane(plane,trk);
             // Make sure the distance to the escaping border is big enough 
             // Run Contianment Main to determine this value from mu-pi comparison plot
-            if(distance_to_intersection_point > 60){
+            if(distance_to_intersection_point > 75){
               contained_and_passes_distance_cut = true;
               break;
             }
@@ -883,7 +833,15 @@ namespace selection{
       recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range, g); 
     } 
   }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  void EventSelectionTool::GetRecoParticleFromTrackMicroBooNE(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){}
 
+  //------------------------------------------------------------------------------------------ 
+  
+  void EventSelectionTool::GetRecoParticleFromTrackICARUS(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){}
+  
   //------------------------------------------------------------------------------------------ 
   
   void EventSelectionTool::GetRecoParticleFromShower(const ShowerList &shower_list, const TVector3 &reco_vertex, ParticleList &recoparticle_list, const Geometry &g){
