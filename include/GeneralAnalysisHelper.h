@@ -255,6 +255,38 @@ namespace selection{
       static void GetRecoLengthWithPdg(const Event &e, const int pdg, std::vector<float> &lengths);
 
       /**                                                              
+       * @brief  Get the longest MC track ID for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  id MC particle ID to return
+       */
+      static void LongestMCTrackID(const Event &e, int &id);
+
+      /**                                                              
+       * @brief  Get the longest Reco track ID for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  id Reco particle ID to return
+       */
+      static void LongestRecoTrackID(const Event &e, int &id);
+
+      /**                                                              
+       * @brief  Get the longest MC track length for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  length MC particle length to return
+       */
+      static void LongestMCTrackLength(const Event &e, double &length);
+
+      /**                                                              
+       * @brief  Get the longest Reco track length for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  length Reco particle length to return
+       */
+      static void LongestRecoTrackLength(const Event &e, double &length);
+
+      /**                                                              
        * @brief  Get the cos thetas for given MC pdg
        *
        * @param  event

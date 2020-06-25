@@ -6,7 +6,7 @@
 
 namespace selection{
 
-  Particle::Particle(const int mc_id, 
+  Particle::Particle(const int mc_id,
                      const int pdg, 
                      const int status, 
                      const int n_hits,  
@@ -16,7 +16,7 @@ namespace selection{
                      const TVector3 &end,
                      const TVector3 &momentum,
                      const Geometry &g) : 
-    m_mc_id(mc_id), 
+    m_mc_id(mc_id),
     m_pdg(pdg),
     m_status(status),
     m_n_hits(n_hits),
@@ -29,13 +29,15 @@ namespace selection{
     m_momentum(momentum),
     m_geometry(g){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
+      m_id     = mc_id;
     }
 
   //------------------------------------------------------------------------------------------ 
   
   Particle::Particle(const int mc_id_charge, 
                      const int mc_id_energy, 
-                     const int mc_id_hits, 
+                     const int mc_id_hits,
+                     const int id,
                      const int pdg, 
                      const int n_hits, 
                      const float kinetic_energy, 
@@ -54,6 +56,7 @@ namespace selection{
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
+    m_id(id),
     m_pdg(pdg),
     m_n_hits(n_hits),
     m_kinetic_energy(kinetic_energy),
@@ -82,13 +85,15 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
 
-  Particle::Particle(const int pdg, 
+  Particle::Particle(const int pdg,
+                     const int id,
                      const int n_hits, 
                      const TVector3 &vertex, 
                      const TVector3 &end, 
                      const float &energy,
                      const Geometry &g) :
     m_pdg(pdg),
+    m_id(id),
     m_n_hits(n_hits),
     m_mass(this->GetMassFromPdg(pdg)),
     m_has_calorimetry(true),
@@ -102,6 +107,9 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
   
+  int Particle::ID() const{
+    return m_id;
+  }
   float Particle::GetMassFromPdg(const int pdg) const{
     switch(abs(pdg)){ 
       case 211: 

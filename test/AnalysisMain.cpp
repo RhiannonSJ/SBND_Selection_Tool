@@ -151,7 +151,7 @@ int MainTest(const char *config){
           reco_fid_true_ccinc++;
           if(e.IsTrueFiducial()){
             reco_true_fid_true_ccinc++;
-            if(GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
+            if(GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)){
               reco_true_fid_max_1_escapes_true_ccinc++;
             }
           }
@@ -163,7 +163,7 @@ int MainTest(const char *config){
           reco_fid_true_ncinc++;
           if(e.IsTrueFiducial()){
             reco_true_fid_true_ncinc++;
-            if(GeneralAnalysisHelper::MaxOneEscapingTrack(e)){
+            if(GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)){
               reco_true_fid_max_1_escapes_true_ncinc++;
             }
           }
@@ -175,13 +175,8 @@ int MainTest(const char *config){
       double second  = -std::numeric_limits<double>::max();
       int longest_id = -1;
       int second_id  = -1;
-      bool min_2_tracks = false;
-      for(const Particle &p : e.GetMCParticleList()){
-        if(p.GetLength() > longest){
-          longest_id = p.GetMCId();
-          longest = p.GetLength();
-        }
-      }
+      GeneralAnalysisHelper::LongestMCTrackLength(e,longest);
+      GeneralAnalysisHelper::LongestMCTrackID(e,longest_id);
       for(const Particle &p : e.GetMCParticleList()){
         if(p.GetMCId() != longest_id && p.GetLength() > second){
           second_id = p.GetMCId();

@@ -48,6 +48,7 @@ namespace selection{
        * @param  mc_id_charge MC ID using the charge method
        * @param  mc_id_energy MC ID using the energy method
        * @param  mc_id_hits MC ID using the hits method
+       * @param  id 
        * @param  pdg of the particle
        * @param  n_hits number of hits the particle has
        * @param  kinetic_energy total energy of the particle
@@ -68,6 +69,7 @@ namespace selection{
       Particle(const int mc_id_charge, 
                const int mc_id_energy, 
                const int mc_id_hits, 
+               const int id,
                const int pdg, 
                const int n_hits, 
                const float kinetic_energy, 
@@ -88,6 +90,7 @@ namespace selection{
        * @brief  Constructor for reconstructed showers 
        *
        * @param  pdg of the particle
+       * @param  id 
        * @param  n_hits number of hits the particle has
        * @param  vertex start point of the shower
        * @param  end end of the shower
@@ -96,11 +99,17 @@ namespace selection{
        *
        */
       Particle(const int pdg, 
+               const int id,
                const int n_hits, 
                const TVector3 &vertex, 
                const TVector3 &end, 
                const float &energy,
                const Geometry &g);
+
+      /**
+       * @brief  Get the ID
+       */
+      int ID() const;
 
       /**
        * @brief  Get the mass from the pdg code
@@ -265,6 +274,7 @@ namespace selection{
       int      m_mc_id_energy;             ///< mc TrackID corresponding to MCParticle using energy
       int      m_mc_id_hits;               ///< mc TrackID corresponding to MCParticle using hits
       int      m_mc_id;                    ///< mc TrackID 
+      int      m_id;                       ///< particle ID 
       int      m_n_hits;                   ///< number of hits 
       int      m_pdg;                      ///< pdg code
       int      m_status;                   ///< status code

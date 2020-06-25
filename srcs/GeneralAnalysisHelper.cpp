@@ -129,9 +129,13 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::NumberEscapingTracks(const Event &e){
     unsigned int escaping_tracks = 0;
+    int i = -1;
     for(const Particle &p : e.GetRecoParticleList()){
+      i++;
       // Make sure the particle is a reconstructed track and check if it escapes
-     if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) escaping_tracks++;
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) {
+        escaping_tracks++;
+      }
     }
     return escaping_tracks;
   }
@@ -199,7 +203,7 @@ namespace selection{
     // Check that we are looking at an MC particle
     int true_id = p.GetMCId();
     ParticleList reco_particles = e.GetRecoParticleList();
-    for(Particle &p_reco : reco_particles){
+    for(const Particle &p_reco : reco_particles){
       if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
         if(GeneralAnalysisHelper::GetBestMCParticle(e,p_reco).GetMCId() == true_id) return true;
       }
@@ -803,6 +807,71 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
 
+  void GeneralAnalysisHelper::LongestMCTrackID(const Event &e, int &id) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    for(const Particle & p : e.GetMCParticleList()){
+      if(p.GetLength() > longest){
+        longest_id = p.ID();
+        longest = p.GetLength();
+      }
+    }
+    id = longest_id;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestRecoTrackID(const Event &e, int &id) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      if(p.GetLength() > longest){
+        longest_id = p.ID();
+        longest = p.GetLength();
+      }
+    }
+    id = longest_id;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestMCTrackLength(const Event &e, double &length) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    LongestMCTrackID(e,longest_id);
+    if(longest_id != -1){
+      for(const Particle & p : e.GetMCParticleList()){
+        if(p.ID() == longest_id){
+          length = p.GetLength();
+          break;
+        }
+      }
+      length = longest;
+    }
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestRecoTrackLength(const Event &e, double &length) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    LongestRecoTrackID(e,longest_id);
+    if(longest_id != -1){
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(!p.GetFromRecoTrack()) continue;
+        if(p.ID() == longest_id){
+          length = p.GetLength();
+          break;
+        }
+      }
+    }
+    else
+      length = longest;
+  }
+  
+  //----------------------------------------------------------------------------------------
+  
   void GeneralAnalysisHelper::GetRecoCosThetaWithPdg(const Event &e, const int pdg, std::vector<float> &cos_thetas) {
     CosThetaWithPdg(pdg, e.GetRecoParticleList(), cos_thetas);
   }
@@ -879,200 +948,5 @@ namespace selection{
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
       if(particle_list[i].GetPdgCode() == pdg) momentum_mod.push_back(particle_list[i].GetModulusMomentum());
     }
-  }
-  
-  //----------------------------------------------------------------------------------------
- 
-  double GeneralAnalysisHelper::Efficiency(const std::vector< double > & count_mc, const std::vector< double > & count_signal, const std::vector< double > & count_selected, const TopologyMap &topology) {
-    ofstream rfile;
-    rfile.open( "../Output_Selection_Tool/statistics/results.txt" );
-
-    for( int i = 0; i<5; ++i ){
-      rfile << "__________________________________________________________"                                                             << "\n";
-      rfile                                                                                                                             << "\n";
-      rfile << "                 TOPOLOGY NUMBER " << i                                                                                 << "\n";
-      rfile << "__________________________________________________________"                                                             << "\n";
-      rfile << "Count MC = "                      << count_mc[i]                                                                        << "\n";
-      rfile << "Count Selected = "                << count_selected[i]                                                                  << "\n";
-      rfile << "Count Signal = "                  << count_signal[i]                                                                    << "\n";
-      rfile << "Background = "                    << count_selected[i] - count_signal[i]                                                << "\n";
-      rfile << "Correct Reconstructed Events[%]=" << ( count_signal[i] / count_mc[i] ) * 100                                            << "\n";
-      rfile << "Purity[%]="                       << (( count_signal[i] ) / count_selected[i] ) * 100                                   << "\n";
-      rfile << "Background_Rejection[%]="         << (1-( count_selected[i] - count_signal[i] ) / ( count_mc[0]+count_mc[1]-count_mc[i] ) ) * 100 << "\n";
-      rfile << "__________________________________________________________"                                                             << "\n";
-    }
-
-    if( topology == GeneralAnalysisHelper::GetNCTopologyMap() )    return ( count_signal[0] / count_mc[0] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCCIncTopologyMap() ) return ( count_signal[1] / count_mc[1] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() ) return ( count_signal[2] / count_mc[2] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) return ( count_signal[3] / count_mc[3] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() ) return ( count_signal[4] / count_mc[4] ) * 100;
-    return 0;
-  }
-  
-  //------------------------------------------------------------------------------------------
-  
-  void GeneralAnalysisHelper::SaveTopologyMatrix(const ParticleMatrix &count_mc_topology, const ParticleMatrix &count_signal_topology, const ParticleMatrix &count_selected_topology) {
-   ofstream TMfile ;
-   TMfile.open( "../Output_Selection_Tool/statistics/TopologyMatrix.txt" ) ;
-    TMfile                                                                   << "\n";
-    TMfile << "____________________________________________________________" << "\n";
-    TMfile                                                                   << "\n";
-    TMfile << "  TOPOLOGY MATRIX - TRUE RECO  (#_TReco / #_Total_MC) : "     << "\n";
-    TMfile << "____________________________________________________________" << "\n";
-    for( unsigned int i = 0 ; i < 5; ++i ){
-      TMfile << "(";
-      for( unsigned int k = 0 ; k < 5 ; ++k ) {
-        if( count_signal_topology[i][k]!=0 ){
-          TMfile << ( count_signal_topology[i][k] / count_mc_topology[i][k] ) * 100 << "   ,   ";
-	      } 
-        else TMfile << "   --   ";
-      }
-      TMfile <<")"                                                           << "\n";
-    }
-  }
-  
-  //------------------------------------------------------------------------------------------
- 
-  void GeneralAnalysisHelper::EventInformationParticles(const Event &e, std::string event_file, const int event_number) {
-    ofstream efile ;
-    efile.open( event_file , std::ofstream::app);
-
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << " EVENT NUMBER =                                            " << event_number                       << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "TRUE EVENTS      : "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "   muons         : " << e.CountMCParticlesWithPdg(13)                                              << "\n";
-    efile << "   pi+/-         : " << e.CountMCParticlesWithPdg(211) + e.CountMCParticlesWithPdg(-211)           << "\n";
-    efile << "   pi0           : " << e.CountMCParticlesWithPdg(111)                                             << "\n";
-    efile << "   protons       : " << e.CountMCParticlesWithPdg(2212)                                            << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "TRUE TOPOLOGY    : "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()))    efile << "   NC           : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE"   << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << " SELECTED EVENTS :                                         "                                       << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "   muons         : " << e.CountRecoParticlesWithPdg(13)                                            << "\n";
-    efile << "   pi+/-         : " << e.CountRecoParticlesWithPdg(211) + e.CountRecoParticlesWithPdg(-211)       << "\n";
-    efile << "   pi0           : " << e.CountRecoParticlesWithPdg(111)                                           << "\n";
-    efile << "   protons       : " << e.CountRecoParticlesWithPdg(2212)                                          << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "SELECTED TOPOLOGY: "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()))    efile << "   NC           : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE" << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-
-  }
-  
-  //------------------------------------------------------------------------------------------
-  
-  void GeneralAnalysisHelper::EventProperties(const Event &e, const TopologyMap &topology, std::string event_file, const int event_number) {
-    ofstream lfile, afile, Kfile ;
-    lfile.open( event_file+="_length.txt" , std::ofstream::app);
-    afile.open( event_file+="_angle.txt"  , std::ofstream::app);
-    Kfile.open( event_file+="_KineticEnergy.txt" , std::ofstream::app);
-
-    /*
-    if( e.CheckMCTopology( topology ) ) { // Change the topology here
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "EVENT NUMBER      : " << event_number                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "LENGTH INFORMATION: "                                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "TRUE EVENTS       : "                                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "Muon length         : " << GeneralAnalysisHelper::GetMCLengthWithPdg(  13  )  << "\n";
-      lfile << "pi+/- length        : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 211  )  << "\n";
-      lfile << "pi0   length        : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 111  )  << "\n";
-      lfile << "p length            : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 2212 )  << "\n";
-      
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "EVENT NUMBER       : " << event_number                       << "\n";
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "ANGULAR INFORMATION: "                                       << "\n";
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "TRUE EVENTS        : "                                       << "\n"; 
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "Muon angle       : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg(  13  )  << "\n";
-      afile << "Pion angle       : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 211  )  << "\n";
-      afile << "pi0   angle      : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 111  )  << "\n";
-      afile << "Proton angle     : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 2212 )  << "\n";
-
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "EVENT NUMBER       : " << event_number                       << "\n";
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "KINETIC ENERGY [GeV] : "                                     << "\n";
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "TRUE EVENTS        : "                                       << "\n"; 
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "Muon Kenergy       : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg(  13  )  << "\n";
-      Kfile << "Pion Kenergy       : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg( 211  )  << "\n";
-       
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile << "Proton Kenergy     : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg( 2212 )  << "\n";
-      if( e.CheckRecoTopology( topology ) ) {
-         lfile << "-----------------------------------------------------------"     << "\n";
-         lfile << "SIGNAL EVENTS     : "                                            << "\n";
-         lfile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) )lfile     << "Muon length       : " << GeneralAnalysisHelper::GetRecoLengthWithPdg(  13  ) << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile   << "pi+/- length      : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 211  ) << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile   << "pi0   length      : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 111  ) << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 )lfile                                << "p length          : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 2212 ) << "\n";
-
-         afile << "-----------------------------------------------------------"     << "\n";
-         afile << "SIGNAL EVENTS      : "                                           << "\n"; 
-         afile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap())) afile     << "Muon angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg(  13  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) afile  << "Pion angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 211  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) ) afile  << "Pi0 angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 111  )  << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 ) afile                               << "Proton angle      : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 2212 )  << "\n";
-         
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         Kfile << "KINETIC ENERGY [GeV] : "                                         << "\n";
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         Kfile << "TRUE EVENTS        : "                                           << "\n"; 
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile    << "Muon Kenergy      : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) Kfile  << "Pion Kenergy      : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 211  )  << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile                               << "Proton Kenergy    : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
-      }
-    }
-    if( e.CheckRecoTopology( topology ) ) { // Change topology here
-
-      lfile << "-----------------------------------------------------------"                                 << "\n";
-      lfile << "SELECTED EVENTS   : "                                                                        << "\n";
-      lfile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) lfile  << "Muon length       : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg(  13  ) << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile << "pi+/- length      : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 211  ) << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile << "pi0   length      : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 111  ) << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) lfile                               << "p length          : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 2212 ) << "\n";
-      
-      afile << "-----------------------------------------------------------"                                 << "\n";
-      afile << "SELECTED EVENTS      : "                                                                     << "\n"; 
-      afile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) afile   << "Muon angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg(  13  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) afile << "Pion angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 211  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) ) afile << "pi0   angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 111  )  << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) afile                                << "Proton angle       : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 2212 )  << "\n";
-
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      Kfile << "KINETIC ENERGY [GeV] : "                                                                     << "\n";
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      Kfile << "TRUE EVENTS        : "                                                                       << "\n"; 
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile   << "Muon Kenergy       : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) Kfile << "Pion Kenergy       : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 211  )  << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile                                << "Proton Kenergy     : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
-    }
-  */
   }
 } // selection

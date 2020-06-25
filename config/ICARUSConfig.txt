@@ -13,7 +13,9 @@ PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/ica
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/icarus/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/icarus/
 
-TotalFiles        = 116
+Detector = 2
+
+TotalFiles = 116
 
 MinXAV  = -364.49, 67.94
 MinYAV  = -177.41, -173.41
@@ -29,3 +31,9 @@ MaxXFid = -224.54, -76.19, 207.89, 356.24
 MaxYFid = 128.41, 128.41, 128.41, 128.41
 MaxZFid = 799.950652, 799.950652, 799.950652, 799.950652
 
+DiffCut      = 0.7
+LengthCut    = 10
+LongestCut   = 90
+Chi2PCut     = 15
+Chi2MuCut    = 26
+Chi2RatioCut = -1

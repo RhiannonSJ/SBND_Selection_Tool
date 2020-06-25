@@ -194,7 +194,7 @@ int MainTest(const char *config){
      
       // Define the escaping plane in the event
       double total_energy          = 0.; 
-      double escaping_track_length = -999.;;
+      double escaping_track_length = -999.;
       int escaping_plane           = -1;
       bool longest_track_escapes   = false;
       bool muon_escapes            = false;

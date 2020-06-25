@@ -13,7 +13,9 @@ PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbn
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/sbnd/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/
 
-TotalFiles        = 149
+Detector = 0
+
+TotalFiles = 149
 
 MinXAV  = -199.15
 MinYAV  = -200.0
@@ -29,3 +31,9 @@ MaxXFid = 5.6, 190.9
 MaxYFid = 185.0, 185.0
 MaxZFid = 415.0, 415.0
 
+DiffCut      = 0.7
+LengthCut    = 10
+LongestCut   = 90
+Chi2PCut     = 65
+Chi2MuCut    = 19
+Chi2RatioCut = 0.09

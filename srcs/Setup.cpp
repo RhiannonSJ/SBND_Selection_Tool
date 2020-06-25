@@ -83,12 +83,14 @@ namespace selection{
       h->SetFillColor(fillcolour);
       h->SetLineColor(linecolour);
       h->SetLineWidth(linewidth);
+      h->SetTitleFont(font);
       h->GetXaxis()->SetTitleFont(font);
       h->GetXaxis()->SetLabelFont(font);
       h->GetYaxis()->SetTitleFont(font);
       h->GetYaxis()->SetLabelFont(font);
       h->GetXaxis()->SetTitleOffset(xoffset);
       h->GetYaxis()->SetTitleOffset(yoffset);
+      if(!scale) continue;
       if(h->Integral() > 0)
         h->Scale(1/h->Integral());
       else

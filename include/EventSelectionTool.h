@@ -85,9 +85,10 @@ namespace selection{
        *
        * @param  shower_tree  
        * @param  map between unique event identifier and list of shower objects
+       * @param  n number of tracks to help construct unique particle id
        *
        */
-      static void LoadShowers(TTree *shower_tree, UIdToShowerListMap &showers);
+      static void LoadShowers(TTree *shower_tree, UIdToShowerListMap &showers, const int &n);
 
       /**
        * @brief  Load tracks
@@ -183,37 +184,6 @@ namespace selection{
        */
       static void CheckAndFlip(const TVector3 &vtx, ParticleList &particles);
       
-      /**
-       * @brief  get the list of track objects
-       *
-       * @param  track_tree tree to take track information from
-       * @param  unique_event_list list of unique events to take track information from
-       * @param  track_list vector of tracks to fill
-       *
-       */
-      static void GetTrackList(unsigned int start, TTree *track_tree, const std::pair<int, int> &unique_event, TrackList &track_list);
-
-      /**
-       * @brief  get the list of shower objects
-       *
-       * @param  shower_tree tree to take shower information from
-       * @param  unique_event_list list of unique events to take shower information from
-       * @param  shower_list vector of showers to fill
-       *
-       */
-      static void GetShowerList(unsigned int start, TTree *shower_tree, const std::pair<int, int> &unique_event, ShowerList &shower_list);
-      
-      /**
-       * @brief  get the list of mc particle objects
-       *
-       * @param  mc particle_tree tree to take mc particle information from
-       * @param  unique_event_list list of unique events to take mc particle information from
-       * @param  mc particle_list vector of mc particles to fill
-       * @param  g active volume geometry of the outer detector
-       *
-       */
-      static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list, const Geometry &g);
-
       /**
        * @brief  get a list of reconstructed particles from track objects in SBND
        *
@@ -337,6 +307,7 @@ namespace selection{
           /**
            * @brief  Constructor
            *
+           * @param  id unique ID
            * @param  mc_id_charge mc TrackID corresponding to MCParticle using charge 
            * @param  mc_id_energy mc TrackID corresponding to MCParticle using energy
            * @param  mc_id_hits mc TrackID corresponding to MCParticle using hits
@@ -353,9 +324,10 @@ namespace selection{
            * @param  one_end_contained whether or not the reconstructed track has one end contained within the  fiducial volume
            *
            */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained, const std::vector<float> &dedx, const std::vector<float> &residual_range);
+          Track(const int id, const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained, const std::vector<float> &dedx, const std::vector<float> &residual_range);
 
           // Member variables
+          int      m_id;                       ///< unique ID
           int      m_mc_id_charge;             ///< mc TrackID corresponding to MCParticle using charge
           int      m_mc_id_energy;             ///< mc TrackID corresponding to MCParticle using energy
           int      m_mc_id_hits;               ///< mc TrackID corresponding to MCParticle using hits
@@ -389,15 +361,17 @@ namespace selection{
           /**
            * @brief  Constructor
            *
+           * @param  id unique ID
            * @param  vertex vertex of the shower
            * @param  direction direction of the shower
            * @param  open_angle opening angle at the vertex of the shower
            * @param  length length of the shower
            *
            */
-          Shower(const int n_hits, const TVector3 &vertex, const TVector3 &direction, const float open_angle, const float length, const float energy);
+          Shower(const int id, const int n_hits, const TVector3 &vertex, const TVector3 &direction, const float open_angle, const float length, const float energy);
 
           // Member variables
+          int      m_id;         ///< unique ID
           int      m_n_hits;     ///< number of hits in the shower
           TVector3 m_vertex;     ///< vertex of the shower 
           TVector3 m_direction;  ///< direction of the shower

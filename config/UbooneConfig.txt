@@ -13,7 +13,9 @@ PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/ubo
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/uboone/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/uboone/
 
-TotalFiles        = 124
+Detector = 1
+
+TotalFiles = 124
 
 MinXAV  = -1.55
 MinYAV  = -115.53
@@ -28,3 +30,10 @@ MinZFid = 15.1
 MaxXFid = 239.8
 MaxYFid = 102.47
 MaxZFid = 956.9
+
+DiffCut      = 0.78
+LengthCut    = 10
+LongestCut   = 90
+Chi2PCut     = 65
+Chi2MuCut    = 21
+Chi2RatioCut = 0.09
