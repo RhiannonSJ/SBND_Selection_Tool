@@ -185,6 +185,32 @@ namespace selection{
       static void CheckAndFlip(const TVector3 &vtx, ParticleList &particles);
       
       /**
+       * @brief  get a list of reconstructed particles from track objects in old version
+       *
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
+       * @param  diff_cut length difference cutbetween longest two tracks
+       * @param  longest_cut longest track length cut
+       * @param  chi2p_cut cut on chi2 proton
+       * @param  chi2mu_cut cut on chi2 muon
+       * @param  chi2ratio_cut cut on the ratio chi2mu/chi2p
+       * @param  icarus whether we are calling the ICARUS PID or not
+       *
+       */
+//      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      static void GetRecoParticleFromTrack(const TrackList &track_list, 
+                                           ParticleList &recoparticle_list, 
+                                           const Geometry &g,
+                                           const double &diff_cut,
+                                           const double &length_cut,
+                                           const double &longest_cut,
+                                           const double &chi2p_cut,
+                                           const double &chi2mu_cut,
+                                           const double &chi2ratio_cut,
+                                           const unsigned int &det);
+      
+      /**
        * @brief  get a list of reconstructed particles from track objects in SBND
        *
        * @param  track_list list of tracks in the event
@@ -253,27 +279,40 @@ namespace selection{
        * @return pdg
        *
        */
-      static int GetMuonByChi2Proton(const Track &track);
+      static int GetMuonByChi2Proton(const Track &track, const unsigned int &det);
       
       /**
        * @brief  get the whether the particle is a proton under the chi^2 proton hypothesis
        *
        * @param  track the track to find the pdg of
+       * @param  detector
        *
        * @return pdg
        *
        */
-      static int GetProtonByChi2Proton(const Track &track);
+      static int GetProtonByChi2Proton(const Track &track, const unsigned int &det);
       
+      /**
+       * @brief  get the whether the particle is a muon candidate from the chi2muon/chi2proton ratio
+       *
+       * @param  track the track to find the pdg of
+       * @param  detector
+       *
+       * @return pdg
+       *
+       */
+      static int GetMuonByChi2MuonProtonRatio(const Track &track, const unsigned int &det);
+
       /**
        * @brief  get the whether the particle is a muon candidate under the chi^2 muon hypothesis
        *
+       * @param  detector
        * @param  track the track to find the pdg of
        *
        * @return pdg
        *
        */
-      static int GetPdgByChi2MuonCandidate(const Track &track);
+      static int GetMuonByChi2Muon(const Track &track, const unsigned int &det);
       
       /**
        * @brief  get the particle id based on its PIDA value

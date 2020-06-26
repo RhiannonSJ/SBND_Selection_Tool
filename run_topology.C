@@ -7,4 +7,5 @@ gROOT->ProcessLine(".L srcs/EventSelectionTool.cpp+");
 gROOT->ProcessLine(".L srcs/GeneralAnalysisHelper.cpp+");
 gROOT->ProcessLine(".L srcs/ConfigReader.cpp+");
 gROOT->ProcessLine(".L srcs/Setup.cpp+");
+gROOT->ProcessLine(".L test/TopologyPIDMain.cpp+");
 }

@@ -178,8 +178,8 @@ int MainTest(const char *config){
       GeneralAnalysisHelper::LongestMCTrackLength(e,longest);
       GeneralAnalysisHelper::LongestMCTrackID(e,longest_id);
       for(const Particle &p : e.GetMCParticleList()){
-        if(p.GetMCId() != longest_id && p.GetLength() > second){
-          second_id = p.GetMCId();
+        if(p.ID() != longest_id && p.GetLength() > second){
+          second_id = p.ID();
           second = p.GetLength();
         }
       }
@@ -194,7 +194,7 @@ int MainTest(const char *config){
         // Muon
         if(abs(p.GetPdgCode()) == 13){
           h_length_mu->Fill(p.GetLength());
-          if(p.GetMCId() == longest_id){
+          if(p.ID() == longest_id){
             h_longest_diff_mu->Fill(diff);
             h_longest_length_mu->Fill(longest);
           }
@@ -202,7 +202,7 @@ int MainTest(const char *config){
         // Pion
         else if(abs(p.GetPdgCode()) == 211){
           h_length_pi->Fill(p.GetLength());
-          if(p.GetMCId() == longest_id){
+          if(p.ID() == longest_id){
             h_longest_diff_pi->Fill(diff);
             h_longest_length_pi->Fill(longest);
           }
@@ -210,7 +210,7 @@ int MainTest(const char *config){
         // Proton
         else if(abs(p.GetPdgCode()) == abs(2212)){
           h_length_pr->Fill(p.GetLength());
-          if(p.GetMCId() == longest_id){
+          if(p.ID() == longest_id){
             h_longest_diff_pr->Fill(diff);
             h_longest_length_pr->Fill(longest);
           }

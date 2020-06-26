@@ -31,7 +31,7 @@ namespace selection{
        * @param  geometry detector geometry
        *
        */
-      Particle(const int mc_id, 
+      Particle(const int mc_id,
                const int pdg, 
                const int status, 
                const int n_hits,  

@@ -127,6 +127,108 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
 
+  bool GeneralAnalysisHelper::PassedCCInclusive(const Event &e, const unsigned int &det){
+    // Define cut variables per detector
+    double diff_cut      = 0.7;
+    double length_cut    = 10.;
+    double longest_cut   = 50.;
+    double escaping_cut  = 90.;
+    double chi2p_cut     = 0.;
+    double chi2mu_cut    = 0.;
+    double chi2ratio_cut = 0.;
+    if(det == 0){
+      chi2p_cut     = 65.;
+      chi2mu_cut    = 19.;
+      chi2ratio_cut = 0.09;
+    }
+    if(det == 1){
+      chi2p_cut     = 65.;
+      chi2mu_cut    = 21.;
+      chi2ratio_cut = 0.09;
+    }
+    if(det == 2){
+      chi2p_cut     = 15.;
+      chi2mu_cut    = 26.;
+      chi2ratio_cut = 1.;
+    }
+
+    if(!e.IsRecoFiducial() || !MaxOneLongEscapingTrack(e)) return false;
+
+    // Get the longest and second longest tracks
+    double longest = -std::numeric_limits<double>::max();
+    double second  = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    int second_id  = -1;
+    GeneralAnalysisHelper::LongestRecoTrackLength(e,longest);
+    GeneralAnalysisHelper::LongestRecoTrackID(e,longest_id);
+    bool min_one_track = false;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      min_one_track = true;
+      if(p.ID() != longest_id && p.GetLength() > second){
+        second_id = p.ID();
+        second = p.GetLength();
+      }
+    }
+
+    // Get the fractional difference between the longest and second longest track lengths
+    double diff = -999.;
+    bool min_2_tracks = (longest_id != -1 && second_id != -1);
+    if(min_2_tracks)
+      diff = (longest - second)/longest;
+
+    if(min_one_track){
+      // If 1 track escapes
+      if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1){
+        for(const Particle &p : e.GetRecoParticleList()){
+          if(!p.GetFromRecoTrack()) continue;
+          // If the longest track escapes return true
+          if(p.ID() == longest_id && p.GetOneEndTrackContained() && p.GetLength() > escaping_cut)
+            return true;
+          else
+            return false;
+        }
+      }
+      // If no tracks escape
+      else{
+        // Not considering protons first
+        bool track_cut_passed = false;
+        for(Particle &p : e.GetRecoParticleList()){
+          if(!p.GetFromRecoTrack()) continue;
+          if(p.GetLength() > length_cut){
+            track_cut_passed = true;
+            break;
+          }
+        }
+        if(track_cut_passed){
+          // If we have two tracks and the longest two are very different in length, pass
+          if(min_2_tracks && diff > diff_cut)
+            return true;
+
+          // Otherwise look at other variables
+          else if((min_2_tracks && diff <= diff_cut) || !min_2_tracks){
+            // Now consider chi2 variables
+            for(const Particle &p : e.GetRecoParticleList()){
+              if(!p.GetFromRecoTrack()) continue;
+              //Check for clear protons
+              if(det != 2){
+                if((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+                  return true;
+              }
+              else if((p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+                return true;
+              
+            }
+          }
+        }
+      }
+    }
+    // Otherwise, we haven't passed any cuts - return false
+    return false;
+  }
+
+  //----------------------------------------------------------------------------------------
+
   unsigned int GeneralAnalysisHelper::NumberEscapingTracks(const Event &e){
     unsigned int escaping_tracks = 0;
     int i = -1;
@@ -847,8 +949,9 @@ namespace selection{
           break;
         }
       }
-      length = longest;
     }
+    else
+      length = longest;
   }
 
   //----------------------------------------------------------------------------------------

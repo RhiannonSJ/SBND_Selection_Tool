@@ -186,6 +186,16 @@ namespace selection{
        * @brief  Get the NuE topology map
        */
       static TopologyMap GetNuETopologyMap();
+
+      /** 
+       * @brief Function to determine if the event passes the global CC Inclusive selection cuts
+       *
+       * @param  e Current event
+       *
+       * @return  true if passed
+       */
+      static bool PassedCCInclusive(const Event &e, const unsigned int &det);
+
       /**
        * @brief  Get the number of escaping reconstructed tracks or MCParticles
        *

@@ -36,6 +36,7 @@ int MainTest(const char *config){
   std::string exceptions_file = "";
   std::string stats_location  = "";
   unsigned int total_files = 0;
+  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
   std::vector<double> minx_fid, miny_fid, minz_fid;
   std::vector<double> maxx_fid, maxy_fid, maxz_fid;
   std::vector<double> minx_av, miny_av, minz_av;
@@ -45,6 +46,7 @@ int MainTest(const char *config){
   p->getValue("InputFileName",    input_filename);
   p->getValue("ExceptionsFile",   exceptions_file);
   p->getValue("StatFileLocation", stats_location); 
+  p->getValue("Detector",         detector);
   p->getValue("TotalFiles",       total_files);
   p->getValue("MinXFid",          minx_fid);
   p->getValue("MinYFid",          miny_fid);
@@ -113,17 +115,6 @@ int MainTest(const char *config){
   unsigned int cc1pi_sig   = 0; 
   unsigned int cc1pi_sel   = 0; 
 
-  unsigned int cc0pi2p_cc0pi = 0;
-  unsigned int cc0pi2p_cc1pi = 0;
-  unsigned int cc0pi2p_ccoth = 0;
-  unsigned int cc0pi2p_nc0pi = 0;
-  unsigned int cc0pi2p_nc1pi = 0;
-  unsigned int cc0pi2p_ncoth = 0;
-  unsigned int cc0pi2p_nue   = 0;
-  unsigned int cc0pi2p_true  = 0; 
-  unsigned int cc0pi2p_sig   = 0; 
-  unsigned int cc0pi2p_sel   = 0; 
-
   unsigned int ncinc_cc0pi = 0;
   unsigned int ncinc_cc1pi = 0;
   unsigned int ncinc_ccoth = 0;
@@ -176,12 +167,15 @@ int MainTest(const char *config){
     EventSelectionTool::EventList events;
     LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
     EventSelectionTool::GetTimeLeft(start,total_files,i);
-    
-    for(const Event &e : events){
 
-      // Check the true vertex is in the fiducial volume
-      if(!e.IsTrueFiducial() || !e.IsRecoFiducial()) continue;
-      if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
+    for(const Event &e : events){
+      // Boolean to check that we have selected a CC Inclusive using the method laid out in PIDMain
+      bool cc_inclusive_passed = GeneralAnalysisHelper::PassedCCInclusive(e,detector);
+
+      // Now we are looking at selected CC Inclusive events, 
+      // start trying to identify particle types
+      if(!cc_inclusive_passed) continue;
+ //     if(!e.IsTrueFiducial()) continue;
       max_one_escaping_track++;
 
       if(e.CheckRecoTopology(maps[0])){
@@ -201,15 +195,6 @@ int MainTest(const char *config){
         else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
         else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
         else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
-        if(e.CheckRecoTopology(maps[3])){
-          if(e.CheckMCTopology(maps[1]))      cc0pi2p_cc0pi++;
-          else if(e.CheckMCTopology(maps[2])) cc0pi2p_cc1pi++;
-          else if(e.CheckMCTopology(maps[0])) cc0pi2p_ccoth++;
-          else if(e.CheckMCTopology(maps[5])) cc0pi2p_nc0pi++;
-          else if(e.CheckMCTopology(maps[6])) cc0pi2p_nc1pi++;
-          else if(e.CheckMCTopology(maps[4])) cc0pi2p_ncoth++;
-          else if(e.CheckMCTopology(maps[7]))   cc0pi2p_nue++;
-        }
       }
       if(e.CheckRecoTopology(maps[2])){
         if(e.CheckMCTopology(maps[1]))      cc1pi_cc0pi++;
@@ -260,10 +245,6 @@ int MainTest(const char *config){
         cc1pi_true++;
         if(e.CheckRecoTopology(maps[2])) cc1pi_sig++;
       }
-      if(e.CheckMCTopology(maps[3])){
-        cc0pi2p_true++;
-        if(e.CheckRecoTopology(maps[3])) cc0pi2p_sig++;
-      }
       if(e.CheckMCTopology(maps[4])){
         ncinc_true++;
         if(e.CheckRecoTopology(maps[4])) ncinc_sig++;
@@ -282,7 +263,6 @@ int MainTest(const char *config){
       if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
       if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
       if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
-      if(e.CheckRecoTopology(maps[3])) cc0pi2p_sel++;
       if(e.CheckRecoTopology(maps[4])) ncinc_sel++;
       if(e.CheckRecoTopology(maps[5])) nc0pi_sel++;
       if(e.CheckRecoTopology(maps[6])) nc1pi_sel++;
@@ -292,18 +272,18 @@ int MainTest(const char *config){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"full_topological_breakdown.txt");
+  file.open(stats_location+"updated_full_topological_breakdown.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
   file << " Total number of events with maximum one escaping track : " << max_one_escaping_track << std::endl;
-  file << std::setw(12) << "True \\ Reco" << "||" <<  std::setw(10) << " CC Inc. " << std::setw(10) << " CC 0Pi " << std::setw(10) << " CC 0Pi 2P" << std::setw(10) << " CC 1Pi " << std::setw(10) << " NC Inc. " << std::setw(10) << " NC 0Pi " << std::setw(10) << " NC 1Pi " << std::endl;
-  file << std::setw(12) << " CC 0Pi "     << "||" << std::setw(10) << ccinc_cc0pi << std::setw(10) << cc0pi_cc0pi << std::setw(10) << cc0pi2p_cc0pi << std::setw(10) << cc1pi_cc0pi << std::setw(10) << ncinc_cc0pi << std::setw(10) << nc0pi_cc0pi << std::setw(10) << nc1pi_cc0pi << std::endl; 
-  file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc0pi2p_cc1pi << std::setw(10) << cc1pi_cc1pi << std::setw(10) << ncinc_cc1pi << std::setw(10) << nc0pi_cc1pi << std::setw(10) << nc1pi_cc1pi <<  std::endl;  
-  file << std::setw(12) << " CC Other "   << "||" << std::setw(10) << ccinc_ccoth << std::setw(10) << cc0pi_ccoth << std::setw(10) << cc0pi2p_ccoth << std::setw(10) << cc1pi_ccoth << std::setw(10) << ncinc_ccoth << std::setw(10) << nc0pi_ccoth << std::setw(10) << nc1pi_ccoth << std::endl; 
-  file << std::setw(12) << " NC 0Pi "     << "||" << std::setw(10) << ccinc_nc0pi << std::setw(10) << cc0pi_nc0pi << std::setw(10) << cc0pi2p_nc0pi << std::setw(10) << cc1pi_nc0pi << std::setw(10) << ncinc_nc0pi << std::setw(10) << nc0pi_nc0pi << std::setw(10) << nc1pi_nc0pi << std::endl;  
-  file << std::setw(12) << " NC 1Pi "     << "||" << std::setw(10) << ccinc_nc1pi << std::setw(10) << cc0pi_nc1pi << std::setw(10) << cc0pi2p_nc1pi << std::setw(10) << cc1pi_nc1pi << std::setw(10) << ncinc_nc1pi << std::setw(10) << nc0pi_nc1pi << std::setw(10) << nc1pi_nc1pi  << std::endl;  
-  file << std::setw(12) << " NC Other "   << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc0pi2p_ncoth << std::setw(10) << cc1pi_ncoth << std::setw(10) << ncinc_ncoth << std::setw(10) << nc0pi_ncoth << std::setw(10) << nc1pi_ncoth  << std::endl;  
+  file << std::setw(12) << "True \\ Reco" << "||" <<  std::setw(10) << " CC Inc. " << std::setw(10) << " CC 0Pi " << std::setw(10) << " CC 1Pi " << std::setw(10) << " NC Inc. " << std::setw(10) << " NC 0Pi " << std::setw(10) << " NC 1Pi " << std::endl;
+  file << std::setw(12) << " CC 0Pi "     << "||" << std::setw(10) << ccinc_cc0pi << std::setw(10) << cc0pi_cc0pi << std::setw(10) << cc1pi_cc0pi << std::setw(10) << ncinc_cc0pi << std::setw(10) << nc0pi_cc0pi << std::setw(10) << nc1pi_cc0pi << std::endl; 
+  file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc1pi_cc1pi << std::setw(10) << ncinc_cc1pi << std::setw(10) << nc0pi_cc1pi << std::setw(10) << nc1pi_cc1pi <<  std::endl;  
+  file << std::setw(12) << " CC Other "   << "||" << std::setw(10) << ccinc_ccoth << std::setw(10) << cc0pi_ccoth << std::setw(10) << cc1pi_ccoth << std::setw(10) << ncinc_ccoth << std::setw(10) << nc0pi_ccoth << std::setw(10) << nc1pi_ccoth << std::endl; 
+  file << std::setw(12) << " NC 0Pi "     << "||" << std::setw(10) << ccinc_nc0pi << std::setw(10) << cc0pi_nc0pi << std::setw(10) << cc1pi_nc0pi << std::setw(10) << ncinc_nc0pi << std::setw(10) << nc0pi_nc0pi << std::setw(10) << nc1pi_nc0pi << std::endl;  
+  file << std::setw(12) << " NC 1Pi "     << "||" << std::setw(10) << ccinc_nc1pi << std::setw(10) << cc0pi_nc1pi << std::setw(10) << cc1pi_nc1pi << std::setw(10) << ncinc_nc1pi << std::setw(10) << nc0pi_nc1pi << std::setw(10) << nc1pi_nc1pi  << std::endl;  
+  file << std::setw(12) << " NC Other "   << "||" << std::setw(10) << ccinc_ncoth << std::setw(10) << cc0pi_ncoth << std::setw(10) << cc1pi_ncoth << std::setw(10) << ncinc_ncoth << std::setw(10) << nc0pi_ncoth << std::setw(10) << nc1pi_ncoth  << std::endl;  
   file << "==============================================================================================================" << std::endl;
   file << " CC Inc.    true       : " << ccinc_true << std::endl; 
   file << " CC 0Pi     true       : " << cc0pi_true << std::endl; 
@@ -315,7 +295,6 @@ int MainTest(const char *config){
   file << "===================================================" << std::endl;
   file << " CC Inc.    efficiency : " << ccinc_sig/double(ccinc_true) << std::endl; 
   file << " CC 0Pi     efficiency : " << cc0pi_sig/double(cc0pi_true) << std::endl; 
-  file << " CC 0Pi 2P  efficiency : " << cc0pi2p_sig/double(cc0pi2p_true) << std::endl; 
   file << " CC 1Pi     efficiency : " << cc1pi_sig/double(cc1pi_true) << std::endl; 
   file << " NC Inc.    efficiency : " << ncinc_sig/double(ncinc_true) << std::endl; 
   file << " NC 0Pi     efficiency : " << nc0pi_sig/double(nc0pi_true) << std::endl; 
@@ -323,7 +302,6 @@ int MainTest(const char *config){
   file << "===================================================" << std::endl;
   file << " CC Inc.   purity      : " << ccinc_sig/double(ccinc_sel)  << std::endl; 
   file << " CC 0Pi    purity      : " << cc0pi_sig/double(cc0pi_sel)  << std::endl; 
-  file << " CC 0Pi 2P purity      : " << cc0pi2p_sig/double(cc0pi2p_sel)  << std::endl; 
   file << " CC 1Pi    purity      : " << cc1pi_sig/double(cc1pi_sel)  << std::endl; 
   file << " NC Inc.   purity      : " << ncinc_sig/double(ncinc_sel)  << std::endl; 
   file << " NC 0Pi    purity      : " << nc0pi_sig/double(nc0pi_sel)  << std::endl; 

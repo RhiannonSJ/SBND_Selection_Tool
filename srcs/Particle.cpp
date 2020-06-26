@@ -29,7 +29,7 @@ namespace selection{
     m_momentum(momentum),
     m_geometry(g){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
-      m_id     = mc_id;
+      m_id = m_mc_id;
     }
 
   //------------------------------------------------------------------------------------------ 
