@@ -31,9 +31,9 @@ MaxXFid = 239.8
 MaxYFid = 102.47
 MaxZFid = 956.9
 
-DiffCut      = 0.78
+DiffCut      = 0.65
 LengthCut    = 10
-LongestCut   = 90
-Chi2PCut     = 65
-Chi2MuCut    = 21
-Chi2RatioCut = 0.08
+LongestCut   = 75
+Chi2PCut     = 80
+Chi2MuCut    = 19
+Chi2RatioCut = 0.07

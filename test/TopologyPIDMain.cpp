@@ -36,8 +36,14 @@ int MainTest(const char *config){
   std::string exceptions_file = "";
   std::string stats_location  = "";
   std::string plots_location  = "";
-  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
   unsigned int total_files = 0;
+  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
+  double diff_cut = 0;
+  double length_cut = 0;
+  double longest_cut = 0;
+  double chi2p_cut = 0;
+  double chi2mu_cut = 0;
+  double chi2ratio_cut = 0;
   std::vector<double> minx_fid, miny_fid, minz_fid;
   std::vector<double> maxx_fid, maxy_fid, maxz_fid;
   std::vector<double> minx_av, miny_av, minz_av;
@@ -48,8 +54,8 @@ int MainTest(const char *config){
   p->getValue("ExceptionsFile",   exceptions_file);
   p->getValue("StatFileLocation", stats_location); 
   p->getValue("PlotFileLocation", plots_location); 
-  p->getValue("Detector",         detector);
   p->getValue("TotalFiles",       total_files);
+  p->getValue("Detector",         detector);
   p->getValue("MinXFid",          minx_fid);
   p->getValue("MinYFid",          miny_fid);
   p->getValue("MinZFid",          minz_fid);
@@ -62,6 +68,12 @@ int MainTest(const char *config){
   p->getValue("MaxXAV",           maxx_av);
   p->getValue("MaxYAV",           maxy_av);
   p->getValue("MaxZAV",           maxz_av);
+  p->getValue("DiffCut",          diff_cut);
+  p->getValue("LengthCut",        length_cut);
+  p->getValue("LongestCut",       longest_cut);
+  p->getValue("Chi2PCut",         chi2p_cut);
+  p->getValue("Chi2MuCut",        chi2mu_cut);
+  p->getValue("Chi2RatioCut",     chi2ratio_cut);
 
   //------------------------------------------------------------------------------------------
   //                                    Initialise
@@ -125,7 +137,42 @@ int MainTest(const char *config){
   std::vector<TH1D*> h_pion   = {h_longest_diff_pi, h_longest_length_pi, h_length_pi, h_chi2_pr_pi, h_chi2_mu_pi, h_chi2_ratio_pi};
   std::vector<TH1D*> h_proton = {h_longest_diff_pr, h_longest_length_pr, h_length_pr, h_chi2_pr_pr, h_chi2_mu_pr, h_chi2_ratio_pr};
   std::vector<TH2D*> h_2d     = {h_chi2_mu_chi2_pr_mu, h_chi2_mu_chi2_pr_pr, h_chi2_mu_chi2_pr_pi};
+ 
+  // COUNTERS
+  // Length-based
+  unsigned int diff_mu = 0;
+  unsigned int diff_pi = 0;
+  unsigned int diff_pr = 0;
+
+  unsigned int longest_mu = 0;
+  unsigned int longest_pi = 0;
+  unsigned int longest_pr = 0;
+
+  unsigned int diff_longest_mu = 0;
+  unsigned int diff_longest_pi = 0;
+  unsigned int diff_longest_pr = 0;
   
+  // Chi2-based
+  unsigned int chi2mu_mu = 0;
+  unsigned int chi2mu_pi = 0;
+  unsigned int chi2mu_pr = 0;
+
+  unsigned int chi2pr_mu = 0;
+  unsigned int chi2pr_pi = 0;
+  unsigned int chi2pr_pr = 0;
+
+  unsigned int chi2ratio_mu = 0;
+  unsigned int chi2ratio_pi = 0;
+  unsigned int chi2ratio_pr = 0;
+
+  unsigned int chi2mu_pr_mu = 0;
+  unsigned int chi2mu_pr_pi = 0;
+  unsigned int chi2mu_pr_pr = 0;
+
+  unsigned int chi2mu_pr_ratio_mu = 0;
+  unsigned int chi2mu_pr_ratio_pi = 0;
+  unsigned int chi2mu_pr_ratio_pr = 0;
+
   // First, ensure all tracks are contained
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
@@ -167,6 +214,15 @@ int MainTest(const char *config){
           if(p.ID() == longest_id){
             h_longest_diff_mu->Fill(diff);
             h_longest_length_mu->Fill(longest);
+            if(diff > diff_cut){
+              diff_mu++;
+              if(longest > longest_cut){
+                diff_longest_mu++;
+              }
+            }
+            if(longest > longest_cut){
+              longest_mu++;
+            }
           }
         }
         // Pion
@@ -175,6 +231,15 @@ int MainTest(const char *config){
           if(p.ID() == longest_id){
             h_longest_diff_pi->Fill(diff);
             h_longest_length_pi->Fill(longest);
+            if(diff > diff_cut){
+              diff_pi++;
+              if(longest > longest_cut){
+                diff_longest_pi++;
+              }
+            }
+            if(longest > longest_cut){
+              longest_pi++;
+            }
           }
         }
         // Proton
@@ -183,6 +248,15 @@ int MainTest(const char *config){
           if(p.ID() == longest_id){
             h_longest_diff_pr->Fill(diff);
             h_longest_length_pr->Fill(longest);
+            if(diff > diff_cut){
+              diff_pr++;
+              if(longest > longest_cut){
+                diff_longest_pr++;
+              }
+            }
+            if(longest > longest_cut){
+              longest_pr++;
+            }
           }
         }
       }
@@ -201,6 +275,21 @@ int MainTest(const char *config){
           h_chi2_mu_mu->Fill(p.GetChi2Mu());
           h_chi2_ratio_mu->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_mu->Fill(p.GetChi2Mu(),p.GetChi2P());
+          if(p.GetChi2P() > chi2p_cut){
+            chi2pr_mu++;
+            if(p.GetChi2Mu() < chi2mu_cut){
+              chi2mu_pr_mu++;
+              if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+                chi2mu_pr_ratio_mu++;
+              }
+            }
+          }
+          if(p.GetChi2Mu() < chi2mu_cut){
+            chi2mu_mu++;
+          }
+          if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+            chi2ratio_mu++;
+          }
         }
         // Pion
         if(abs(mcp.GetPdgCode()) == 211){
@@ -208,6 +297,21 @@ int MainTest(const char *config){
           h_chi2_mu_pi->Fill(p.GetChi2Mu());
           h_chi2_ratio_pi->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_pi->Fill(p.GetChi2Mu(),p.GetChi2P());
+          if(p.GetChi2P() > chi2p_cut){
+            chi2pr_pi++;
+            if(p.GetChi2Mu() < chi2mu_cut){
+              chi2mu_pr_pi++;
+              if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+                chi2mu_pr_ratio_pi++;
+              }
+            }
+          }
+          if(p.GetChi2Mu() < chi2mu_cut){
+            chi2mu_pi++;
+          }
+          if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+            chi2ratio_pi++;
+          }
         }
         // Proton
         if(abs(mcp.GetPdgCode()) == 2212){
@@ -215,6 +319,21 @@ int MainTest(const char *config){
           h_chi2_mu_pr->Fill(p.GetChi2Mu());
           h_chi2_ratio_pr->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_pr->Fill(p.GetChi2Mu(),p.GetChi2P());
+          if(p.GetChi2P() > chi2p_cut){
+            chi2pr_pr++;
+            if(p.GetChi2Mu() < chi2mu_cut){
+              chi2mu_pr_pr++;
+              if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+                chi2mu_pr_ratio_pr++;
+              }
+            }
+          }
+          if(p.GetChi2Mu() < chi2mu_cut){
+            chi2mu_pr++;
+          }
+          if(p.GetChi2Mu()/p.GetChi2P() < chi2ratio_cut){
+            chi2ratio_pr++;
+          }
         }
       }
     }
@@ -357,6 +476,64 @@ int MainTest(const char *config){
   c->SaveAs((plots_location+"ccpassed/track_chi2_ratios.png").c_str());
   l->Clear();
   c->Clear();
+
+  // Write statistics
+  // Files to hold particle statistics
+  ofstream file;
+  file.open(stats_location+"pid_cut_checks.txt");
+
+  file << "=====================================================================" << std::endl;
+  
+  file << " Total POT used to generate this sample: " << pot << std::endl;
+  
+  file << std::setw(15) << "Cut/True type"    << "||";
+  file << std::setw(8) << "Muon  ";
+  file << std::setw(8) << "Pion  ";
+  file << std::setw(8) << "Proton" << std::endl;
+
+  file << std::setw(15) << "Diff only"    << "||";
+  file << std::setw(8) << diff_mu;
+  file << std::setw(8) << diff_pi;
+  file << std::setw(8) << diff_pr << std::endl;
+
+  file << std::setw(15) << "Longest only"    << "||";
+  file << std::setw(8) << longest_mu;
+  file << std::setw(8) << longest_pi;
+  file << std::setw(8) << longest_pr << std::endl;
+
+  file << std::setw(15) << "Diff & long"    << "||";
+  file << std::setw(8) << diff_longest_mu;
+  file << std::setw(8) << diff_longest_pi;
+  file << std::setw(8) << diff_longest_pr << std::endl;
+
+  file << "---------------------------------------------------------------------" << std::endl;
+
+  file << std::setw(15) << "Chi2 Pr only"    << "||";
+  file << std::setw(8) << chi2pr_mu;
+  file << std::setw(8) << chi2pr_pi;
+  file << std::setw(8) << chi2pr_pr << std::endl;
+
+  file << std::setw(15) << "Chi2 Mu only"    << "||";
+  file << std::setw(8) << chi2mu_mu;
+  file << std::setw(8) << chi2mu_pi;
+  file << std::setw(8) << chi2mu_pr << std::endl;
+
+  file << std::setw(15) << "Chi2 Mu/Pr only"    << "||";
+  file << std::setw(8) << chi2ratio_mu;
+  file << std::setw(8) << chi2ratio_pi;
+  file << std::setw(8) << chi2ratio_pr << std::endl;
+
+  file << std::setw(15) << "Chi2 Mu & Pr"    << "||";
+  file << std::setw(8) << chi2mu_pr_mu;
+  file << std::setw(8) << chi2mu_pr_pi;
+  file << std::setw(8) << chi2mu_pr_pr << std::endl;
+
+  file << std::setw(15) << "Chi2 Mu & Pr & R"    << "||";
+  file << std::setw(8) << chi2mu_pr_ratio_mu;
+  file << std::setw(8) << chi2mu_pr_ratio_pi;
+  file << std::setw(8) << chi2mu_pr_ratio_pr << std::endl;
+  
+  file << "=====================================================================" << std::endl;
 
   std::cout << "-----------------------------------------------------------" << std::endl;
   time_t rawtime_end;

@@ -31,9 +31,9 @@ MaxXFid = -224.54, -76.19, 207.89, 356.24
 MaxYFid = 128.41, 128.41, 128.41, 128.41
 MaxZFid = 799.950652, 799.950652, 799.950652, 799.950652
 
-DiffCut      = 0.7
+DiffCut      = 0.65
 LengthCut    = 10
-LongestCut   = 90
-Chi2PCut     = 15
-Chi2MuCut    = 26
+LongestCut   = 60
+Chi2PCut     = 17
+Chi2MuCut    = 34
 Chi2RatioCut = -1
