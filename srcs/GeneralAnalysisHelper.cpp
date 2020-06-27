@@ -127,6 +127,16 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
 
+  bool GeneralAnalysisHelper::MinOneRecoTrack(const Event &e){
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      return true;
+    }
+    return false;
+  }
+
+  //----------------------------------------------------------------------------------------
+
   bool GeneralAnalysisHelper::PassedCCInclusive(const Event &e, const unsigned int &det){
     // Define cut variables per detector
     double diff_cut      = 0.7;
@@ -139,12 +149,13 @@ namespace selection{
     if(det == 0){
       chi2p_cut     = 65.;
       chi2mu_cut    = 19.;
-      chi2ratio_cut = 0.09;
+      chi2ratio_cut = 0.08;
     }
     if(det == 1){
       chi2p_cut     = 65.;
       chi2mu_cut    = 21.;
-      chi2ratio_cut = 0.09;
+      chi2ratio_cut = 0.08;
+      diff_cut      = 0.78;
     }
     if(det == 2){
       chi2p_cut     = 15.;
@@ -152,7 +163,7 @@ namespace selection{
       chi2ratio_cut = 1.;
     }
 
-    if(!e.IsRecoFiducial() || !MaxOneLongEscapingTrack(e)) return false;
+    if(!e.IsRecoFiducial() || !MaxOneLongEscapingTrack(e) || !MinOneRecoTrack(e)) return false;
 
     // Get the longest and second longest tracks
     double longest = -std::numeric_limits<double>::max();
@@ -161,10 +172,8 @@ namespace selection{
     int second_id  = -1;
     GeneralAnalysisHelper::LongestRecoTrackLength(e,longest);
     GeneralAnalysisHelper::LongestRecoTrackID(e,longest_id);
-    bool min_one_track = false;
     for(const Particle &p : e.GetRecoParticleList()){
       if(!p.GetFromRecoTrack()) continue;
-      min_one_track = true;
       if(p.ID() != longest_id && p.GetLength() > second){
         second_id = p.ID();
         second = p.GetLength();
@@ -177,48 +186,39 @@ namespace selection{
     if(min_2_tracks)
       diff = (longest - second)/longest;
 
-    if(min_one_track){
-      // If 1 track escapes
-      if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1){
-        for(const Particle &p : e.GetRecoParticleList()){
-          if(!p.GetFromRecoTrack()) continue;
-          // If the longest track escapes return true
-          if(p.ID() == longest_id && p.GetOneEndTrackContained() && p.GetLength() > escaping_cut)
-            return true;
-          else
-            return false;
+    // If 1 track escapes return true
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1)
+      return true;
+
+    // If no tracks escape
+    else{
+      // Not considering protons first
+      bool track_cut_passed = false;
+      for(Particle &p : e.GetRecoParticleList()){
+        if(!p.GetFromRecoTrack()) continue;
+        if(p.GetLength() > length_cut){
+          track_cut_passed = true;
+          break;
         }
       }
-      // If no tracks escape
-      else{
-        // Not considering protons first
-        bool track_cut_passed = false;
-        for(Particle &p : e.GetRecoParticleList()){
-          if(!p.GetFromRecoTrack()) continue;
-          if(p.GetLength() > length_cut){
-            track_cut_passed = true;
-            break;
-          }
-        }
-        if(track_cut_passed){
-          // If we have two tracks and the longest two are very different in length, pass
-          if(min_2_tracks && diff > diff_cut)
-            return true;
+      if(track_cut_passed){
+        // If we have two tracks and the longest two are very different in length, pass
+        if(min_2_tracks && diff > diff_cut)
+          return true;
 
-          // Otherwise look at other variables
-          else if((min_2_tracks && diff <= diff_cut) || !min_2_tracks){
-            // Now consider chi2 variables
-            for(const Particle &p : e.GetRecoParticleList()){
-              if(!p.GetFromRecoTrack()) continue;
-              //Check for clear protons
-              if(det != 2){
-                if((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
-                  return true;
-              }
-              else if((p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+        // Otherwise look at other variables
+        else if((min_2_tracks && diff <= diff_cut) || !min_2_tracks){
+          // Now consider chi2 variables
+          for(const Particle &p : e.GetRecoParticleList()){
+            if(!p.GetFromRecoTrack()) continue;
+            //Check for clear protons
+            if(det != 2){
+              if((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
                 return true;
-              
             }
+            else if((p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+              return true;
+
           }
         }
       }

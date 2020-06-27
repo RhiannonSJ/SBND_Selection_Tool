@@ -315,28 +315,6 @@ namespace selection{
       static int GetMuonByChi2Muon(const Track &track, const unsigned int &det);
       
       /**
-       * @brief  get the particle id based on its PIDA value
-       *
-       * @param  track the track to find the pdg of
-       *
-       * @return pdg
-       *
-       */
-      static int GetPdgByPIDA(const Track &track);
-      
-      /**
-       * @brief  get the particle id based on its PIDA value with strict limits
-       *
-       * @param  track the track to find the pdg of
-       *
-       * @return pdg
-       
-       *
-       */
-      static int GetPdgByPIDAStrict(const Track &track);
-     
-
-      /**
        * @brief  Track class 
        */
       class Track{

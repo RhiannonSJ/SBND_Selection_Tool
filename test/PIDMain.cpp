@@ -111,10 +111,6 @@ int MainTest(const char *config){
   TH1D *h_one_escapes_pmu = new TH1D("h_one_escapes_pmu", "One track escapes",40,0,3);
   TH1D *h_one_escapes_pth = new TH1D("h_one_escapes_pth", "One track escapes",40,-1,1);
 
-  TH1D *h_longest_escapes_enu = new TH1D("h_longest_escapes_enu", "Longest track escapes / One track escapes",40,0,3);
-  TH1D *h_longest_escapes_pmu = new TH1D("h_longest_escapes_pmu", "Longest track escapes / One track escapes",40,0,3);
-  TH1D *h_longest_escapes_pth = new TH1D("h_longest_escapes_pth", "Longest track escapes / One track escapes",40,-1,1);
-
   // Length cut/none escaping
   TH1D *h_none_escape_enu = new TH1D("h_none_escape_enu", "No tracks escape",40,0,3);
   TH1D *h_none_escape_pmu = new TH1D("h_none_escape_pmu", "No tracks escape",40,0,3);
@@ -178,7 +174,11 @@ int MainTest(const char *config){
     EventSelectionTool::GetTimeLeft(start,total_files,i);
 
     for(const Event &e : events){
-      if(!e.IsRecoFiducial() || !e.IsTrueFiducial() || !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e)) continue;
+
       double enu = e.GetTrueNuEnergy();
 
       // Get the longest and second longest tracks
@@ -188,10 +188,8 @@ int MainTest(const char *config){
       int second_id  = -1;
       GeneralAnalysisHelper::LongestRecoTrackLength(e,longest);
       GeneralAnalysisHelper::LongestRecoTrackID(e,longest_id);
-      bool one_track = false;
       for(const Particle &p : e.GetRecoParticleList()){
         if(!p.GetFromRecoTrack()) continue;
-        one_track = true;
         if(p.ID() != longest_id && p.GetLength() > second){
           second_id = p.ID();
           second = p.GetLength();
@@ -204,7 +202,7 @@ int MainTest(const char *config){
       if(min_2_tracks)
         diff = (longest - second)/longest;
 
-      if(one_track && e.CheckMCTopology(cc_map)){
+      if(e.CheckMCTopology(cc_map)){
         double pmu = 0.;
         double pth = 0.;
         std::vector<float> pmus, pths;
@@ -225,12 +223,12 @@ int MainTest(const char *config){
           h_one_escapes_pth->Fill(pth);
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
+            all_cuts_ccinc++;
             if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > 90){
-              h_longest_escapes_enu->Fill(enu);
-              h_longest_escapes_pmu->Fill(pmu);
-              h_longest_escapes_pth->Fill(pth);
+              h_one_escapes_enu->Fill(enu);
+              h_one_escapes_pmu->Fill(pmu);
+              h_one_escapes_pth->Fill(pth);
               longest_escaping_ccinc++;
-              all_cuts_ccinc++;
               break;
             }
           }
@@ -304,15 +302,15 @@ int MainTest(const char *config){
           }
         }
       }
-      else if(one_track && e.CheckMCTopology(nc_map)){
+      else if(e.CheckMCTopology(nc_map)){
         total_fiducial_cuts_ncinc++;
         if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1){
           one_escaping_ncinc++;
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
+            all_cuts_ncinc++;
             if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > 90){
               longest_escaping_ncinc++;
-              all_cuts_ncinc++;
               break;
             }
           }
@@ -364,10 +362,6 @@ int MainTest(const char *config){
   }
 
   // Construct and write efficiency histograms
-  TH1D *h_eff_longest_enu = (TH1D*) h_longest_escapes_enu->Clone("h_eff_longest_enu");
-  TH1D *h_eff_longest_pmu = (TH1D*) h_longest_escapes_pmu->Clone("h_eff_longest_pmu");
-  TH1D *h_eff_longest_pth = (TH1D*) h_longest_escapes_pth->Clone("h_eff_longest_pth");
-
   TH1D *h_eff_min_length_enu = (TH1D*) h_min_length_enu->Clone("h_eff_min_length_enu");
   TH1D *h_eff_min_length_pmu = (TH1D*) h_min_length_pmu->Clone("h_eff_min_length_pmu");
   TH1D *h_eff_min_length_pth = (TH1D*) h_min_length_pth->Clone("h_eff_min_length_pth");
@@ -381,10 +375,6 @@ int MainTest(const char *config){
   TH1D *h_eff_chi2_length_pth = (TH1D*) h_chi2_length_pth->Clone("h_eff_chi2_length_pth");
 
   // Now divide through by the appropraite histogram and set the style
-  h_eff_longest_enu->Divide(h_one_escapes_enu);
-  h_eff_longest_pmu->Divide(h_one_escapes_pmu);
-  h_eff_longest_pth->Divide(h_one_escapes_pth);
-
   h_eff_min_length_enu->Divide(h_none_escape_enu);
   h_eff_min_length_pmu->Divide(h_none_escape_pmu);
   h_eff_min_length_pth->Divide(h_none_escape_pth);
@@ -397,12 +387,10 @@ int MainTest(const char *config){
   h_eff_chi2_length_pmu->Divide(h_1track_nodiff_pmu);
   h_eff_chi2_length_pth->Divide(h_1track_nodiff_pth);
 
-  std::vector<TH1D*> h_longest     = {h_eff_longest_enu,     h_eff_longest_pmu,     h_eff_longest_pth};
   std::vector<TH1D*> h_min_length  = {h_eff_min_length_enu,  h_eff_min_length_pmu,  h_eff_min_length_pth};
   std::vector<TH1D*> h_diff        = {h_eff_diff_enu,        h_eff_diff_pmu,        h_eff_diff_pth};
   std::vector<TH1D*> h_chi2_length = {h_eff_chi2_length_enu, h_eff_chi2_length_pmu, h_eff_chi2_length_pth};
 
-  SetHistogramStyle(h_longest,     3001, 1, 905, 905, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_min_length,  3001, 1, 801, 801, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_diff,        3001, 1, 867, 867, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_chi2_length, 3001, 1, 835, 835, 2, 132, 1.2, 1.5, false);
@@ -413,30 +401,6 @@ int MainTest(const char *config){
   c->SetLeftMargin(0.113181);
   c->SetRightMargin(0.0320233);
   gStyle->SetTitleFont(132,"t");
-
-  h_eff_longest_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
-  h_eff_longest_enu->Draw("hist");
-
-  c->SaveAs((plots_location+"enu_efficiency_longest_escaping.root").c_str());
-  c->SaveAs((plots_location+"enu_efficiency_longest_escaping.png").c_str());
-  c->Clear();
-
-  h_eff_longest_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_pmu->GetXaxis()->SetTitle("True muon momentum [GeV]");
-  h_eff_longest_pmu->Draw("hist");
-
-  c->SaveAs((plots_location+"pmu_efficiency_longest_escaping.root").c_str());
-  c->SaveAs((plots_location+"pmu_efficiency_longest_escaping.png").c_str());
-  c->Clear();
-
-  h_eff_longest_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_pth->GetXaxis()->SetTitle("True muon scattering angle");
-  h_eff_longest_pth->Draw("hist");
-
-  c->SaveAs((plots_location+"pth_efficiency_longest_escaping.root").c_str());
-  c->SaveAs((plots_location+"pth_efficiency_longest_escaping.png").c_str());
-  c->Clear();
 
   h_eff_min_length_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
   h_eff_min_length_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
@@ -511,7 +475,6 @@ int MainTest(const char *config){
   c->Clear();
 
   // Now overlay the histograms
-  SetHistogramStyle(h_longest,     0, 1, 905, 905, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_min_length,  0, 1, 801, 801, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_diff,        0, 2, 867, 867, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_chi2_length, 0, 1, 835, 835, 2, 132, 1.2, 1.5, false);
@@ -525,17 +488,15 @@ int MainTest(const char *config){
   l->SetBorderSize(0);
   l->SetTextFont(132);
 
-  l->AddEntry(h_eff_longest_enu,     "Longest track escapes","l");
   l->AddEntry(h_eff_min_length_enu,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_enu,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_eff_chi2_length_enu, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_eff_longest_enu->SetTitle("");
-  h_eff_longest_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
-  h_eff_longest_enu->GetYaxis()->SetRangeUser(0.2,1.1);
-  h_eff_longest_enu->Draw("hist");
-  h_eff_min_length_enu->Draw("hist same");
+  h_eff_min_length_enu->SetTitle("");
+  h_eff_min_length_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
+  h_eff_min_length_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
+  h_eff_min_length_enu->GetYaxis()->SetRangeUser(0.2,1.1);
+  h_eff_min_length_enu->Draw("hist");
   h_eff_diff_enu->Draw("hist same");
   h_eff_chi2_length_enu->Draw("hist same");
   l->Draw("same");
@@ -545,17 +506,15 @@ int MainTest(const char *config){
   c->Clear();
   l->Clear();
 
-  l->AddEntry(h_eff_longest_pmu,     "Longest track escapes","l");
   l->AddEntry(h_eff_min_length_pmu,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_pmu,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_eff_chi2_length_pmu, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_eff_longest_pmu->SetTitle("");
-  h_eff_longest_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_pmu->GetXaxis()->SetTitle("True muon momentum [GeV]");
-  h_eff_longest_pmu->GetYaxis()->SetRangeUser(0.2,1.1);
-  h_eff_longest_pmu->Draw("hist");
-  h_eff_min_length_pmu->Draw("hist same");
+  h_eff_min_length_pmu->SetTitle("");
+  h_eff_min_length_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
+  h_eff_min_length_pmu->GetXaxis()->SetTitle("True muon momentum [GeV]");
+  h_eff_min_length_pmu->GetYaxis()->SetRangeUser(0.2,1.1);
+  h_eff_min_length_pmu->Draw("hist");
   h_eff_diff_pmu->Draw("hist same");
   h_eff_chi2_length_pmu->Draw("hist same");
   l->Draw("same");
@@ -570,17 +529,15 @@ int MainTest(const char *config){
   l->SetX2NDC(0.977728);
   l->SetY2NDC(0.30131);
 
-  l->AddEntry(h_eff_longest_pth,     "Longest track escapes","l");
   l->AddEntry(h_eff_min_length_pth,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_pth,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_eff_chi2_length_pth, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_eff_longest_pth->SetTitle("");
-  h_eff_longest_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
-  h_eff_longest_pth->GetXaxis()->SetTitle("True muon scattering angle");
-  h_eff_longest_pth->GetYaxis()->SetRangeUser(0.2,1.1);
-  h_eff_longest_pth->Draw("hist");
-  h_eff_min_length_pth->Draw("hist same");
+  h_eff_min_length_pth->SetTitle("");
+  h_eff_min_length_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
+  h_eff_min_length_pth->GetXaxis()->SetTitle("True muon scattering angle");
+  h_eff_min_length_pth->GetYaxis()->SetRangeUser(0.2,1.1);
+  h_eff_min_length_pth->Draw("hist");
   h_eff_diff_pth->Draw("hist same");
   h_eff_chi2_length_pth->Draw("hist same");
   l->Draw("same");
@@ -595,9 +552,9 @@ int MainTest(const char *config){
   TH1D *h_cum_total_pmu = (TH1D*) h_one_escapes_pmu->Clone("h_cum_total_pmu");
   TH1D *h_cum_total_pth = (TH1D*) h_one_escapes_pth->Clone("h_cum_total_pth");
 
-  TH1D *h_cum_longest_enu = (TH1D*) h_longest_escapes_enu->Clone("h_cum_longest_enu");
-  TH1D *h_cum_longest_pmu = (TH1D*) h_longest_escapes_pmu->Clone("h_cum_longest_pmu");
-  TH1D *h_cum_longest_pth = (TH1D*) h_longest_escapes_pth->Clone("h_cum_longest_pth");
+  TH1D *h_cum_one_escapes_enu = (TH1D*) h_one_escapes_enu->Clone("h_cum_one_escapes_enu");
+  TH1D *h_cum_one_escapes_pmu = (TH1D*) h_one_escapes_pmu->Clone("h_cum_one_escapes_pmu");
+  TH1D *h_cum_one_escapes_pth = (TH1D*) h_one_escapes_pth->Clone("h_cum_one_escapes_pth");
 
   TH1D *h_cum_min_length_enu = (TH1D*) h_min_length_enu->Clone("h_cum_min_length_enu");
   TH1D *h_cum_min_length_pmu = (TH1D*) h_min_length_pmu->Clone("h_cum_min_length_pmu");
@@ -616,18 +573,18 @@ int MainTest(const char *config){
   h_cum_total_pmu->Add(h_none_escape_pmu);
   h_cum_total_pth->Add(h_none_escape_pth);
 
-  h_cum_diff_enu->Add(h_cum_longest_enu);
-  h_cum_diff_pmu->Add(h_cum_longest_pmu);
-  h_cum_diff_pth->Add(h_cum_longest_pth);
+  h_cum_diff_enu->Add(h_cum_one_escapes_enu);
+  h_cum_diff_pmu->Add(h_cum_one_escapes_pmu);
+  h_cum_diff_pth->Add(h_cum_one_escapes_pth);
 
   h_cum_chi2_length_enu->Add(h_cum_diff_enu);
   h_cum_chi2_length_pmu->Add(h_cum_diff_pmu);
   h_cum_chi2_length_pth->Add(h_cum_diff_pth);
 
   // Now divide by the totals
-  h_cum_longest_enu->Divide(h_cum_total_enu);
-  h_cum_longest_pmu->Divide(h_cum_total_pmu);
-  h_cum_longest_pth->Divide(h_cum_total_pth);
+  h_cum_one_escapes_enu->Divide(h_cum_total_enu);
+  h_cum_one_escapes_pmu->Divide(h_cum_total_pmu);
+  h_cum_one_escapes_pth->Divide(h_cum_total_pth);
 
   h_cum_diff_enu->Divide(h_cum_total_enu);
   h_cum_diff_pmu->Divide(h_cum_total_pmu);
@@ -637,19 +594,19 @@ int MainTest(const char *config){
   h_cum_chi2_length_pmu->Divide(h_cum_total_pmu);
   h_cum_chi2_length_pth->Divide(h_cum_total_pth);
 
-  std::vector<TH1D*> h_cum_longest     = {h_cum_longest_enu,     h_cum_longest_pmu,     h_cum_longest_pth};
+  std::vector<TH1D*> h_cum_one_escapes = {h_cum_one_escapes_enu, h_cum_one_escapes_pmu, h_cum_one_escapes_pth};
   std::vector<TH1D*> h_cum_diff        = {h_cum_diff_enu,        h_cum_diff_pmu,        h_cum_diff_pth};
   std::vector<TH1D*> h_cum_chi2_length = {h_cum_chi2_length_enu, h_cum_chi2_length_pmu, h_cum_chi2_length_pth};
 
-  SetHistogramStyle(h_cum_longest,     0, 1, 905, 905, 2, 132, 1.2, 1.5, false);
+  SetHistogramStyle(h_cum_one_escapes, 0, 1, 905, 905, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_cum_diff,        0, 1, 867, 867, 2, 132, 1.2, 1.5, false);
   SetHistogramStyle(h_cum_chi2_length, 0, 1, 835, 835, 2, 132, 1.2, 1.5, false);
-
+  
   if(detector == 0){
-    l->SetX1NDC(0.384187);
-    l->SetY1NDC(0.315866);
-    l->SetX2NDC(0.958797);
-    l->SetY2NDC(0.525473);
+    l->SetX1NDC(0.383073);
+    l->SetY1NDC(0.395924);
+    l->SetX2NDC(0.957684);
+    l->SetY2NDC(0.605531);
   }
   else if(detector == 1){
     l->SetX1NDC(0.285078);
@@ -659,21 +616,21 @@ int MainTest(const char *config){
   }
   else if(detector == 2){
     l->SetX1NDC(0.481069);
-    l->SetY1NDC(0.104803);
-    l->SetX2NDC(0.975501);
-    l->SetY2NDC(0.31441);
+    l->SetY1NDC(0.141194);
+    l->SetX2NDC(0.974388);
+    l->SetY2NDC(0.350801);
   }
 
   // Now overlay the histograms
-  l->AddEntry(h_cum_longest_enu,     "Longest track escapes","l");
+  l->AddEntry(h_cum_one_escapes_enu, "One track escapes","l");
   l->AddEntry(h_cum_diff_enu,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_cum_chi2_length_enu, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_cum_longest_enu->SetTitle("");
-  h_cum_longest_enu->GetYaxis()->SetTitle("Cumulative efficiency");
-  h_cum_longest_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
-  h_cum_longest_enu->GetYaxis()->SetRangeUser(0.0,1.1);
-  h_cum_longest_enu->Draw("hist");
+  h_cum_one_escapes_enu->SetTitle("");
+  h_cum_one_escapes_enu->GetYaxis()->SetTitle("Cumulative efficiency");
+  h_cum_one_escapes_enu->GetXaxis()->SetTitle("True neutrino energy [GeV]");
+  h_cum_one_escapes_enu->GetYaxis()->SetRangeUser(0.0,1.1);
+  h_cum_one_escapes_enu->Draw("hist");
   h_cum_diff_enu->Draw("hist same");
   h_cum_chi2_length_enu->Draw("hist same");
   l->Draw("same");
@@ -682,18 +639,18 @@ int MainTest(const char *config){
   c->SaveAs((plots_location+"enu_cumulative_efficiency_overlay.png").c_str());
   c->Clear();
   l->Clear();
-
+  
   if(detector == 0){
-    l->SetX1NDC(0.36802);
-    l->SetY1NDC(0.36099);
-    l->SetX2NDC(0.942094);
-    l->SetY2NDC(0.570597);
+    l->SetX1NDC(0.406459);
+    l->SetY1NDC(0.129549);
+    l->SetX2NDC(0.981069);
+    l->SetY2NDC(0.339156);
   }
   else if(detector == 1){
-    l->SetX1NDC(0.252784);
-    l->SetY1NDC(0.513828);
-    l->SetX2NDC(0.827394);
-    l->SetY2NDC(0.723435);
+    l->SetX1NDC(0.253341);
+    l->SetY1NDC(0.547307);
+    l->SetX2NDC(0.826837);
+    l->SetY2NDC(0.756914);
   }
   else if(detector == 2){
     l->SetX1NDC(0.4098);
@@ -702,15 +659,15 @@ int MainTest(const char *config){
     l->SetY2NDC(0.349345);
   }
 
-  l->AddEntry(h_cum_longest_pmu,     "Longest track escapes","l");
+  l->AddEntry(h_cum_one_escapes_pmu, "One track escapes","l");
   l->AddEntry(h_cum_diff_pmu,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_cum_chi2_length_pmu, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_cum_longest_pmu->SetTitle("");
-  h_cum_longest_pmu->GetYaxis()->SetTitle("Cumulative efficiency");
-  h_cum_longest_pmu->GetXaxis()->SetTitle("True muon momentum [GeV]");
-  h_cum_longest_pmu->GetYaxis()->SetRangeUser(0.0,1.1);
-  h_cum_longest_pmu->Draw("hist");
+  h_cum_one_escapes_pmu->SetTitle("");
+  h_cum_one_escapes_pmu->GetYaxis()->SetTitle("Cumulative efficiency");
+  h_cum_one_escapes_pmu->GetXaxis()->SetTitle("True muon momentum [GeV]");
+  h_cum_one_escapes_pmu->GetYaxis()->SetRangeUser(0.0,1.1);
+  h_cum_one_escapes_pmu->Draw("hist");
   h_cum_diff_pmu->Draw("hist same");
   h_cum_chi2_length_pmu->Draw("hist same");
   l->Draw("same");
@@ -721,10 +678,10 @@ int MainTest(const char *config){
   l->Clear();
 
   if(detector == 0){
-    l->SetX1NDC(0.13363);
-    l->SetY1NDC(0.459971);
-    l->SetX2NDC(0.679287);
-    l->SetY2NDC(0.669578);
+    l->SetX1NDC(0.131403);
+    l->SetY1NDC(0.484716);
+    l->SetX2NDC(0.67706 );
+    l->SetY2NDC(0.694323);
   }
   else if(detector == 1){
     l->SetX1NDC(0.132517);
@@ -739,15 +696,15 @@ int MainTest(const char *config){
     l->SetY2NDC(0.922853);
   }
 
-  l->AddEntry(h_cum_longest_pth,     "Longest track escapes","l");
+  l->AddEntry(h_cum_one_escapes_pth, "One track escapes","l");
   l->AddEntry(h_cum_diff_pth,        "Two longest #Delta L_{frac} > 0.7","l");
   l->AddEntry(h_cum_chi2_length_pth, "Remaining tracks #chi^{2} & length cuts","l");
 
-  h_cum_longest_pth->SetTitle("");
-  h_cum_longest_pth->GetYaxis()->SetTitle("Cumulative efficiency");
-  h_cum_longest_pth->GetXaxis()->SetTitle("True muon scattering angle");
-  h_cum_longest_pth->GetYaxis()->SetRangeUser(0.0,1.1);
-  h_cum_longest_pth->Draw("hist");
+  h_cum_one_escapes_pth->SetTitle("");
+  h_cum_one_escapes_pth->GetYaxis()->SetTitle("Cumulative efficiency");
+  h_cum_one_escapes_pth->GetXaxis()->SetTitle("True muon scattering angle");
+  h_cum_one_escapes_pth->GetYaxis()->SetRangeUser(0.0,1.1);
+  h_cum_one_escapes_pth->Draw("hist");
   h_cum_diff_pth->Draw("hist same");
   h_cum_chi2_length_pth->Draw("hist same");
   l->Draw("same");
@@ -786,11 +743,6 @@ int MainTest(const char *config){
   file << std::setw(15) << one_escaping_ccinc;
   file << std::setw(15) << one_escaping_ncinc;
   file << std::setw(15) << one_escaping_ccinc / static_cast<double>(one_escaping_ccinc+one_escaping_ncinc) << std::endl;
-
-  file << std::setw(20) << " Longest escaping "   << "||";
-  file << std::setw(15) << longest_escaping_ccinc;
-  file << std::setw(15) << longest_escaping_ncinc;
-  file << std::setw(15) << longest_escaping_ccinc / static_cast<double>(longest_escaping_ccinc+longest_escaping_ncinc) << std::endl;
 
   file << "---------------------------------------------------------------------" << std::endl;
 

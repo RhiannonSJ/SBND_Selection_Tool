@@ -930,8 +930,7 @@ namespace selection{
       else recoparticle_list.emplace_back(22, unused_showers[i].m_id, unused_showers[i].m_n_hits, unused_showers[i].m_vertex, (unused_showers[i].m_length * unused_showers[i].m_direction ), unused_showers[i].m_energy,g);
     } // Unused showers
   }
-
-  //------------------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------------------ 
   
   int EventSelectionTool::GetPdgByChi2(const Track &track){
 
@@ -955,9 +954,9 @@ namespace selection{
     } 
     return best_pdg;
   }
-  
+
   //------------------------------------------------------------------------------------------ 
-  
+ 
   int EventSelectionTool::GetMuonByChi2(const TrackList &tracks, const std::vector<unsigned int> &mu_candidates){
 
     // Loop over muon candidates and find smallest corresponding chi2_mu
@@ -995,7 +994,7 @@ namespace selection{
   int EventSelectionTool::GetMuonByChi2MuonProtonRatio(const Track &track, const unsigned int &det){
     double cut = 0.;
     if(det == 0 || det == 1)
-      cut = 0.09;
+      cut = 0.08;
     else
       cut = 1.;
 
@@ -1031,46 +1030,6 @@ namespace selection{
     // Limit based on particle gun plots of muon and proton vs proton chi^2
     if(track.m_chi2_mu < cut) return 13;
     return std::numeric_limits<int>::max();
-  }
-  
-  //------------------------------------------------------------------------------------------ 
-  
-  int EventSelectionTool::GetPdgByPIDA(const Track &track){
-
-    // Muon
-    if(track.m_pida >= 5 && track.m_pida < 9) return 13;
-
-    //Pion
-    if(track.m_pida >= 9 && track.m_pida < 13) return 211;
-  
-    //Kaon
-    if(track.m_pida >= 13 && track.m_pida < 13.5) return 321;
-  
-    //Proton
-    if(track.m_pida >= 13) return 2212;
-
-    return std::numeric_limits<int>::max();
-  
-  }
-  
-  //------------------------------------------------------------------------------------------ 
-  
-  int EventSelectionTool::GetPdgByPIDAStrict(const Track &track){
-
-    // Muon
-    if(track.m_pida >= 7.5  && track.m_pida < 8) return 13;
-
-    //Pion
-    if(track.m_pida >= 8    && track.m_pida < 9) return 211;
-  
-    //Kaon
-    if(track.m_pida >= 12.9 && track.m_pida < 13.5) return 321;
-  
-    //Proton
-    if(track.m_pida >= 16.9 && track.m_pida < 17.4) return 2212;
-
-    return std::numeric_limits<int>::max();
-  
   }
   
   //------------------------------------------------------------------------------------------ 

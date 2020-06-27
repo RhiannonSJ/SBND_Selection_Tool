@@ -187,6 +187,16 @@ namespace selection{
        */
       static TopologyMap GetNuETopologyMap();
 
+
+      /** 
+       * @brief Function to determine if the event has at least 1 reconstructed track
+       *
+       * @param  e Current event
+       *
+       * @return  true if passed
+       */
+      static bool MinOneRecoTrack(const Event &e);
+      
       /** 
        * @brief Function to determine if the event passes the global CC Inclusive selection cuts
        *

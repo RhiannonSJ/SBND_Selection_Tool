@@ -94,15 +94,18 @@ int MainTest(const char *config){
   unsigned int total_true_ccinc = 0;
   unsigned int total_true_ncinc = 0;
   
-  unsigned int reco_fid_true_ccinc = 0;
-  unsigned int reco_fid_true_ncinc = 0;
+  unsigned int true_fid_true_ccinc = 0;
+  unsigned int true_fid_true_ncinc = 0;
   
   unsigned int reco_true_fid_true_ccinc = 0;
   unsigned int reco_true_fid_true_ncinc = 0;
   
   unsigned int reco_true_fid_max_1_escapes_true_ccinc = 0;
   unsigned int reco_true_fid_max_1_escapes_true_ncinc = 0;
-  
+ 
+  unsigned int reco_true_fid_max_1_escapes_min_1_track_true_ccinc = 0;
+  unsigned int reco_true_fid_max_1_escapes_min_1_track_true_ncinc = 0;
+
   // HISTOGRAMS
   TH1D *h_longest_diff_mu = new TH1D("h_longest_diff_mu", "Percentage length difference between 2 longest tracks",40,0,1);
   TH1D *h_longest_diff_pr = new TH1D("h_longest_diff_pr", "Percentage length difference between 2 longest tracks",40,0,1);
@@ -147,24 +150,30 @@ int MainTest(const char *config){
       // Fill the counters
       if(e.CheckMCTopology(cc_map)) {
         total_true_ccinc++;
-        if(e.IsRecoFiducial()){
-          reco_fid_true_ccinc++;
-          if(e.IsTrueFiducial()){
+        if(e.IsTrueFiducial()){
+          true_fid_true_ccinc++;
+          if(e.IsRecoFiducial()){
             reco_true_fid_true_ccinc++;
             if(GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)){
               reco_true_fid_max_1_escapes_true_ccinc++;
+              if(GeneralAnalysisHelper::MinOneRecoTrack(e)){
+                reco_true_fid_max_1_escapes_min_1_track_true_ccinc++;
+              }
             }
           }
         }
       }
       else if(e.CheckMCTopology(nc_map)) {
         total_true_ncinc++;
-        if(e.IsRecoFiducial()){
-          reco_fid_true_ncinc++;
-          if(e.IsTrueFiducial()){
+        if(e.IsTrueFiducial()){
+          true_fid_true_ncinc++;
+          if(e.IsRecoFiducial()){
             reco_true_fid_true_ncinc++;
             if(GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)){
               reco_true_fid_max_1_escapes_true_ncinc++;
+              if(GeneralAnalysisHelper::MinOneRecoTrack(e)){
+                reco_true_fid_max_1_escapes_min_1_track_true_ncinc++;
+              }
             }
           }
         }
@@ -405,12 +414,12 @@ int MainTest(const char *config){
   file << std::setw(15) << total_true_ncinc;
   file << std::setw(15) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc) << std::endl;
 
-  file << std::setw(20) << " Reco fiducial "  << "||";
-  file << std::setw(15) << reco_fid_true_ccinc;
-  file << std::setw(15) << reco_fid_true_ncinc;
-  file << std::setw(15) << reco_fid_true_ccinc/static_cast<double>(reco_fid_true_ccinc+reco_fid_true_ncinc) << std::endl; 
-
   file << std::setw(20) << " True fiducial "  << "||";
+  file << std::setw(15) << true_fid_true_ccinc;
+  file << std::setw(15) << true_fid_true_ncinc;
+  file << std::setw(15) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc) << std::endl; 
+
+  file << std::setw(20) << " Reco fiducial "  << "||";
   file << std::setw(15) << reco_true_fid_true_ccinc;
   file << std::setw(15) << reco_true_fid_true_ncinc;
   file << std::setw(15) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc) << std::endl; 
@@ -419,6 +428,11 @@ int MainTest(const char *config){
   file << std::setw(15) << reco_true_fid_max_1_escapes_true_ccinc;
   file << std::setw(15) << reco_true_fid_max_1_escapes_true_ncinc;
   file << std::setw(15) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc) << std::endl; 
+
+  file << std::setw(20) << " Min. 1 track " << "||";
+  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc;
+  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ncinc;
+  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc) << std::endl; 
 
   file << "=====================================================================" << std::endl;
 

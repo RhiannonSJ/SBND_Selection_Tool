@@ -36,4 +36,4 @@ LengthCut    = 10
 LongestCut   = 90
 Chi2PCut     = 65
 Chi2MuCut    = 19
-Chi2RatioCut = 0.09
+Chi2RatioCut = 0.08
