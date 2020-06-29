@@ -145,15 +145,13 @@ namespace selection{
         mcparticles = mcparticle_itr->second;
       
       if(tracks.size() != 0) {
-        EventSelectionTool::GetRecoParticleFromTrackSBND(tracks, recoparticles, av);
-        /*
+//        EventSelectionTool::GetRecoParticleFromTrackSBND(tracks, recoparticles, av);
         if(det == 0)
           EventSelectionTool::GetRecoParticleFromTrackSBND(tracks, recoparticles, av);
         if(det == 1)
           EventSelectionTool::GetRecoParticleFromTrackMicroBooNE(tracks, recoparticles, av);
         if(det == 2)
           EventSelectionTool::GetRecoParticleFromTrackICARUS(tracks, recoparticles, av);
-          */
       }
       if(showers.size() != 0) EventSelectionTool::GetRecoParticleFromShower(showers, r_vertex, recoparticles, av);
      
@@ -603,12 +601,12 @@ namespace selection{
   
   void EventSelectionTool::GetRecoParticleFromTrackSBND(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){
     // Define any pre-calculated cuts
-    double diff_cut      = 0.7;
-    double longest_cut   = 50.;
+    double diff_cut      = 0.65;
+    double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 65.;
-    double chi2mu_cut    = 19.;
-    double chi2ratio_cut = 0.09;
+    double chi2p_cut     = 70.;
+    double chi2mu_cut    = 14.;
+    double chi2ratio_cut = 0.075;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 0);
   }
 
@@ -616,12 +614,12 @@ namespace selection{
   
   void EventSelectionTool::GetRecoParticleFromTrackMicroBooNE(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){
     // Define any pre-calculated cuts
-    double diff_cut      = 0.7;
-    double longest_cut   = 50.;
+    double diff_cut      = 0.65;
+    double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 65.;
-    double chi2mu_cut    = 21.;
-    double chi2ratio_cut = 0.09;
+    double chi2p_cut     = 70.;
+    double chi2mu_cut    = 19.;
+    double chi2ratio_cut = 0.075;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 1);
   }
 
@@ -629,10 +627,10 @@ namespace selection{
   
   void EventSelectionTool::GetRecoParticleFromTrackICARUS(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g){
     // Define any pre-calculated cuts
-    double diff_cut      = 0.7;
-    double longest_cut   = 50.;
+    double diff_cut      = 0.65;
+    double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 15.;
+    double chi2p_cut     = 12.;
     double chi2mu_cut    = 26.;
     double chi2ratio_cut = 1.;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 2);
@@ -655,7 +653,7 @@ namespace selection{
     float second   = -std::numeric_limits<float>::max();
     int longest_id = -1;
     int second_id  = -1;
-   
+  
     // Check if exactly 1 track escapes
     bool one_long_escapes = false;
     unsigned int n_escaping = 0;
@@ -702,51 +700,30 @@ namespace selection{
         // If one end is contained and the neutrino vertex is more than 75 cm from the escaping border
         if(track.m_one_end_contained) 
           recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
-        else if(EventSelectionTool::GetProtonByChi2Proton(track,det) == 2212 && track.m_length < length_cut)
+        else if(EventSelectionTool::GetProtonByChi2Proton(track,det) == 2212 || track.m_length < length_cut)
           recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
         else
           recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g); 
       }
       else{
-        // If more than one escape then we shouldn't select the event so don't worry too much
-        // Just do the same thing as if none escape for now
-        //
-        // If none escape:
-        // If the number of tracks is >=2 check the difference between the lengths of the longest two
-        // If it passes the cut, call the longest the muons and get the rest via protons then other as usual
-        if(track_list.size() >= 2 && diff > diff_cut){
-          // If we are looking at the longest track, call it the muon
-          if(id == longest_id)
-            recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 13, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
-          else if(EventSelectionTool::GetProtonByChi2Proton(track, det) == 2212)
+        if(det == 0 || det == 1){
+          // If the Chi2 Proton hypothesis gives proton, call the track a proton
+          // Otherwise, call it a muon candidate
+          if(EventSelectionTool::GetProtonByChi2Proton(track,det) == 2212 || track.m_length < length_cut)
             recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
+          else if(EventSelectionTool::GetMuonByChi2Proton(track,det) == 13 || (id == longest_id && diff > diff_cut) || (id == longest_id && longest > longest_cut))
+            mu_candidates.push_back(id);
           else
             recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
         }
         else{
-          // Some chi2 manipulation
-          bool passes_chi2_proton = false;
-          if(det == 0 || det == 1){
-            if(EventSelectionTool::GetProtonByChi2Proton(track, det) == 2212 && 
-               EventSelectionTool::GetMuonByChi2Muon(track, det) != 13 && 
-               EventSelectionTool::GetMuonByChi2MuonProtonRatio(track, det) != 13) passes_chi2_proton = true;
-          }
-          else if(det == 2){
-            if(EventSelectionTool::GetProtonByChi2Proton(track, det) == 2212 && 
-               EventSelectionTool::GetMuonByChi2Muon(track, det) != 13) passes_chi2_proton = true;
-          }
-          bool longest_is_short = false;
-          if(longest < longest_cut) longest_is_short = true;
-
-          if(passes_chi2_proton){
-            // If the longest track is long make sure we are not looking at the longest track
-            if(!longest_is_short && id != longest_id)
-              recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
-          }
-          else if(EventSelectionTool::GetMuonByChi2Muon(track, det) == 13 || id == longest_id)
+          if((id == longest_id && diff > diff_cut) || (id == longest_id && longest > longest_cut))
             mu_candidates.push_back(id);
+          else if(EventSelectionTool::GetProtonByChi2Proton(track,det) == 2212 || track.m_length < length_cut)
+            recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, 2212, track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
           else
             recoparticle_list.emplace_back(track.m_mc_id_charge, track.m_mc_id_energy, track.m_mc_id_hits, track.m_id, EventSelectionTool::GetPdgByChi2(track), track.m_n_hits, track.m_kinetic_energy, track.m_mcs_mom_muon, track.m_range_mom_muon, track.m_range_mom_proton,  track.m_length, track.m_vertex, track.m_end, track.m_chi2_pr, track.m_chi2_mu, track.m_chi2_pi, track.m_dedx, track.m_residual_range,g);
+        
         }
       }
     }
@@ -766,7 +743,7 @@ namespace selection{
     for(unsigned int i = 0; i < mu_candidates.size(); ++i){
       int id = mu_candidates[i];
       const Track &candidate(track_list[id]);
-      if(longest_id == id && longest > longest_cut) {
+      if(longest_id == id){
         muonID = id;
         foundTheMuon = true;
         break;
@@ -933,7 +910,6 @@ namespace selection{
 //------------------------------------------------------------------------------------------ 
   
   int EventSelectionTool::GetPdgByChi2(const Track &track){
-
     // Push the chi2 values onto a vector to find the minimum
     // NOT MUON
     std::map<int, float> chi2_map;
@@ -980,9 +956,9 @@ namespace selection{
   int EventSelectionTool::GetProtonByChi2Proton(const Track &track, const unsigned int &det){
     double cut = 0.;
     if(det == 0 || det == 1)
-      cut = 65.;
+      cut = 87.;
     else
-      cut = 15.;
+      cut = 20.;
 
     // Limit based on particle gun plots of muon and proton vs proton chi^2
     if(track.m_chi2_pr < cut) return 2212;
@@ -994,7 +970,7 @@ namespace selection{
   int EventSelectionTool::GetMuonByChi2MuonProtonRatio(const Track &track, const unsigned int &det){
     double cut = 0.;
     if(det == 0 || det == 1)
-      cut = 0.08;
+      cut = 0.075;
     else
       cut = 1.;
 
@@ -1006,10 +982,12 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   int EventSelectionTool::GetMuonByChi2Proton(const Track &track, const unsigned int &det){
     double cut = 0.;
-    if(det == 0 || det == 1)
-      cut = 65.;
+    if(det == 0)
+      cut = 87.;
+    else if(det == 1)
+      cut = 85.;
     else
-      cut = 15.;
+      cut = 20.;
 
     // Limit based on particle gun plots of muon and proton vs proton chi^2
     if(track.m_chi2_pr >= cut) return 13;
@@ -1021,9 +999,9 @@ namespace selection{
   int EventSelectionTool::GetMuonByChi2Muon(const Track &track, const unsigned int &det){
     double cut = 0.;
     if(det == 0)
-      cut = 19.;
+      cut = 14.;
     else if(det == 1)
-      cut = 21.;
+      cut = 19.;
     else
       cut = 26.;
 

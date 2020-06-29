@@ -197,7 +197,7 @@ int MainTest(const char *config){
         else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
       }
       if(e.CheckRecoTopology(maps[2])){
-        if(e.CheckMCTopology(maps[1]))      cc1pi_cc0pi++;
+        if(e.CheckMCTopology(maps[1])) cc1pi_cc0pi++;
         else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
         else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
         else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
@@ -272,7 +272,7 @@ int MainTest(const char *config){
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"updated_full_topological_breakdown.txt");
+  file.open(stats_location+"updated2_full_topological_breakdown.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
