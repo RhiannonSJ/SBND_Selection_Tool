@@ -68,12 +68,12 @@ int MainTest(const char *config){
   p->getValue("MaxXAV",           maxx_av);
   p->getValue("MaxYAV",           maxy_av);
   p->getValue("MaxZAV",           maxz_av);
-  p->getValue("DiffCut",          diff_cut);
-  p->getValue("LengthCut",        length_cut);
-  p->getValue("LongestCut",       longest_cut);
-  p->getValue("Chi2PCut",         chi2p_cut);
-  p->getValue("Chi2MuCut",        chi2mu_cut);
-  p->getValue("Chi2RatioCut",     chi2ratio_cut);
+  p->getValue("PreDiffCut",       diff_cut);
+  p->getValue("PreLengthCut",     length_cut);
+  p->getValue("PreLongestCut",    longest_cut);
+  p->getValue("PreChi2PCut",      chi2p_cut);
+  p->getValue("PreChi2MuCut",     chi2mu_cut);
+  p->getValue("PreChi2RatioCut",  chi2ratio_cut);
 
   //------------------------------------------------------------------------------------------
   //                                    Initialise
@@ -203,6 +203,7 @@ int MainTest(const char *config){
         diff = (longest - second)/longest;
 
       if(e.CheckMCTopology(cc_map)){
+        total_fiducial_cuts_ccinc++;
         double pmu = 0.;
         double pth = 0.;
         std::vector<float> pmus, pths;
@@ -214,17 +215,16 @@ int MainTest(const char *config){
         pmu = pmus.at(0);
         pth = pths.at(0);
 
-        total_fiducial_cuts_ccinc++;
         // If 1 track escapes
         if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1){
           one_escaping_ccinc++;
+          all_cuts_ccinc++;
           h_one_escapes_enu->Fill(enu);
           h_one_escapes_pmu->Fill(pmu);
           h_one_escapes_pth->Fill(pth);
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
-            all_cuts_ccinc++;
-            if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > 90){
+            if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > longest_cut){
               h_one_escapes_enu->Fill(enu);
               h_one_escapes_pmu->Fill(pmu);
               h_one_escapes_pth->Fill(pth);
@@ -309,7 +309,7 @@ int MainTest(const char *config){
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
             all_cuts_ncinc++;
-            if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > 90){
+            if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > longest_cut){
               longest_escaping_ncinc++;
               break;
             }

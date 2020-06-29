@@ -8,7 +8,7 @@
 InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/icarus_selection_doms_files_190620/selection/
 InputFileName     = selection_tree.root
 
-StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/icarus/
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/icarus/pid/
 PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/icarus/pid/
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/icarus/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/icarus/
@@ -31,9 +31,18 @@ MaxXFid = -224.54, -76.19, 207.89, 356.24
 MaxYFid = 128.41, 128.41, 128.41, 128.41
 MaxZFid = 799.950652, 799.950652, 799.950652, 799.950652
 
+# pre-inclusive cuts
+PreDiffCut      = 0.7
+PreLengthCut    = 10
+PreLongestCut   = 50
+PreChi2PCut     = 15
+PreChi2MuCut    = 26
+PreChi2RatioCut = 1.
+
+# post-inclusive cuts
 DiffCut      = 0.65
 LengthCut    = 10
-LongestCut   = 60
-Chi2PCut     = 17
-Chi2MuCut    = 34
-Chi2RatioCut = -1
+LongestCut   = 100
+Chi2PCut     = 20
+Chi2MuCut    = 26
+Chi2RatioCut = 1

@@ -604,7 +604,7 @@ namespace selection{
     double diff_cut      = 0.65;
     double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 70.;
+    double chi2p_cut     = 87.;
     double chi2mu_cut    = 14.;
     double chi2ratio_cut = 0.075;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 0);
@@ -617,7 +617,7 @@ namespace selection{
     double diff_cut      = 0.65;
     double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 70.;
+    double chi2p_cut     = 85.;
     double chi2mu_cut    = 19.;
     double chi2ratio_cut = 0.075;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 1);
@@ -630,7 +630,7 @@ namespace selection{
     double diff_cut      = 0.65;
     double longest_cut   = 100.;
     double length_cut    = 10.;
-    double chi2p_cut     = 12.;
+    double chi2p_cut     = 20.;
     double chi2mu_cut    = 26.;
     double chi2ratio_cut = 1.;
     GetRecoParticleFromTrack(track_list, recoparticle_list, g, diff_cut, length_cut, longest_cut, chi2p_cut, chi2mu_cut, chi2ratio_cut, 2);

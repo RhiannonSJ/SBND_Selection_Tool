@@ -149,7 +149,8 @@ int MainTest(const char *config){
   unsigned int nc1pi_sel   = 0;
 
   unsigned int all_tracks_contained   = 0;
-  unsigned int max_one_escaping_track = 0;
+  unsigned int precuts_passed         = 0;
+  unsigned int ccinc_passed           = 0;
 
   TopologyMap nc_map      = GeneralAnalysisHelper::GetNCTopologyMap();
   TopologyMap cc_map      = GeneralAnalysisHelper::GetCCIncTopologyMap();
@@ -172,111 +173,117 @@ int MainTest(const char *config){
       // Boolean to check that we have selected a CC Inclusive using the method laid out in PIDMain
       bool cc_inclusive_passed = GeneralAnalysisHelper::PassedCCInclusive(e,detector);
 
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e)) continue;
+      precuts_passed++;
+
       // Now we are looking at selected CC Inclusive events, 
       // start trying to identify particle types
-      if(!cc_inclusive_passed) continue;
- //     if(!e.IsTrueFiducial()) continue;
-      max_one_escaping_track++;
-
-      if(e.CheckRecoTopology(maps[0])){
-        if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) ccinc_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) ccinc_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) ccinc_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) ccinc_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) ccinc_nue++;
-      }
-      if(e.CheckRecoTopology(maps[1])){
-        if(e.CheckMCTopology(maps[1]))      cc0pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) cc0pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) cc0pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) cc0pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
-      }
-      if(e.CheckRecoTopology(maps[2])){
-        if(e.CheckMCTopology(maps[1])) cc1pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) cc1pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) cc1pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) cc1pi_nue++;
-      }
-      if(e.CheckRecoTopology(maps[4])){
-        if(e.CheckMCTopology(maps[1]))      ncinc_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) ncinc_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) ncinc_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) ncinc_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) ncinc_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) ncinc_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) ncinc_nue++;
-      }
-      if(e.CheckRecoTopology(maps[5])){
-        if(e.CheckMCTopology(maps[1]))      nc0pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) nc0pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) nc0pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) nc0pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) nc0pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) nc0pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) nc0pi_nue++;
-      }
-      if(e.CheckRecoTopology(maps[6])){
-        if(e.CheckMCTopology(maps[1]))      nc1pi_cc0pi++;
-        else if(e.CheckMCTopology(maps[2])) nc1pi_cc1pi++;
-        else if(e.CheckMCTopology(maps[0])) nc1pi_ccoth++;
-        else if(e.CheckMCTopology(maps[5])) nc1pi_nc0pi++;
-        else if(e.CheckMCTopology(maps[6])) nc1pi_nc1pi++;
-        else if(e.CheckMCTopology(maps[4])) nc1pi_ncoth++;
-        else if(e.CheckMCTopology(maps[7])) nc1pi_nue++;
+      if(cc_inclusive_passed){
+        ccinc_passed++;
+        if(e.CheckRecoTopology(maps[0])){
+          if(e.CheckMCTopology(maps[1]))      ccinc_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) ccinc_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) ccinc_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) ccinc_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) ccinc_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) ccinc_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) ccinc_nue++;
+        }
+        if(e.CheckRecoTopology(maps[1])){
+          if(e.CheckMCTopology(maps[1]))      cc0pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) cc0pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) cc0pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) cc0pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) cc0pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) cc0pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) cc0pi_nue++;
+        }
+        if(e.CheckRecoTopology(maps[2])){
+          if(e.CheckMCTopology(maps[1])) cc1pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) cc1pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) cc1pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) cc1pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) cc1pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) cc1pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) cc1pi_nue++;
+        }
+        if(e.CheckRecoTopology(maps[4])){
+          if(e.CheckMCTopology(maps[1]))      ncinc_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) ncinc_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) ncinc_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) ncinc_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) ncinc_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) ncinc_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) ncinc_nue++;
+        }
+        if(e.CheckRecoTopology(maps[5])){
+          if(e.CheckMCTopology(maps[1]))      nc0pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) nc0pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) nc0pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) nc0pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) nc0pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) nc0pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) nc0pi_nue++;
+        }
+        if(e.CheckRecoTopology(maps[6])){
+          if(e.CheckMCTopology(maps[1]))      nc1pi_cc0pi++;
+          else if(e.CheckMCTopology(maps[2])) nc1pi_cc1pi++;
+          else if(e.CheckMCTopology(maps[0])) nc1pi_ccoth++;
+          else if(e.CheckMCTopology(maps[5])) nc1pi_nc0pi++;
+          else if(e.CheckMCTopology(maps[6])) nc1pi_nc1pi++;
+          else if(e.CheckMCTopology(maps[4])) nc1pi_ncoth++;
+          else if(e.CheckMCTopology(maps[7])) nc1pi_nue++;
+        }
       }
       // Overall efficiencies 
       if(e.CheckMCTopology(maps[0])){
         ccinc_true++;
-        if(e.CheckRecoTopology(maps[0])) ccinc_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[0])) ccinc_sig++;
       }
       if(e.CheckMCTopology(maps[1])){
         cc0pi_true++;
-        if(e.CheckRecoTopology(maps[1])) cc0pi_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[1])) cc0pi_sig++;
       }
       if(e.CheckMCTopology(maps[2])) {
         cc1pi_true++;
-        if(e.CheckRecoTopology(maps[2])) cc1pi_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[2])) cc1pi_sig++;
       }
       if(e.CheckMCTopology(maps[4])){
         ncinc_true++;
-        if(e.CheckRecoTopology(maps[4])) ncinc_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[4])) ncinc_sig++;
       }
       if(e.CheckMCTopology(maps[5])){
         nc0pi_true++;
-        if(e.CheckRecoTopology(maps[5])) nc0pi_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[5])) nc0pi_sig++;
       }
       if(e.CheckMCTopology(maps[6])){
         nc1pi_true++;
-        if(e.CheckRecoTopology(maps[6])) nc1pi_sig++;
+        if(cc_inclusive_passed && e.CheckRecoTopology(maps[6])) nc1pi_sig++;
       }
       if(e.CheckMCTopology(maps[7])) nue_true++;
 
       // Overall purities
-      if(e.CheckRecoTopology(maps[0])) ccinc_sel++;
-      if(e.CheckRecoTopology(maps[1])) cc0pi_sel++;
-      if(e.CheckRecoTopology(maps[2])) cc1pi_sel++;
-      if(e.CheckRecoTopology(maps[4])) ncinc_sel++;
-      if(e.CheckRecoTopology(maps[5])) nc0pi_sel++;
-      if(e.CheckRecoTopology(maps[6])) nc1pi_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[0])) ccinc_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[1])) cc0pi_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[2])) cc1pi_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[4])) ncinc_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[5])) nc0pi_sel++;
+      if(cc_inclusive_passed && e.CheckRecoTopology(maps[6])) nc1pi_sel++;
     }
   }
 
   // Files to hold particle statistics
   ofstream file;
   
-  file.open(stats_location+"updated2_full_topological_breakdown.txt");
+  file.open(stats_location+"full_topological_breakdown.txt");
 
   file << "==============================================================================================================" << std::endl;
   //file << " Total number of events with all tracks contained : " << all_tracks_contained << std::endl;
-  file << " Total number of events with maximum one escaping track : " << max_one_escaping_track << std::endl;
+  file << " Total number of events passing the reconstructable cuts : " << precuts_passed << std::endl;
+  file << " Total number of events passing the CC Inclusive cuts    : " << ccinc_passed << std::endl;
   file << std::setw(12) << "True \\ Reco" << "||" <<  std::setw(10) << " CC Inc. " << std::setw(10) << " CC 0Pi " << std::setw(10) << " CC 1Pi " << std::setw(10) << " NC Inc. " << std::setw(10) << " NC 0Pi " << std::setw(10) << " NC 1Pi " << std::endl;
   file << std::setw(12) << " CC 0Pi "     << "||" << std::setw(10) << ccinc_cc0pi << std::setw(10) << cc0pi_cc0pi << std::setw(10) << cc1pi_cc0pi << std::setw(10) << ncinc_cc0pi << std::setw(10) << nc0pi_cc0pi << std::setw(10) << nc1pi_cc0pi << std::endl; 
   file << std::setw(12) << " CC 1Pi "     << "||" << std::setw(10) << ccinc_cc1pi << std::setw(10) << cc0pi_cc1pi << std::setw(10) << cc1pi_cc1pi << std::setw(10) << ncinc_cc1pi << std::setw(10) << nc0pi_cc1pi << std::setw(10) << nc1pi_cc1pi <<  std::endl;  

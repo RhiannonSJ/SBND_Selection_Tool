@@ -8,7 +8,7 @@
 InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/uboone_selection_doms_files_190620/selection/
 InputFileName     = selection_tree.root
 
-StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/uboone/
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/uboone/pid/
 PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/uboone/pid/
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/uboone/
 TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/uboone/
@@ -31,9 +31,18 @@ MaxXFid = 239.8
 MaxYFid = 102.47
 MaxZFid = 956.9
 
+# pre-inclusive cuts
+PreDiffCut      = 0.7
+PreLengthCut    = 10
+PreLongestCut   = 50
+PreChi2PCut     = 65
+PreChi2MuCut    = 21
+PreChi2RatioCut = 0.08
+
+# post-inclusive cuts
 DiffCut      = 0.65
 LengthCut    = 10
-LongestCut   = 75
-Chi2PCut     = 80
+LongestCut   = 100
+Chi2PCut     = 85
 Chi2MuCut    = 19
-Chi2RatioCut = 0.07
+Chi2RatioCut = 0.075
