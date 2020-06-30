@@ -1,7 +1,12 @@
 #include "../include/CC0piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
+#include "../include/Geometry.h"
+#include "../include/Plane.h"
 #include "../include/Event.h"
+#include "../include/Particle.h"
+#include "../include/Setup.h"
+#include "../include/ConfigReader.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -25,35 +30,78 @@
 #include "TROOT.h"
 #include "TAxis.h"
 
+using namespace cppsecrets;
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, 
-                   const unsigned int &start_file, 
-                   const unsigned int &end_file, 
-                   const int &start_time, 
-                   double &pot, 
-                   std::vector<unsigned int> &exceptions);
+int MainTest(const char *config){
 
-int MainTest(const unsigned int &start_file = 0, const unsigned int &end_file = 1){
-  
   time_t rawtime;
-  struct tm * timeinfo;
-  time (&rawtime);
-  timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
+  GetTime(rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
- 
-  // Output file location
-  std::string file_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/files/valor/cut75cm/";
+
 
   //------------------------------------------------------------------------------------------
-  //                                       Load events
+  //                                    Configure
   //------------------------------------------------------------------------------------------
-  
+  // Create object of the class ConfigReader
+  // Parse the configuration file
+  // Dump map on the console after parsing it
+  ConfigReader* p = ConfigReader::getInstance();
+  p->parseFile(config);
+  std::cout << " Variables from configuration file: " << std::endl;
+  p->dumpFileValues();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
+  // Get variables from config
+  std::string input_location  = "";
+  std::string input_filename  = "";
+  std::string exceptions_file = "";
+  std::string file_location   = "";
+  unsigned int total_files = 0;
+  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
+  std::vector<double> minx_fid, miny_fid, minz_fid;
+  std::vector<double> maxx_fid, maxy_fid, maxz_fid;
+  std::vector<double> minx_av, miny_av, minz_av;
+  std::vector<double> maxx_av, maxy_av, maxz_av;
+
+  p->getValue("InputFileLocation",input_location);
+  p->getValue("InputFileName",    input_filename);
+  p->getValue("ExceptionsFile",   exceptions_file);
+  p->getValue("TreeFileLocation", file_location); 
+  p->getValue("Detector",         detector);
+  p->getValue("TotalFiles",       total_files);
+  p->getValue("MinXFid",          minx_fid);
+  p->getValue("MinYFid",          miny_fid);
+  p->getValue("MinZFid",          minz_fid);
+  p->getValue("MaxXFid",          maxx_fid);
+  p->getValue("MaxYFid",          maxy_fid);
+  p->getValue("MaxZFid",          maxz_fid);
+  p->getValue("MinXAV",           minx_av);
+  p->getValue("MinYAV",           miny_av);
+  p->getValue("MinZAV",           minz_av);
+  p->getValue("MaxXAV",           maxx_av);
+  p->getValue("MaxYAV",           maxy_av);
+  p->getValue("MaxZAV",           maxz_av);
+
+  //------------------------------------------------------------------------------------------
+  //                                    Initialise
+  //------------------------------------------------------------------------------------------
+
+  // Get the active and fiducial geometry objects
+  Geometry fiducial(minx_fid,miny_fid,minz_fid,maxx_fid,maxy_fid,maxz_fid,true);
+  Geometry active(minx_av,miny_av,minz_av,maxx_av,maxy_av,maxz_av,false);
+  PlaneList planes = active.GetExternalPlaneList();
+
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
-  
+
+  int start = static_cast<int>(time(NULL));
+  double pot = 0.; 
+
+  std::vector<int> exceptions;
+  FillExceptions(exceptions_file.c_str(),exceptions);
+
   // Maps
   TopologyMap ccinc = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap cc0pi = GeneralAnalysisHelper::GetCC0PiTopologyMap();
@@ -77,16 +125,11 @@ int MainTest(const unsigned int &start_file = 0, const unsigned int &end_file = 
   //    4 = other
   int true_topology = -1;
   int reco_topology = -1;
-  
-  double pot; // Subrun information
 
   TTree *t_run    = new TTree("valor_tree"," Tree to hold variables needed for the VALOR analysis");
   TTree *t_subrun = new TTree("subrun_tree"," Tree to hold subrun variables, such as POT");
   t_run->SetDirectory(0);
   t_subrun->SetDirectory(0);
- 
-  TH1D *h_ccinc_e_true = new TH1D("h_ccinc_e_true","Neutrino energy distribution for a true CC Inclusive final state",100, 0, 3);
-  TH1D *h_ccinc_e_sig  = new TH1D("h_ccinc_e_sig", "Neutrino energy distribution for a signal CC Inclusive final state",100, 0, 3);
 
   t_run->Branch("iscc",          &iscc,          "iscc/O");
   t_run->Branch("isnc",          &isnc,          "isnc/O");
@@ -107,108 +150,96 @@ int MainTest(const unsigned int &start_file = 0, const unsigned int &end_file = 
   t_run->Branch("reco_topology", &reco_topology, "reco_topology/I");
 
   t_subrun->Branch("pot",        &pot,           "pot/D");
-  
-  int start = static_cast<int>(time(NULL));
-  std::vector<unsigned int> exceptions;
-  exceptions.clear();
-
-  // Read in txt file of list of empty input directories
-  std::fstream exception_file("exceptions.txt");
-  if(!exception_file)
-    std::cout << " No exceptions file given" << std::endl;
-  else{
-    std::string s_exc;
-    while (std::getline(exception_file, s_exc)) {
-      unsigned int i_exc;
-      std::istringstream ss_exc(s_exc);
-      ss_exc >> i_exc;
-      exceptions.push_back(i_exc);
-      ss_exc.str(std::string());
-      s_exc.clear();
-    }
-  }
-
-  /*
-  std::cout << " Skipping files in directory : " << std::endl;
-  for(const int & ex : exceptions)
-    std::cout << " - " << ex << " - ";
-  std::cout << std::endl;
-  */
-
-  LoadAllEvents(events, start_file, end_file, start, pot, exceptions);
 
   // Counter to quantify how many events have strange particle energies in them
   int bad_events = 0;
 
-  // Loop over events and perform vertexing study
-  for(const Event &e : events){
-    bool bad_event = false;
+  for( unsigned int i = 0; i < total_files; ++i ){
+    EventSelectionTool::EventList events;
+    LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
 
-    // TPC track criteria
-    if(!e.IsSBNDRecoFiducial()) continue;
-    if(!GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)) continue;
-    iscc     = e.GetIsCC();
-    isnc     = !e.GetIsCC();
-    nu_pdg   = e.GetNeutrinoPdgCode();
-    enu_true = e.GetTrueNuEnergy();
-    qsqr     = e.GetTrueNuQ2();
-    mode     = e.GetPhysicalProcess();
-    baseline = e.GetBaseline();
+    for(const Event &e : events){
+      bool cc_inclusive_passed = GeneralAnalysisHelper::PassedCCInclusive(e,detector);
 
-    // Start the counters
-    nkaons      = 0;
-    npip        = 0;
-    npim        = 0;
-    npi0        = 0;
-    enu_reco    = 0.;
-    enu_reco_mc = 0.;
-    
-    // Particles 
-    ParticleList mc   = e.GetMCParticleList();
-    ParticleList reco = e.GetRecoParticleList();
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e)) continue;
 
-    // Neutrino vertex is within the ficudial border
-    if(e.IsSBNDTrueFiducial()){
-      if(e.CheckRecoTopology(ccinc)){
-        if(!bad_event){
+      // Now we are looking at selected CC Inclusive events, 
+      // start trying to identify particle types
+      if(cc_inclusive_passed){
+        iscc     = e.GetIsCC();
+        isnc     = !e.GetIsCC();
+        nu_pdg   = e.GetNeutrinoPdgCode();
+        enu_true = e.GetTrueNuEnergy();
+        qsqr     = e.GetTrueNuQ2();
+        mode     = e.GetPhysicalProcess();
+        baseline = e.GetBaseline();
+
+        // Start the counters
+        nkaons      = 0;
+        npip        = 0;
+        npim        = 0;
+        npi0        = 0;
+        enu_reco    = 0.;
+        enu_reco_mc = 0.;
+
+        // Particles 
+        ParticleList mc   = e.GetMCParticleList();
+        ParticleList reco = e.GetRecoParticleList();
+
+        if(e.CheckRecoTopology(ccinc)){
           for(const Particle &p : reco){
-            if(p.GetKineticEnergy() <= 0.) continue;
-            if(p.GetKineticEnergy() > 10) { // Higher than 10 GeV
-              bad_event = true;
+            double mass = 0.;
+            double KE   = 0.;
+            KE = sqrt(pow(p.GetModulusMomentum(),2) + pow(p.GetMass(),2)) - p.GetMass();
+            if(KE <= 0. || isnan(KE)) continue;
+            if(KE > 10) { // Higher than 10 GeV
               bad_events++;
-              std::cerr << " Badly defined energy of the particle (>10GeV), skipping event " << std::endl;
               break;
             }
             if(p.GetPdgCode() == 13){
               mu_momentum = p.GetModulusMomentum();
               mu_cos_z    = p.GetCosTheta();
             } 
-            double mass = 0.;
-            if(p.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e,p) >= 0) {
-              if(GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 211  || 
-                  GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == -211 ||
-                  GeneralAnalysisHelper::GetBestMCParticle(e,p).GetPdgCode() == 13){
-                mass = GeneralAnalysisHelper::GetBestMCParticle(e,p).GetMass();
+            if(p.GetFromRecoTrack()) {
+              // Calculated KE from momentum and mass for every particle
+
+              if(p.GetPdgCode() == 211  || 
+                  p.GetPdgCode() == -211 ||
+                  p.GetPdgCode() == 13){
+                mass = p.GetMass();
               }
             }
             // Calculate the reconstructed energy from the reco kinetic (visible) + mass of outgoing particles 
             // Do not include hadron mass since the interaction didn't *produce* a hadron, it was *with* a hadron
-            enu_reco += (p.GetKineticEnergy() + mass);
+            enu_reco += KE + mass;
+            if(isnan(enu_reco)){
+              std::cout << " Found NAN: " << enu_reco << std::endl;
+              enu_reco = 0;
+            }
           }
           for(const Particle &p : mc){
             if(p.GetPdgCode() ==  311 || p.GetPdgCode() == -321 || p.GetPdgCode() == 321) nkaons++;
             if(p.GetPdgCode() ==  211) npip++;
             if(p.GetPdgCode() == -211) npim++;
             if(p.GetPdgCode() ==  111) npi0++; 
-            
+
             // MC reconstructed neutrino energy 
             double mass = 0.;
+            double KE   = 0.;
+            // Calculated KE from momentum and mass for every particle
+            KE = sqrt(pow(p.GetModulusMomentum(),2) + pow(p.GetMass(),2)) - p.GetMass();
+
             if(p.GetPdgCode() == 211  || 
-               p.GetPdgCode() == -211 ||
-               p.GetPdgCode() == 13){
+                p.GetPdgCode() == -211 ||
+                p.GetPdgCode() == 13){
               mass = p.GetMass();
             } // Pdgcodes
-            enu_reco_mc += (p.GetKineticEnergy() + mass);
+            enu_reco_mc += KE + mass;
+            //enu_reco_mc += (p.GetKineticEnergy() + mass);
           } // Particles
 
           if(e.CheckRecoTopology(cc0pi))
@@ -231,97 +262,34 @@ int MainTest(const unsigned int &start_file = 0, const unsigned int &end_file = 
             true_topology = 3;
           else
             true_topology = 4;
+
           t_run->Fill();
-        } // Bad event
-      } // Topology
-      // Check all true CC Inclusive events and plot the reconstructed energy of them
-      if(e.CheckMCTopology(ccinc)){
-        if(bad_event) continue;
-        double enu_mc_reco = 0.;
-        for(const Particle &p : e.GetMCParticleList()){
-          // Calculate the reconstructed energy from the reco kinetic (visible) + the true particle mass (cheating)
-          double mass = 0.;
-          if(p.GetPdgCode() == 211  || 
-             p.GetPdgCode() == -211 ||
-             p.GetPdgCode() == 13)
-            mass = p.GetMass();
-          enu_mc_reco += (p.GetKineticEnergy() + mass);
-        } // Particles
-        h_ccinc_e_true->Fill(enu_mc_reco);
-        if(e.CheckRecoTopology(ccinc)){
-          h_ccinc_e_sig->Fill(enu_mc_reco);
-        } // Signal CCInclusive
-      } // Topology
-    } // Fiducial
-  } // Events
-  std::cout << " Total events with particles with bad energy : " << bad_events << std::endl;
+        } // Chosen Topology
+      } // CCInc Precuts
+    } // Events
+  } // Files
+  std::cout << " Total events with particles with energy > 10GeV (skipped) : " << bad_events << std::endl;
   // Print the total pot from all the samples
   std::cout << " Total POT in the samples is: " << pot << std::endl;
   t_subrun->Fill();
 
-  // Write histograms to file and external files
-  TH1D *h_ccinc_e_eff = (TH1D*)h_ccinc_e_sig->Clone("h_ccinc_e_eff");
-  h_ccinc_e_eff->Divide(h_ccinc_e_true);
-
   // Output TFile
-  TFile f((file_location+"ccinc_selection_180620_"+std::to_string(start_file)+"-"+std::to_string(end_file)+".root").c_str(), "RECREATE");
+  TFile f((file_location+"ccinc_selection_final.root").c_str(), "RECREATE");
 
-  h_ccinc_e_true->Write();
-  h_ccinc_e_sig->Write();
-  h_ccinc_e_eff->Write();
   t_run->Write();
   t_subrun->Write();
 
   f.Write();
   f.Close();
 
-  time_t rawtime_afterload;
-  struct tm * timeinfo_afterload;
-  time (&rawtime_afterload);
-  timeinfo_afterload = localtime (&rawtime_afterload);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " After loading events local time and date:  " << asctime(timeinfo_afterload) << std::endl;
-  std::cout << "-----------------------------------------------------------" << std::endl;
-
   time_t rawtime_end;
-  struct tm * timeinfo_end;
-  time (&rawtime_end);
-  timeinfo_end = localtime (&rawtime_end);
+  GetTime(rawtime_end);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " End: Local time and date:  " << asctime(timeinfo_end) << std::endl;
+  GetTotalTime(rawtime, rawtime_end);
   std::cout << "-----------------------------------------------------------" << std::endl;
 
   return 0;
 
 } // MainTest
 
-void LoadAllEvents(EventSelectionTool::EventList &events, 
-                   const unsigned int &start_file, 
-                   const unsigned int &end_file, 
-                   const int &start_time, 
-                   double &pot, 
-                   std::vector<unsigned int> &exceptions){
-  double total_pot = 0;
-  std::vector<unsigned int>::iterator it;
-  // Load the events into the event list
-  for( unsigned int i = start_file; i < end_file; ++i ){
-    it = std::find(exceptions.begin(), exceptions.end(),i);
-    if(it != exceptions.end()) continue;
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-    //name = "/sbnd/app/users/rsjones/LArSoft_v08_54_00/test/output_file.root";
-    name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_170620/selection/"+std::to_string(i)+"/output_file.root";
-    //name = "/pnfs/sbnd/persistent/users/rsjones/mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
-
-    double temp_pot = 0.;
-    unsigned int total_files = end_file - start_file;
-    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
-    EventSelectionTool::GetTimeLeft(start_time,total_files,i-start_file);
-    total_pot += temp_pot;
-  }
-  std::cout << std::endl;
-  pot = total_pot;
-} // LoadAllEvents

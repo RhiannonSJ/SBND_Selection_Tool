@@ -163,7 +163,6 @@ int MainTest(const char *config){
 
   std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
 
-  // First, ensure all tracks are contained
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
     LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);

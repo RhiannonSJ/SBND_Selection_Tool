@@ -10,8 +10,8 @@ InputFileName     = selection_tree.root
 
 StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/pid/
 PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/pid/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/pid/
 TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/sbnd/
-TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/
 
 Detector = 0
 

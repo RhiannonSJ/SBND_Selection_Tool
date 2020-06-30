@@ -13,14 +13,22 @@
 
 namespace selection{
 
-  double EventSelectionTool::GetPOT(TTree *subrun){
+  double EventSelectionTool::GetPOT(TTree *subrun, const unsigned int det){
     // Get the pot for the individual file
     unsigned int n = subrun->GetEntries();
     double pot = 0.;
     for(unsigned int j = 0; j < n; ++j){
-      subrun->GetEntry(j);
-      TBranch *b_pot = subrun->GetBranch("subrun_pot");
-      pot += b_pot->GetLeaf("subrun_pot")->GetValue();
+      if(det == 0){
+        subrun->GetEntry(j);
+        TBranch *b_pot = subrun->GetBranch("subrun_pot");
+        pot += b_pot->GetLeaf("subrun_pot")->GetValue();
+      }
+      // There is a bug in the uboone and icarus POT so need to divide by 10
+      else{
+        subrun->GetEntry(j);
+        TBranch *b_pot = subrun->GetBranch("subrun_pot");
+        pot += b_pot->GetLeaf("subrun_pot")->GetValue()*0.1;
+      }
     }
     return pot;
   }
@@ -88,7 +96,10 @@ namespace selection{
     TBranch *b_t_neutrino_qsqr = t_event->GetBranch("t_qsqr");
     TBranch *b_detector        = t_subrun->GetBranch("detector_enum");
     
-    pot = EventSelectionTool::GetPOT(t_subrun);
+    t_subrun->GetEntry(0);
+    unsigned int det = b_detector->GetLeaf("detector_enum")->GetValue();
+   
+    pot = EventSelectionTool::GetPOT(t_subrun,det);
     
     unsigned int n_events = t_event->GetEntries();
 
@@ -100,7 +111,7 @@ namespace selection{
       ShowerList   showers;
 
       TVector3 r_vertex, t_vertex;
-      unsigned int interaction, pions_ch, pions_neu, scatter, det;
+      unsigned int interaction, pions_ch, pions_neu, scatter;
       int neutrino_pdg;
       bool iscc(false);
       float neu_energy;
@@ -127,9 +138,6 @@ namespace selection{
       neu_energy   = b_t_vertex_energy->GetLeaf("t_vertex_energy")->GetValue();
       neu_qsqr     = b_t_neutrino_qsqr->GetLeaf("t_qsqr")->GetValue();
       
-      t_subrun->GetEntry(j);
-      det = b_detector->GetLeaf("detector_enum")->GetValue();
-   
       const UniqueId event_identification(event_id,time_now);
 
       const auto track_itr = all_tracks.find(event_identification);

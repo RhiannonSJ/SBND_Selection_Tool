@@ -41,11 +41,12 @@ namespace selection{
        * @brief get the pot corresponding to each individual file
        *
        * @param  subrun tree with the some of the subrun information from larsoft
+       * @param  det detector enumeration
        *
        * @return pot from the current file
        *
        */
-      static double GetPOT(TTree *subrun);
+      static double GetPOT(TTree *subrun, const unsigned int det);
 
       /**
        * @brief  load the list of events to analyse from the root file
