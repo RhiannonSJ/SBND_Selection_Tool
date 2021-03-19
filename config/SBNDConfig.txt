@@ -5,17 +5,19 @@
 # June 2020
 #
 
-InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_190620/selection/
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_260121/selection/
 InputFileName     = selection_tree.root
 
-StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/sbnd/pid/
-PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/sbnd/pid/
-TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/sbnd/pid/
-TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/sbnd/
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/Jan2021/sbnd/pid/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/Jan2021/sbnd/pid/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/Jan2021/sbnd/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/Jan2021/sbnd/
 
 Detector = 0
 
-TotalFiles = 149
+TotalFiles = 150
+
+TotalPOT = 6.6e20
 
 MinXAV  = -199.15
 MinYAV  = -200.0
@@ -43,6 +45,7 @@ PreChi2RatioCut = 0.08
 DiffCut      = 0.65
 LengthCut    = 10
 LongestCut   = 100
-Chi2PCut     = 87
+Chi2PCut     = 65
+Chi2PCutMu   = 87
 Chi2MuCut    = 14
 Chi2RatioCut = 0.075

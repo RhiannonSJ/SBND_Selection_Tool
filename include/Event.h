@@ -81,6 +81,15 @@ namespace selection{
       unsigned int CountRecoParticlesWithPdg(const int pdg) const;
 
       /**
+       * @brief  CheckMCNeutrino
+       * 
+       * @param  pdg neutrino pdg code to check the event against
+       *
+       * @return boolean as to whether the event has the corresponding neutrino flavour
+       */
+      bool CheckMCNeutrino(const int &pdg) const;
+
+      /**
        * @brief  CheckMCTopology
        *
        * @param  topology map of the chosen topology which holds the number of each chosen type of particle to look for

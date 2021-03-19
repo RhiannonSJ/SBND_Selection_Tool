@@ -57,9 +57,10 @@ namespace selection{
        * @param  pot from the current file
        * @param  fid fiducial volume of this detector
        * @param  av active volume of this detector
+       * @param  runEverything whether or not to get the really hefty branches
        *
        */
-      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av);
+      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av, const bool &runEverything );
 
       /**
        * @brief  Output the length of time left in the running
@@ -99,7 +100,7 @@ namespace selection{
        * @param  g active volume of the detector
        *
        */
-      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g);
+      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g, const bool &runEverything );
       
       /**
        * @brief  The the distance between a particle and a defined plane

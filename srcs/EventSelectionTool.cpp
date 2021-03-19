@@ -58,7 +58,7 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
  
-  void EventSelectionTool::LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av){
+  void EventSelectionTool::LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av, const bool &runEverything ){
  
     TFile f(file_name.c_str());
     if(!f.IsOpen()){
@@ -73,7 +73,7 @@ namespace selection{
     TTree *t_shower   = (TTree*) f.Get("selectionTree/recoshower_tree");
    
     UIdToTrackListMap all_tracks;
-    LoadTracks(t_track,all_tracks, av);  
+    LoadTracks(t_track,all_tracks, av, runEverything);  
 
     UIdToShowerListMap all_showers;
     LoadShowers(t_shower,all_showers,t_track->GetEntries());  
@@ -137,7 +137,7 @@ namespace selection{
       pions_neu    = b_t_neutral_pions->GetLeaf("t_neutral_pions")->GetValue();
       neu_energy   = b_t_vertex_energy->GetLeaf("t_vertex_energy")->GetValue();
       neu_qsqr     = b_t_neutrino_qsqr->GetLeaf("t_qsqr")->GetValue();
-      
+    
       const UniqueId event_identification(event_id,time_now);
 
       const auto track_itr = all_tracks.find(event_identification);
@@ -265,7 +265,7 @@ namespace selection{
     } 
   }
   //------------------------------------------------------------------------------------------ 
-  void EventSelectionTool::LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g){
+  void EventSelectionTool::LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g, const bool &runEverything ){
 
     // Get the outermost faces of the detector
     float min_x = *std::min_element(g.GetMinX().begin(),g.GetMinX().end());
@@ -293,13 +293,19 @@ namespace selection{
     TBranch *b_mcs_mom_muon     = track_tree->GetBranch("tr_mcs_mom_muon");
     TBranch *b_range_mom_muon   = track_tree->GetBranch("tr_range_mom_muon");
     TBranch *b_range_mom_proton = track_tree->GetBranch("tr_range_mom_proton");
-    // Do not process the following branches
-    track_tree->SetBranchStatus("tr_dedx_size",0);      
-    track_tree->SetBranchStatus("tr_residual_range",0); 
-    track_tree->SetBranchStatus("tr_dedx",0);           
-    //TBranch *b_size             = track_tree->GetBranch("tr_dedx_size");      
-    //TBranch *b_residual_range   = track_tree->GetBranch("tr_residual_range"); 
-    //TBranch *b_dedx             = track_tree->GetBranch("tr_dedx");           
+    TBranch *b_size             = track_tree->GetBranch("tr_dedx_size");      
+    TBranch *b_residual_range;
+    TBranch *b_dedx; 
+
+    if(!runEverything){
+      // Do not process the following branches
+      track_tree->SetBranchStatus("tr_dedx",0);      
+      track_tree->SetBranchStatus("tr_residual_range",0); 
+    }
+    else{
+      b_residual_range = track_tree->GetBranch("tr_residual_range"); 
+      b_dedx           = track_tree->GetBranch("tr_dedx");
+    }
     
     unsigned int n_entries = track_tree->GetEntries();
 
@@ -313,10 +319,10 @@ namespace selection{
       double temp_vertex[3];
       double temp_end[3];
 
+      int n_hits             = b_n_hits->GetLeaf("tr_n_hits")->GetValue();
       int id_charge          = b_id_charge->GetLeaf("tr_id_charge")->GetValue();
       int id_energy          = b_id_energy->GetLeaf("tr_id_energy")->GetValue();
       int id_hits            = b_id_hits->GetLeaf("tr_id_hits")->GetValue();
-      int n_hits             = b_n_hits->GetLeaf("tr_n_hits")->GetValue();
       temp_vertex[0]         = b_vertex->GetLeaf("tr_vertex")->GetValue(0);
       temp_vertex[1]         = b_vertex->GetLeaf("tr_vertex")->GetValue(1);
       temp_vertex[2]         = b_vertex->GetLeaf("tr_vertex")->GetValue(2);
@@ -360,18 +366,16 @@ namespace selection{
 
       std::vector<float> dedx;
       std::vector<float> residual_range;
-      
-      /*
-      double n_dedx = b_size->GetLeaf("tr_dedx_size")->GetValue(); // Get the number of entries for the dedx & residual range branches
-      dedx.clear();
-      residual_range.clear();
-      for(unsigned int j = 0; j < n_dedx; ++j){
-        b_dedx->GetEntry(j);
-        b_residual_range->GetEntry(j);
-        dedx.push_back(b_dedx->GetLeaf("tr_dedx")->GetValue());
-        residual_range.push_back(b_residual_range->GetLeaf("tr_residual_range")->GetValue());
+
+      if(runEverything){
+        unsigned int n_dedx = b_size->GetLeaf("tr_dedx_size")->GetValue(); // Get the number of entries for the dedx & residual range branches
+        for(unsigned int j = 0; j < n_dedx; ++j){
+          dedx.push_back(b_dedx->GetLeaf("tr_dedx")->GetValue(j));
+          residual_range.push_back(b_residual_range->GetLeaf("tr_residual_range")->GetValue(j));
+        }
       }
-      */
+
+      if(n_hits < 5) continue;
       tracks[id].emplace_back(i, id_charge, id_energy, id_hits, n_hits, pida, chi2_mu, chi2_pi, chi2_pr, chi2_ka, length, kinetic_energy, mcs_mom_muon, range_mom_muon, range_mom_proton,vertex, end, !not_contained, one_end_escapes, dedx, residual_range);
     
     } 

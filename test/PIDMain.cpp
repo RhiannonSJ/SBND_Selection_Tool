@@ -100,7 +100,7 @@ int MainTest(const char *config){
   TopologyMap cc0pi2p_map = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
   TopologyMap nc0pi_map   = GeneralAnalysisHelper::GetNC0PiTopologyMap();
   TopologyMap nc1pi_map   = GeneralAnalysisHelper::GetNC1PiTopologyMap();
-  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuETopologyMap();
+  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuECCTopologyMap();
 
   std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
 
@@ -139,8 +139,13 @@ int MainTest(const char *config){
   TH1D *h_chi2_length_pth = new TH1D("h_chi2_length_pth", "Longest length & #chi^{2}_{muon} & #chi^{2}_{proton} cuts / 1 track or didn't pass diff ",40,-1,1);
 
   // COUNTERS
-  unsigned int total_fiducial_cuts_ccinc = 0;
-  unsigned int total_fiducial_cuts_ncinc = 0;
+  unsigned int total_ccinc  = 0;
+  unsigned int total_ncinc  = 0;
+  unsigned int total_nueinc = 0;
+  
+  unsigned int total_fiducial_cuts_ccinc  = 0;
+  unsigned int total_fiducial_cuts_ncinc  = 0;
+  unsigned int total_fiducial_cuts_nueinc = 0;
 
   unsigned int one_escaping_ccinc = 0;
   unsigned int one_escaping_ncinc = 0;
@@ -174,6 +179,15 @@ int MainTest(const char *config){
     EventSelectionTool::GetTimeLeft(start,total_files,i);
 
     for(const Event &e : events){
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial()) continue;
+      if(e.CheckMCTopology(cc_map))
+        total_ccinc++;
+      if(e.CheckMCTopology(nc_map))
+        total_ncinc++;
+      if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12))
+        total_nueinc++;
+
       if(!e.IsRecoFiducial() || 
          !e.IsTrueFiducial() || 
          !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
@@ -358,6 +372,9 @@ int MainTest(const char *config){
           }
         }
       }
+      else if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12)){
+        total_fiducial_cuts_nueinc++;
+      }
     }
   }
 
@@ -391,15 +408,16 @@ int MainTest(const char *config){
   std::vector<TH1D*> h_diff        = {h_eff_diff_enu,        h_eff_diff_pmu,        h_eff_diff_pth};
   std::vector<TH1D*> h_chi2_length = {h_eff_chi2_length_enu, h_eff_chi2_length_pmu, h_eff_chi2_length_pth};
 
-  SetHistogramStyle(h_min_length,  3001, 1, 801, 801, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_diff,        3001, 1, 867, 867, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_chi2_length, 3001, 1, 835, 835, 2, 132, 1.2, 1.5, false);
+  SetHistogramStyle(h_min_length,  3001, 1, 801, 801, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_diff,        3001, 1, 867, 867, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_chi2_length, 3001, 1, 835, 835, 2, 132, 1, 1.2, false);
 
   TCanvas *c = new TCanvas("c","",900,900);
-  c->SetTopMargin(0.0800582);
-  c->SetBottomMargin(0.0946143);
-  c->SetLeftMargin(0.113181);
-  c->SetRightMargin(0.0320233);
+  c->SetLeftMargin  (0.138796 );
+  c->SetRightMargin (0.0334448);
+  c->SetBottomMargin(0.132404 );
+  c->SetTopMargin   (0.065854 );
+  
   gStyle->SetTitleFont(132,"t");
 
   h_eff_min_length_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -408,6 +426,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"enu_efficiency_min_length.root").c_str());
   c->SaveAs((plots_location+"enu_efficiency_min_length.png").c_str());
+  c->SaveAs((plots_location+"enu_efficiency_min_length.pdf").c_str());
   c->Clear();
 
   h_eff_min_length_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -416,6 +435,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pmu_efficiency_min_length.root").c_str());
   c->SaveAs((plots_location+"pmu_efficiency_min_length.png").c_str());
+  c->SaveAs((plots_location+"pmu_efficiency_min_length.pdf").c_str());
   c->Clear();
 
   h_eff_min_length_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -424,6 +444,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pth_efficiency_min_length.root").c_str());
   c->SaveAs((plots_location+"pth_efficiency_min_length.png").c_str());
+  c->SaveAs((plots_location+"pth_efficiency_min_length.pdf").c_str());
   c->Clear();
 
   h_eff_diff_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -432,6 +453,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"enu_efficiency_diff.root").c_str());
   c->SaveAs((plots_location+"enu_efficiency_diff.png").c_str());
+  c->SaveAs((plots_location+"enu_efficiency_diff.pdf").c_str());
   c->Clear();
 
   h_eff_diff_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -440,6 +462,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pmu_efficiency_diff.root").c_str());
   c->SaveAs((plots_location+"pmu_efficiency_diff.png").c_str());
+  c->SaveAs((plots_location+"pmu_efficiency_diff.pdf").c_str());
   c->Clear();
 
   h_eff_diff_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -448,6 +471,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pth_efficiency_diff.root").c_str());
   c->SaveAs((plots_location+"pth_efficiency_diff.png").c_str());
+  c->SaveAs((plots_location+"pth_efficiency_diff.pdf").c_str());
   c->Clear();
 
   h_eff_chi2_length_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -456,6 +480,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"enu_efficiency_chi2_length.root").c_str());
   c->SaveAs((plots_location+"enu_efficiency_chi2_length.png").c_str());
+  c->SaveAs((plots_location+"enu_efficiency_chi2_length.pdf").c_str());
   c->Clear();
 
   h_eff_chi2_length_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -464,6 +489,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pmu_efficiency_chi2_length.root").c_str());
   c->SaveAs((plots_location+"pmu_efficiency_chi2_length.png").c_str());
+  c->SaveAs((plots_location+"pmu_efficiency_chi2_length.pdf").c_str());
   c->Clear();
 
   h_eff_chi2_length_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -472,25 +498,26 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pth_efficiency_chi2_length.root").c_str());
   c->SaveAs((plots_location+"pth_efficiency_chi2_length.png").c_str());
+  c->SaveAs((plots_location+"pth_efficiency_chi2_length.pdf").c_str());
   c->Clear();
 
   // Now overlay the histograms
-  SetHistogramStyle(h_min_length,  0, 1, 801, 801, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_diff,        0, 2, 867, 867, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_chi2_length, 0, 1, 835, 835, 2, 132, 1.2, 1.5, false);
-
+  SetHistogramStyle(h_min_length,  0, 1, 801, 801, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_diff,        0, 2, 867, 867, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_chi2_length, 0, 1, 835, 835, 2, 132, 1, 1.2, false);
 
   // Not going to print title so change canvas margin
-  c->SetTopMargin(0.0320233);
+  c->SetTopMargin(0.0365854);
 
-  TLegend * l = new TLegend(0.300,0.194,0.847,0.462);
+  TLegend * l = new TLegend(0.300,0.17,0.847,0.462);
   l->SetFillStyle(0);
   l->SetBorderSize(0);
+  l->SetTextSize(0.045);
   l->SetTextFont(132);
 
   l->AddEntry(h_eff_min_length_enu,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_enu,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_eff_chi2_length_enu, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_eff_chi2_length_enu, "#chi^{2} & length cuts","l");
 
   h_eff_min_length_enu->SetTitle("");
   h_eff_min_length_enu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -503,12 +530,13 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"enu_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"enu_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"enu_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
 
   l->AddEntry(h_eff_min_length_pmu,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_pmu,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_eff_chi2_length_pmu, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_eff_chi2_length_pmu, "#chi^{2} & length cuts","l");
 
   h_eff_min_length_pmu->SetTitle("");
   h_eff_min_length_pmu->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -521,17 +549,18 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pmu_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"pmu_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"pmu_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
 
-  l->SetX1NDC(0.45991);
-  l->SetY1NDC(0.126638);
-  l->SetX2NDC(0.977728);
-  l->SetY2NDC(0.30131);
+  l->SetX1NDC(0.42);
+  l->SetY1NDC(0.17);
+  l->SetX2NDC(0.93);
+  l->SetY2NDC(0.32);
 
   l->AddEntry(h_eff_min_length_pth,  "One track >10 cm","l");
   l->AddEntry(h_eff_diff_pth,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_eff_chi2_length_pth, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_eff_chi2_length_pth, "#chi^{2} & length cuts","l");
 
   h_eff_min_length_pth->SetTitle("");
   h_eff_min_length_pth->GetYaxis()->SetTitle("Efficiency w.r.t previous cut");
@@ -544,6 +573,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pth_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"pth_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"pth_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
 
@@ -598,9 +628,9 @@ int MainTest(const char *config){
   std::vector<TH1D*> h_cum_diff        = {h_cum_diff_enu,        h_cum_diff_pmu,        h_cum_diff_pth};
   std::vector<TH1D*> h_cum_chi2_length = {h_cum_chi2_length_enu, h_cum_chi2_length_pmu, h_cum_chi2_length_pth};
 
-  SetHistogramStyle(h_cum_one_escapes, 0, 1, 905, 905, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_cum_diff,        0, 1, 867, 867, 2, 132, 1.2, 1.5, false);
-  SetHistogramStyle(h_cum_chi2_length, 0, 1, 835, 835, 2, 132, 1.2, 1.5, false);
+  SetHistogramStyle(h_cum_one_escapes, 0, 1, 905, 905, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_cum_diff,        0, 1, 867, 867, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_cum_chi2_length, 0, 1, 835, 835, 2, 132, 1, 1.2, false);
   
   if(detector == 0){
     l->SetX1NDC(0.383073);
@@ -624,7 +654,7 @@ int MainTest(const char *config){
   // Now overlay the histograms
   l->AddEntry(h_cum_one_escapes_enu, "One track escapes","l");
   l->AddEntry(h_cum_diff_enu,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_cum_chi2_length_enu, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_cum_chi2_length_enu, "#chi^{2} & length cuts","l");
 
   h_cum_one_escapes_enu->SetTitle("");
   h_cum_one_escapes_enu->GetYaxis()->SetTitle("Cumulative efficiency");
@@ -637,6 +667,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"enu_cumulative_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"enu_cumulative_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"enu_cumulative_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
   
@@ -661,7 +692,7 @@ int MainTest(const char *config){
 
   l->AddEntry(h_cum_one_escapes_pmu, "One track escapes","l");
   l->AddEntry(h_cum_diff_pmu,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_cum_chi2_length_pmu, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_cum_chi2_length_pmu, "#chi^{2} & length cuts","l");
 
   h_cum_one_escapes_pmu->SetTitle("");
   h_cum_one_escapes_pmu->GetYaxis()->SetTitle("Cumulative efficiency");
@@ -674,6 +705,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pmu_cumulative_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"pmu_cumulative_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"pmu_cumulative_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
 
@@ -698,7 +730,7 @@ int MainTest(const char *config){
 
   l->AddEntry(h_cum_one_escapes_pth, "One track escapes","l");
   l->AddEntry(h_cum_diff_pth,        "Two longest #Delta L_{frac} > 0.7","l");
-  l->AddEntry(h_cum_chi2_length_pth, "Remaining tracks #chi^{2} & length cuts","l");
+  l->AddEntry(h_cum_chi2_length_pth, "#chi^{2} & length cuts","l");
 
   h_cum_one_escapes_pth->SetTitle("");
   h_cum_one_escapes_pth->GetYaxis()->SetTitle("Cumulative efficiency");
@@ -711,6 +743,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"pth_cumulative_efficiency_overlay.root").c_str());
   c->SaveAs((plots_location+"pth_cumulative_efficiency_overlay.png").c_str());
+  c->SaveAs((plots_location+"pth_cumulative_efficiency_overlay.pdf").c_str());
   c->Clear();
   l->Clear();
 
@@ -719,17 +752,25 @@ int MainTest(const char *config){
   ofstream file;
   file.open(stats_location+"final_method_all_cuts.txt");
 
-  file << "=====================================================================" << std::endl;
+  file << "====================================================================================" << std::endl;
   file << " Total POT used to generate this sample: " << pot << std::endl;
   file << std::setw(20) << "Cut/True top."    << "||";
-  file <<  std::setw(15) << " CC Inc. ";
+  file << std::setw(15) << " CC Inc. ";
   file << std::setw(15) << " NC Inc. ";
-  file << std::setw(15) << " CCInc. purity" << std::endl;
+  file << std::setw(15) << " CCInc. purity";
+  file << std::setw(15) << " Nue Inc. " << std::endl;
 
-  file << std::setw(20) << " Total "          << "||";
+  file << std::setw(20) << " Total " << "||";
+  file << std::setw(15) << total_ccinc;
+  file << std::setw(15) << total_ncinc;
+  file << std::setw(15) << total_ccinc / static_cast<double>(total_ccinc+total_ncinc+total_nueinc);
+  file << std::setw(15) << total_nueinc << std::endl;
+
+  file << std::setw(20) << " Total fiducial " << "||";
   file << std::setw(15) << total_fiducial_cuts_ccinc;
   file << std::setw(15) << total_fiducial_cuts_ncinc;
-  file << std::setw(15) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc) << std::endl;
+  file << std::setw(15) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nueinc);
+  file << std::setw(15) << total_fiducial_cuts_nueinc << std::endl;
 
   file << std::setw(20) << " All cuts "   << "||";
   file << std::setw(15) << all_cuts_ccinc;
@@ -737,23 +778,23 @@ int MainTest(const char *config){
   file << std::setw(15) << all_cuts_ccinc / static_cast<double>(all_cuts_ccinc+all_cuts_ncinc) << std::endl;
 
 
-  file << "=====================================================================" << std::endl;
+  file << "====================================================================================" << std::endl;
 
   file << std::setw(20) << " One escaping "    << "||";
   file << std::setw(15) << one_escaping_ccinc;
   file << std::setw(15) << one_escaping_ncinc;
   file << std::setw(15) << one_escaping_ccinc / static_cast<double>(one_escaping_ccinc+one_escaping_ncinc) << std::endl;
 
-  file << "---------------------------------------------------------------------" << std::endl;
+  file << "-----------------------------------------------------------------------------------" << std::endl;
 
   file << std::setw(20) << " None escaping "    << "||";
   file << std::setw(15) << total_fiducial_cuts_ccinc-one_escaping_ccinc;
   file << std::setw(15) << total_fiducial_cuts_ncinc-one_escaping_ncinc;
   file << std::setw(15) << (total_fiducial_cuts_ccinc-one_escaping_ccinc) / static_cast<double>((total_fiducial_cuts_ccinc-one_escaping_ccinc)+(total_fiducial_cuts_ncinc-one_escaping_ncinc)) << std::endl;
 
-  file << "---------------------------------------------------------------------" << std::endl;
+  file << "-----------------------------------------------------------------------------------" << std::endl;
   file << " If all tracks are contained: "                                        << std::endl;
-  file << "---------------------------------------------------------------------" << std::endl;
+  file << "-----------------------------------------------------------------------------------" << std::endl;
 
   file << std::setw(20) << " 1 track > 10cm "   << "||";
   file << std::setw(15) << track_length_cut_ccinc;
@@ -765,9 +806,9 @@ int MainTest(const char *config){
   file << std::setw(15) << track_length_min2_ncinc;
   file << std::setw(15) << track_length_min2_ccinc / static_cast<double>(track_length_min2_ccinc+track_length_min2_ncinc) << std::endl;
 
-  file << "---------------------------------------------------------------------" << std::endl;
+  file << "-----------------------------------------------------------------------------------" << std::endl;
   file << " If all tracks are contained & track cut passed: "                     << std::endl;
-  file << "---------------------------------------------------------------------" << std::endl;
+  file << "-----------------------------------------------------------------------------------" << std::endl;
 
   file << std::setw(20) << " Diff > 0.7 "   << "||";
   file << std::setw(15) << track_length_diff_cut_ccinc;
@@ -779,7 +820,7 @@ int MainTest(const char *config){
   file << std::setw(15) << chi2_cuts_ncinc;
   file << std::setw(15) << chi2_cuts_ccinc / static_cast<double>(chi2_cuts_ccinc+chi2_cuts_ncinc) << std::endl;
 
-  file << "=====================================================================" << std::endl;
+  file << "====================================================================================" << std::endl;
 
   std::cout << "-----------------------------------------------------------" << std::endl;
   time_t rawtime_end;

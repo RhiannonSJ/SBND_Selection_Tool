@@ -128,9 +128,19 @@ namespace selection{
       static TopologyMap GetNC1PiTopologyMap();
 
       /**
+       * @brief  Get NC 1Pi NPi0 topology map
+       */
+      static TopologyMap GetNC1PiNPi0TopologyMap();
+
+      /**
        * @brief  Get NC 2Pi topology map
        */
       static TopologyMap GetNC2PiTopologyMap();
+
+      /**
+       * @brief  Get NC NPi topology map
+       */
+      static TopologyMap GetNCNPiTopologyMap();
 
       /**
        * @brief  Get CC inclusive topology map
@@ -168,6 +178,11 @@ namespace selection{
       static TopologyMap GetCC1PiTopologyMap();
 
       /**
+       * @brief  Get CC 1Pi Npi0 topology map
+       */
+      static TopologyMap GetCC1PiNPi0TopologyMap();
+
+      /**
        * @brief  Get CC 2Pi topology map
        */
       static TopologyMap GetCC2PiTopologyMap();
@@ -183,10 +198,19 @@ namespace selection{
       static TopologyMap GetCCPi0PiCTopologyMap();
 
       /*
-       * @brief  Get the NuE topology map
+       * @brief  Get the NuE CC topology map
        */
-      static TopologyMap GetNuETopologyMap();
+      static TopologyMap GetNuECCTopologyMap();
 
+      /*
+       * @brief  Get the NuE NC topology map
+       */
+      static TopologyMap GetNuENCTopologyMap();
+
+      /*
+       * @brief  Get the corresponding other topology map w.r.t list passed
+       */
+      static TopologyMap GetOtherTopologyMap(const unsigned int e, const std::vector<TopologyMap> &maps);
 
       /** 
        * @brief Function to determine if the event has at least 1 reconstructed track

@@ -37,6 +37,7 @@ int MainTest(const char *config){
   std::string stats_location  = "";
   std::string plots_location  = "";
   unsigned int total_files = 0;
+  double totPOT = 0.;
   std::vector<double> minx_fid, miny_fid, minz_fid;
   std::vector<double> maxx_fid, maxy_fid, maxz_fid;
   std::vector<double> minx_av, miny_av, minz_av;
@@ -48,6 +49,7 @@ int MainTest(const char *config){
   p->getValue("StatFileLocation", stats_location); 
   p->getValue("PlotFileLocation", plots_location); 
   p->getValue("TotalFiles",       total_files);
+  p->getValue("TotalPOT",         totPOT);
   p->getValue("MinXFid",          minx_fid);
   p->getValue("MinYFid",          miny_fid);
   p->getValue("MinZFid",          minz_fid);
@@ -86,25 +88,30 @@ int MainTest(const char *config){
   TopologyMap cc0pi2p_map = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
   TopologyMap nc0pi_map   = GeneralAnalysisHelper::GetNC0PiTopologyMap();
   TopologyMap nc1pi_map   = GeneralAnalysisHelper::GetNC1PiTopologyMap();
-  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuETopologyMap();
+  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuECCTopologyMap();
 
   std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
 
   // COUNTERS
   unsigned int total_true_ccinc = 0;
   unsigned int total_true_ncinc = 0;
+  unsigned int total_true_nueinc = 0;
   
   unsigned int true_fid_true_ccinc = 0;
   unsigned int true_fid_true_ncinc = 0;
+  unsigned int true_fid_true_nueinc = 0;
   
   unsigned int reco_true_fid_true_ccinc = 0;
   unsigned int reco_true_fid_true_ncinc = 0;
+  unsigned int reco_true_fid_true_nueinc = 0;
   
   unsigned int reco_true_fid_max_1_escapes_true_ccinc = 0;
   unsigned int reco_true_fid_max_1_escapes_true_ncinc = 0;
+  unsigned int reco_true_fid_max_1_escapes_true_nueinc = 0;
  
   unsigned int reco_true_fid_max_1_escapes_min_1_track_true_ccinc = 0;
   unsigned int reco_true_fid_max_1_escapes_min_1_track_true_ncinc = 0;
+  unsigned int reco_true_fid_max_1_escapes_min_1_track_true_nueinc = 0;
 
   // HISTOGRAMS
   TH1D *h_longest_diff_mu = new TH1D("h_longest_diff_mu", "Percentage length difference between 2 longest tracks",40,0,1);
@@ -119,21 +126,21 @@ int MainTest(const char *config){
   TH1D *h_length_pr = new TH1D("h_length_pr", "Track length",40,0,500);
   TH1D *h_length_pi = new TH1D("h_length_pi", "Track length",40,0,500);
 
-  TH1D *h_chi2_pr_mu = new TH1D("h_chi2_pr_mu", "#Chi^{2}_{proton}",40,0,120);
-  TH1D *h_chi2_pr_pr = new TH1D("h_chi2_pr_pr", "#Chi^{2}_{proton}",40,0,120);
-  TH1D *h_chi2_pr_pi = new TH1D("h_chi2_pr_pi", "#Chi^{2}_{proton}",40,0,120);
+  TH1D *h_chi2_pr_mu = new TH1D("h_chi2_pr_mu", "#chi^{2}_{proton}",40,0,120);
+  TH1D *h_chi2_pr_pr = new TH1D("h_chi2_pr_pr", "#chi^{2}_{proton}",40,0,120);
+  TH1D *h_chi2_pr_pi = new TH1D("h_chi2_pr_pi", "#chi^{2}_{proton}",40,0,120);
 
-  TH1D *h_chi2_mu_mu = new TH1D("h_chi2_mu_mu", "#Chi^{2}_{muon}",40,0,70);
-  TH1D *h_chi2_mu_pr = new TH1D("h_chi2_mu_pr", "#Chi^{2}_{muon}",40,0,70);
-  TH1D *h_chi2_mu_pi = new TH1D("h_chi2_mu_pi", "#Chi^{2}_{muon}",40,0,70);
+  TH1D *h_chi2_mu_mu = new TH1D("h_chi2_mu_mu", "#chi^{2}_{muon}",40,0,70);
+  TH1D *h_chi2_mu_pr = new TH1D("h_chi2_mu_pr", "#chi^{2}_{muon}",40,0,70);
+  TH1D *h_chi2_mu_pi = new TH1D("h_chi2_mu_pi", "#chi^{2}_{muon}",40,0,70);
   
-  TH1D *h_chi2_ratio_mu = new TH1D("h_chi2_ratio_mu", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
-  TH1D *h_chi2_ratio_pr = new TH1D("h_chi2_ratio_pr", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
-  TH1D *h_chi2_ratio_pi = new TH1D("h_chi2_ratio_pi", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
+  TH1D *h_chi2_ratio_mu = new TH1D("h_chi2_ratio_mu", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.5);
+  TH1D *h_chi2_ratio_pr = new TH1D("h_chi2_ratio_pr", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.5);
+  TH1D *h_chi2_ratio_pi = new TH1D("h_chi2_ratio_pi", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.5);
 
-  TH2D *h_chi2_mu_chi2_pr_mu = new TH2D("h_chi2_mu_chi2_pr_mu", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
-  TH2D *h_chi2_mu_chi2_pr_pr = new TH2D("h_chi2_mu_chi2_pr_pr", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
-  TH2D *h_chi2_mu_chi2_pr_pi = new TH2D("h_chi2_mu_chi2_pr_pi", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
+  TH2D *h_chi2_mu_chi2_pr_mu = new TH2D("h_chi2_mu_chi2_pr_mu", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
+  TH2D *h_chi2_mu_chi2_pr_pr = new TH2D("h_chi2_mu_chi2_pr_pr", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
+  TH2D *h_chi2_mu_chi2_pr_pi = new TH2D("h_chi2_mu_chi2_pr_pi", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
 
   std::vector<TH1D*> h_muon   = {h_longest_diff_mu, h_longest_length_mu, h_length_mu, h_chi2_pr_mu, h_chi2_mu_mu, h_chi2_ratio_mu};
   std::vector<TH1D*> h_pion   = {h_longest_diff_pi, h_longest_length_pi, h_length_pi, h_chi2_pr_pi, h_chi2_mu_pi, h_chi2_ratio_pi};
@@ -173,6 +180,21 @@ int MainTest(const char *config){
               reco_true_fid_max_1_escapes_true_ncinc++;
               if(GeneralAnalysisHelper::MinOneRecoTrack(e)){
                 reco_true_fid_max_1_escapes_min_1_track_true_ncinc++;
+              }
+            }
+          }
+        }
+      }
+      else if(e.CheckMCTopology(nue_map)) {
+        total_true_nueinc++;
+        if(e.IsTrueFiducial()){
+          true_fid_true_nueinc++;
+          if(e.IsRecoFiducial()){
+            reco_true_fid_true_nueinc++;
+            if(GeneralAnalysisHelper::MaxOneLongEscapingTrack(e)){
+              reco_true_fid_max_1_escapes_true_nueinc++;
+              if(GeneralAnalysisHelper::MinOneRecoTrack(e)){
+                reco_true_fid_max_1_escapes_min_1_track_true_nueinc++;
               }
             }
           }
@@ -261,32 +283,34 @@ int MainTest(const char *config){
 
   // Write histograms
   // Set the style of the muon, pion and proton histograms
-  SetHistogramStyle(h_muon,   3001, 1, 905, 905, 2, 132, 1.2, 1.5, true);
-  SetHistogramStyle(h_pion,   3001, 1, 801, 801, 2, 132, 1.2, 1.5, true);
-  SetHistogramStyle(h_proton, 3001, 1, 867, 867, 2, 132, 1.2, 1.5, true);
+  SetHistogramStyle(h_muon,   3001, 1, 905, 905, 2, 132, 1, 1.2, true);
+  SetHistogramStyle(h_pion,   3001, 1, 801, 801, 2, 132, 1, 1.2, true);
+  SetHistogramStyle(h_proton, 3001, 1, 867, 867, 2, 132, 1, 1.2, true);
 
   // Test
   TCanvas *c = new TCanvas("c","",900,900);
-  c->SetTopMargin(0.0320233);
-  c->SetBottomMargin(0.0946143);
-  c->SetLeftMargin(0.113181);
-  c->SetRightMargin(0.0320233);
-
-  TLegend * l = new TLegend(0.355,0.681,0.977,0.929);
+  c->SetLeftMargin  (0.138796 );
+  c->SetRightMargin (0.0334448);
+  c->SetBottomMargin(0.132404 );
+  c->SetTopMargin   (0.0365854);
+  
+  TLegend * l = new TLegend(0.27,0.88,0.99,0.95);
+  l->SetNColumns(3);
   l->SetFillStyle(0);
   l->SetBorderSize(0);
+  l->SetTextSize(0.05);
   l->SetTextFont(132);
 
   // Longest diffs
-  l->AddEntry(h_longest_diff_mu,"Muons","f");
-  l->AddEntry(h_longest_diff_pi,"Pions","f");
-  l->AddEntry(h_longest_diff_pr,"Protons","f");
+  l->AddEntry(h_longest_diff_mu,"Longest: #mu","f");
+  l->AddEntry(h_longest_diff_pi,"Longest: #pi","f");
+  l->AddEntry(h_longest_diff_pr,"Longest: pr","f");
 
   double max_diff = 1.1 * std::max(h_longest_diff_mu->GetMaximum(), std::max(h_longest_diff_pi->GetMaximum(),h_longest_diff_pr->GetMaximum()));
   h_longest_diff_mu->GetYaxis()->SetRangeUser(0.,max_diff);
   h_longest_diff_mu->SetTitle("");
   h_longest_diff_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_longest_diff_mu->GetXaxis()->SetTitle("Fractional length difference between two longest tracks [cm]");
+  h_longest_diff_mu->GetXaxis()->SetTitle("#Delta L / L_{longest}, between two longest tracks");
   h_longest_diff_mu->Draw("hist");
   h_longest_diff_pi->Draw("hist same");
   h_longest_diff_pr->Draw("hist same");
@@ -294,6 +318,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"longest_length_differences.root").c_str());
   c->SaveAs((plots_location+"longest_length_differences.png").c_str());
+  c->SaveAs((plots_location+"longest_length_differences.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -314,6 +339,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"longest_lengths.root").c_str());
   c->SaveAs((plots_location+"longest_lengths.png").c_str());
+  c->SaveAs((plots_location+"longest_lengths.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -334,6 +360,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"track_lengths.root").c_str());
   c->SaveAs((plots_location+"track_lengths.png").c_str());
+  c->SaveAs((plots_location+"track_lengths.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -346,7 +373,7 @@ int MainTest(const char *config){
   h_chi2_mu_mu->GetYaxis()->SetRangeUser(0.,max_chi2_mu);
   h_chi2_mu_mu->SetTitle("");
   h_chi2_mu_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_mu_mu->GetXaxis()->SetTitle("#Chi^{2}_{#mu}");
+  h_chi2_mu_mu->GetXaxis()->SetTitle("#chi^{2}_{#mu}");
   h_chi2_mu_mu->Draw("hist");
   h_chi2_mu_pi->Draw("hist same");
   h_chi2_mu_pr->Draw("hist same");
@@ -354,6 +381,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"track_chi2_mus.root").c_str());
   c->SaveAs((plots_location+"track_chi2_mus.png").c_str());
+  c->SaveAs((plots_location+"track_chi2_mus.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -366,7 +394,7 @@ int MainTest(const char *config){
   h_chi2_pr_mu->GetYaxis()->SetRangeUser(0.,max_chi2_pr);
   h_chi2_pr_mu->SetTitle("");
   h_chi2_pr_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_pr_mu->GetXaxis()->SetTitle("#Chi^{2}_{proton}");
+  h_chi2_pr_mu->GetXaxis()->SetTitle("#chi^{2}_{proton}");
   h_chi2_pr_mu->Draw("hist");
   h_chi2_pr_pi->Draw("hist same");
   h_chi2_pr_pr->Draw("hist same");
@@ -374,6 +402,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"track_chi2_prs.root").c_str());
   c->SaveAs((plots_location+"track_chi2_prs.png").c_str());
+  c->SaveAs((plots_location+"track_chi2_prs.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -386,7 +415,7 @@ int MainTest(const char *config){
   h_chi2_ratio_mu->GetYaxis()->SetRangeUser(0.,max_chi2_ratio);
   h_chi2_ratio_mu->SetTitle("");
   h_chi2_ratio_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_ratio_mu->GetXaxis()->SetTitle("#Chi^{2}_{#mu} / #Chi^{2}_{proton}");
+  h_chi2_ratio_mu->GetXaxis()->SetTitle("#chi^{2}_{#mu} / #chi^{2}_{proton}");
   h_chi2_ratio_mu->Draw("hist");
   h_chi2_ratio_pi->Draw("hist same");
   h_chi2_ratio_pr->Draw("hist same");
@@ -394,47 +423,106 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"track_chi2_ratios.root").c_str());
   c->SaveAs((plots_location+"track_chi2_ratios.png").c_str());
+  c->SaveAs((plots_location+"track_chi2_ratios.pdf").c_str());
   l->Clear();
   c->Clear();
 
   // Write statistics
+  // POT scaling factor
+  double potScale = totPOT / static_cast<double>(pot);
+  std::cout << " Total POT: " << totPOT << ", constructed with: " << pot << " POT --> scale = " << potScale << std::endl;
+  
   // Files to hold particle statistics
   ofstream file;
   file.open(stats_location+"analysis_cuts.txt");
 
-  file << "=====================================================================" << std::endl;
+  file << "====================================================================================" << std::endl;
   file << " Total POT used to generate this sample: " << pot << std::endl;
   file << std::setw(20) << "Cut/True top."    << "||";
   file <<  std::setw(15) << " CC Inc. ";
   file << std::setw(15) << " NC Inc. ";
+  file << std::setw(15) << " Nue Inc. ";
   file << std::setw(15) << " CCInc. purity" << std::endl;
 
   file << std::setw(20) << " Total "          << "||";
-  file << std::setw(15) << total_true_ccinc;
-  file << std::setw(15) << total_true_ncinc;
-  file << std::setw(15) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc) << std::endl;
+  file << std::setw(15) << static_cast<int>(total_true_ccinc*potScale);
+  file << std::setw(15) << static_cast<int>(total_true_ncinc*potScale);
+  file << std::setw(15) << static_cast<int>(total_true_nueinc*potScale);
+  file << std::setw(15) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc+total_true_nueinc) << std::endl;
 
   file << std::setw(20) << " True fiducial "  << "||";
-  file << std::setw(15) << true_fid_true_ccinc;
-  file << std::setw(15) << true_fid_true_ncinc;
-  file << std::setw(15) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc) << std::endl; 
+  file << std::setw(15) << static_cast<int>(true_fid_true_ccinc*potScale);
+  file << std::setw(15) << static_cast<int>(true_fid_true_ncinc*potScale);
+  file << std::setw(15) << static_cast<int>(true_fid_true_nueinc*potScale);
+  file << std::setw(15) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc+true_fid_true_nueinc) << std::endl; 
 
   file << std::setw(20) << " Reco fiducial "  << "||";
-  file << std::setw(15) << reco_true_fid_true_ccinc;
-  file << std::setw(15) << reco_true_fid_true_ncinc;
-  file << std::setw(15) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc) << std::endl; 
+  file << std::setw(15) << static_cast<int>(reco_true_fid_true_ccinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_true_ncinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_true_nueinc*potScale);
+  file << std::setw(15) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc+reco_true_fid_true_nueinc) << std::endl; 
 
   file << std::setw(20) << " Max. 1 escapes " << "||";
-  file << std::setw(15) << reco_true_fid_max_1_escapes_true_ccinc;
-  file << std::setw(15) << reco_true_fid_max_1_escapes_true_ncinc;
-  file << std::setw(15) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc) << std::endl; 
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_true_ccinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_true_ncinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_true_nueinc*potScale);
+  file << std::setw(15) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc+reco_true_fid_max_1_escapes_true_nueinc) << std::endl; 
 
   file << std::setw(20) << " Min. 1 track " << "||";
-  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc;
-  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ncinc;
-  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc) << std::endl; 
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ncinc*potScale);
+  file << std::setw(15) << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_nueinc*potScale);
+  file << std::setw(15) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc+reco_true_fid_max_1_escapes_min_1_track_true_nueinc) << std::endl; 
 
-  file << "=====================================================================" << std::endl;
+  file << "====================================================================================" << std::endl;
+
+  ofstream fileTeX;
+  fileTeX.open(stats_location+"analysis_cuts.tex");
+  // TeX file header
+  fileTeX << "\\begin{table}[h!] " << std::endl;
+  fileTeX << "  \\small " << std::endl;
+  fileTeX << "  \\centering " << std::endl;
+  fileTeX << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+  fileTeX << "  \\begin{tabular}{ m{3cm} * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+  fileTeX << "    \\hline" << endl;
+  fileTeX << "    True topology~$\\rightarrow$ & \\multirow{2}{*}{CC~Inclusive} & \\multirow{2}{*}{NC~Inclusive} & \\multirow{2}{*}{\\nue} & \\multirow{2}{*}{CC~Purity} \\\\" << std::endl; 
+  fileTeX << "    $\\downarrow$~Cut applied & & & \\\\" << std::endl;
+  fileTeX << "    \\hline" << endl;
+
+  fileTeX << "    Total & ";
+  fileTeX << "    \\num{ " << static_cast<int>(total_true_ccinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(total_true_ncinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(total_true_nueinc*potScale) << "} & ";
+  fileTeX << std::setprecision(4) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc+total_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
+
+  fileTeX << "    True fiducial & "; 
+  fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_ccinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_ncinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_nueinc*potScale) << "} & ";
+  fileTeX << std::setprecision(4) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc+true_fid_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
+
+  fileTeX << "    Reco fiducial & "; 
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_ccinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_ncinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_nueinc*potScale) << "} & ";
+  fileTeX << std::setprecision(4) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc+reco_true_fid_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
+
+  fileTeX << "    Max. 1 escapes & "; 
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_ccinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_ncinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_nueinc*potScale) << "} & ";
+  fileTeX << std::setprecision(4) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc+reco_true_fid_max_1_escapes_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
+
+  fileTeX << "    Min. 1 track & "; 
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ncinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_nueinc*potScale) << "} & ";
+  fileTeX << std::setprecision(4) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc+reco_true_fid_max_1_escapes_min_1_track_true_nueinc)*100 << "~\\% \\\\" << std::endl; 
+  fileTeX << "    \\hline" << endl;
+
+  // Tex file end
+  fileTeX << "  \\end{tabular}"<< endl;
+  fileTeX << "\\end{table}" << std::endl;
 
   std::cout << "-----------------------------------------------------------" << std::endl;
   time_t rawtime_end;

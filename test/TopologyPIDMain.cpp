@@ -93,17 +93,6 @@ int MainTest(const char *config){
   std::vector<int> exceptions;
   FillExceptions(exceptions_file.c_str(),exceptions);
 
-  TopologyMap nc_map      = GeneralAnalysisHelper::GetNCTopologyMap();
-  TopologyMap cc_map      = GeneralAnalysisHelper::GetCCIncTopologyMap();
-  TopologyMap cc0pi_map   = GeneralAnalysisHelper::GetCC0PiTopologyMap();
-  TopologyMap cc1pi_map   = GeneralAnalysisHelper::GetCC1PiTopologyMap();
-  TopologyMap cc0pi2p_map = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
-  TopologyMap nc0pi_map   = GeneralAnalysisHelper::GetNC0PiTopologyMap();
-  TopologyMap nc1pi_map   = GeneralAnalysisHelper::GetNC1PiTopologyMap();
-  TopologyMap nue_map     = GeneralAnalysisHelper::GetNuETopologyMap();
-
-  std::vector< TopologyMap > maps({cc_map, cc0pi_map, cc1pi_map, cc0pi2p_map, nc_map, nc0pi_map, nc1pi_map, nue_map});  
-
   // HISTOGRAMS
   TH1D *h_longest_diff_mu = new TH1D("h_longest_diff_mu", "Percentage length difference between 2 longest tracks",40,0,1);
   TH1D *h_longest_diff_pr = new TH1D("h_longest_diff_pr", "Percentage length difference between 2 longest tracks",40,0,1);
@@ -117,25 +106,33 @@ int MainTest(const char *config){
   TH1D *h_length_pr = new TH1D("h_length_pr", "Track length",40,0,500);
   TH1D *h_length_pi = new TH1D("h_length_pi", "Track length",40,0,500);
 
-  TH1D *h_chi2_pr_mu = new TH1D("h_chi2_pr_mu", "#Chi^{2}_{proton}",40,0,120);
-  TH1D *h_chi2_pr_pr = new TH1D("h_chi2_pr_pr", "#Chi^{2}_{proton}",40,0,120);
-  TH1D *h_chi2_pr_pi = new TH1D("h_chi2_pr_pi", "#Chi^{2}_{proton}",40,0,120);
+  TH1D *h_chi2_pr_mu = new TH1D("h_chi2_pr_mu", "#chi^{2}_{proton}",40,0,200);
+  TH1D *h_chi2_pr_pr = new TH1D("h_chi2_pr_pr", "#chi^{2}_{proton}",40,0,200);
+  TH1D *h_chi2_pr_pi = new TH1D("h_chi2_pr_pi", "#chi^{2}_{proton}",40,0,200);
 
-  TH1D *h_chi2_mu_mu = new TH1D("h_chi2_mu_mu", "#Chi^{2}_{muon}",40,0,70);
-  TH1D *h_chi2_mu_pr = new TH1D("h_chi2_mu_pr", "#Chi^{2}_{muon}",40,0,70);
-  TH1D *h_chi2_mu_pi = new TH1D("h_chi2_mu_pi", "#Chi^{2}_{muon}",40,0,70);
+  TH1D *h_chi2_mu_mu = new TH1D("h_chi2_mu_mu", "#chi^{2}_{#mu}",40,0,70);
+  TH1D *h_chi2_mu_pr = new TH1D("h_chi2_mu_pr", "#chi^{2}_{#mu}",40,0,70);
+  TH1D *h_chi2_mu_pi = new TH1D("h_chi2_mu_pi", "#chi^{2}_{#mu}",40,0,70);
   
-  TH1D *h_chi2_ratio_mu = new TH1D("h_chi2_ratio_mu", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
-  TH1D *h_chi2_ratio_pr = new TH1D("h_chi2_ratio_pr", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
-  TH1D *h_chi2_ratio_pi = new TH1D("h_chi2_ratio_pi", "#Chi^{2}_{muon}/#Chi^{2}_{proton}",40,0,0.5);
+  TH1D *h_chi2_pi_mu = new TH1D("h_chi2_pi_mu", "#chi^{2}_{#pi}",40,0,70);
+  TH1D *h_chi2_pi_pr = new TH1D("h_chi2_pi_pr", "#chi^{2}_{#pi}",40,0,70);
+  TH1D *h_chi2_pi_pi = new TH1D("h_chi2_pi_pi", "#chi^{2}_{#pi}",40,0,70);
+  
+  TH1D *h_chi2_ratio_mu = new TH1D("h_chi2_ratio_mu", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.6);
+  TH1D *h_chi2_ratio_pr = new TH1D("h_chi2_ratio_pr", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.6);
+  TH1D *h_chi2_ratio_pi = new TH1D("h_chi2_ratio_pi", "#chi^{2}_{muon}/#chi^{2}_{proton}",40,0,0.6);
 
-  TH2D *h_chi2_mu_chi2_pr_mu = new TH2D("h_chi2_mu_chi2_pr_mu", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
-  TH2D *h_chi2_mu_chi2_pr_pr = new TH2D("h_chi2_mu_chi2_pr_pr", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
-  TH2D *h_chi2_mu_chi2_pr_pi = new TH2D("h_chi2_mu_chi2_pr_pi", "#Chi^{2}_{muon} vs #Chi^{2}_{proton}",40,0,100,40,0,100);
+  TH1D *h_chi2_pi_ratio_mu = new TH1D("h_chi2_pi_ratio_mu", "#chi^{2}_{pion}/#chi^{2}_{proton}",40,0,0.6);
+  TH1D *h_chi2_pi_ratio_pr = new TH1D("h_chi2_pi_ratio_pr", "#chi^{2}_{pion}/#chi^{2}_{proton}",40,0,0.6);
+  TH1D *h_chi2_pi_ratio_pi = new TH1D("h_chi2_pi_ratio_pi", "#chi^{2}_{pion}/#chi^{2}_{proton}",40,0,0.6);
 
-  std::vector<TH1D*> h_muon   = {h_longest_diff_mu, h_longest_length_mu, h_length_mu, h_chi2_pr_mu, h_chi2_mu_mu, h_chi2_ratio_mu};
-  std::vector<TH1D*> h_pion   = {h_longest_diff_pi, h_longest_length_pi, h_length_pi, h_chi2_pr_pi, h_chi2_mu_pi, h_chi2_ratio_pi};
-  std::vector<TH1D*> h_proton = {h_longest_diff_pr, h_longest_length_pr, h_length_pr, h_chi2_pr_pr, h_chi2_mu_pr, h_chi2_ratio_pr};
+  TH2D *h_chi2_mu_chi2_pr_mu = new TH2D("h_chi2_mu_chi2_pr_mu", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
+  TH2D *h_chi2_mu_chi2_pr_pr = new TH2D("h_chi2_mu_chi2_pr_pr", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
+  TH2D *h_chi2_mu_chi2_pr_pi = new TH2D("h_chi2_mu_chi2_pr_pi", "#chi^{2}_{muon} vs #chi^{2}_{proton}",40,0,100,40,0,100);
+
+  std::vector<TH1D*> h_muon   = {h_longest_diff_mu, h_longest_length_mu, h_length_mu, h_chi2_pr_mu, h_chi2_mu_mu, h_chi2_pi_mu, h_chi2_ratio_mu, h_chi2_pi_ratio_mu};
+  std::vector<TH1D*> h_pion   = {h_longest_diff_pi, h_longest_length_pi, h_length_pi, h_chi2_pr_pi, h_chi2_mu_pi, h_chi2_pi_pi, h_chi2_ratio_pi, h_chi2_pi_ratio_pi};
+  std::vector<TH1D*> h_proton = {h_longest_diff_pr, h_longest_length_pr, h_length_pr, h_chi2_pr_pr, h_chi2_mu_pr, h_chi2_pi_pr, h_chi2_ratio_pr, h_chi2_pi_ratio_pr};
   std::vector<TH2D*> h_2d     = {h_chi2_mu_chi2_pr_mu, h_chi2_mu_chi2_pr_pr, h_chi2_mu_chi2_pr_pi};
  
   // COUNTERS
@@ -160,7 +157,7 @@ int MainTest(const char *config){
   unsigned int chi2pr_mu = 0;
   unsigned int chi2pr_pi = 0;
   unsigned int chi2pr_pr = 0;
-
+  
   unsigned int chi2ratio_mu = 0;
   unsigned int chi2ratio_pi = 0;
   unsigned int chi2ratio_pr = 0;
@@ -269,12 +266,19 @@ int MainTest(const char *config){
         if(GeneralAnalysisHelper::ParticleHasAMatch(e,p) == -1) continue;
         Particle mcp = GeneralAnalysisHelper::GetBestMCParticle(e,p);
         double chi2_ratio = p.GetChi2Mu()/p.GetChi2P();
+        double chi2_pi_ratio = p.GetChi2Pi()/p.GetChi2P();
         // Muon
         if(abs(mcp.GetPdgCode()) == 13){
           h_chi2_pr_mu->Fill(p.GetChi2P());
           h_chi2_mu_mu->Fill(p.GetChi2Mu());
           h_chi2_ratio_mu->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_mu->Fill(p.GetChi2Mu(),p.GetChi2P());
+
+          // Now check chi2proton in order to fill chi2 pion
+          if(p.GetChi2P() > 65){
+            h_chi2_pi_ratio_mu->Fill(chi2_pi_ratio);
+            h_chi2_pi_mu->Fill(p.GetChi2Pi());
+          }
           if(p.GetChi2P() > chi2p_cut){
             chi2pr_mu++;
             if(p.GetChi2Mu() < chi2mu_cut){
@@ -297,6 +301,11 @@ int MainTest(const char *config){
           h_chi2_mu_pi->Fill(p.GetChi2Mu());
           h_chi2_ratio_pi->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_pi->Fill(p.GetChi2Mu(),p.GetChi2P());
+          
+          if(p.GetChi2P() > 65){
+            h_chi2_pi_ratio_pi->Fill(chi2_pi_ratio);
+            h_chi2_pi_pi->Fill(p.GetChi2Pi());
+          }
           if(p.GetChi2P() > chi2p_cut){
             chi2pr_pi++;
             if(p.GetChi2Mu() < chi2mu_cut){
@@ -319,6 +328,11 @@ int MainTest(const char *config){
           h_chi2_mu_pr->Fill(p.GetChi2Mu());
           h_chi2_ratio_pr->Fill(chi2_ratio);
           h_chi2_mu_chi2_pr_pr->Fill(p.GetChi2Mu(),p.GetChi2P());
+          
+          if(p.GetChi2P() > 65){
+            h_chi2_pi_pr->Fill(p.GetChi2Pi());
+            h_chi2_pi_ratio_pr->Fill(chi2_pi_ratio);
+          }
           if(p.GetChi2P() > chi2p_cut){
             chi2pr_pr++;
             if(p.GetChi2Mu() < chi2mu_cut){
@@ -341,32 +355,34 @@ int MainTest(const char *config){
 
   // Write histograms
   // Set the style of the muon, pion and proton histograms
-  SetHistogramStyle(h_muon,   3001, 1, 905, 905, 2, 132, 1.2, 1.5, true);
-  SetHistogramStyle(h_pion,   3001, 1, 801, 801, 2, 132, 1.2, 1.5, true);
-  SetHistogramStyle(h_proton, 3001, 1, 867, 867, 2, 132, 1.2, 1.5, true);
+  SetHistogramStyle(h_muon,   3001, 1, 905, 905, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_pion,   3001, 1, 801, 801, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_proton, 3001, 1, 867, 867, 2, 132, 1, 1.2, false);
 
   // Test
   TCanvas *c = new TCanvas("c","",900,900);
-  c->SetTopMargin(0.0320233);
-  c->SetBottomMargin(0.0946143);
-  c->SetLeftMargin(0.113181);
-  c->SetRightMargin(0.0320233);
-
-  TLegend * l = new TLegend(0.355,0.681,0.977,0.929);
+  c->SetLeftMargin  (0.138796 );
+  c->SetRightMargin (0.0334448);
+  c->SetBottomMargin(0.132404 );
+  c->SetTopMargin   (0.0365854);
+  
+  TLegend * l = new TLegend(0.27,0.88,0.99,0.95);
+  l->SetNColumns(3);
   l->SetFillStyle(0);
   l->SetBorderSize(0);
+  l->SetTextSize(0.05);
   l->SetTextFont(132);
 
   // Longest diffs
-  l->AddEntry(h_longest_diff_mu,"Muons","f");
-  l->AddEntry(h_longest_diff_pi,"Pions","f");
-  l->AddEntry(h_longest_diff_pr,"Protons","f");
+  l->AddEntry(h_longest_diff_mu,"Longest: #mu","f");
+  l->AddEntry(h_longest_diff_pi,"Longest: #pi","f");
+  l->AddEntry(h_longest_diff_pr,"Longest: pr","f");
 
   double max_diff = 1.1 * std::max(h_longest_diff_mu->GetMaximum(), std::max(h_longest_diff_pi->GetMaximum(),h_longest_diff_pr->GetMaximum()));
   h_longest_diff_mu->GetYaxis()->SetRangeUser(0.,max_diff);
   h_longest_diff_mu->SetTitle("");
   h_longest_diff_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_longest_diff_mu->GetXaxis()->SetTitle("Fractional length difference between two longest tracks [cm]");
+  h_longest_diff_mu->GetXaxis()->SetTitle("#Delta L / L_{longest}, between two longest tracks");
   h_longest_diff_mu->Draw("hist");
   h_longest_diff_pi->Draw("hist same");
   h_longest_diff_pr->Draw("hist same");
@@ -374,6 +390,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/longest_length_differences.root").c_str());
   c->SaveAs((plots_location+"ccpassed/longest_length_differences.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/longest_length_differences.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -394,6 +411,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/longest_lengths.root").c_str());
   c->SaveAs((plots_location+"ccpassed/longest_lengths.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/longest_lengths.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -414,6 +432,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/track_lengths.root").c_str());
   c->SaveAs((plots_location+"ccpassed/track_lengths.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_lengths.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -426,7 +445,7 @@ int MainTest(const char *config){
   h_chi2_mu_mu->GetYaxis()->SetRangeUser(0.,max_chi2_mu);
   h_chi2_mu_mu->SetTitle("");
   h_chi2_mu_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_mu_mu->GetXaxis()->SetTitle("#Chi^{2}_{#mu}");
+  h_chi2_mu_mu->GetXaxis()->SetTitle("#chi^{2}_{#mu}");
   h_chi2_mu_mu->Draw("hist");
   h_chi2_mu_pi->Draw("hist same");
   h_chi2_mu_pr->Draw("hist same");
@@ -434,6 +453,7 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/track_chi2_mus.root").c_str());
   c->SaveAs((plots_location+"ccpassed/track_chi2_mus.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_mus.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -446,7 +466,7 @@ int MainTest(const char *config){
   h_chi2_pr_mu->GetYaxis()->SetRangeUser(0.,max_chi2_pr);
   h_chi2_pr_mu->SetTitle("");
   h_chi2_pr_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_pr_mu->GetXaxis()->SetTitle("#Chi^{2}_{proton}");
+  h_chi2_pr_mu->GetXaxis()->SetTitle("#chi^{2}_{proton}");
   h_chi2_pr_mu->Draw("hist");
   h_chi2_pr_pi->Draw("hist same");
   h_chi2_pr_pr->Draw("hist same");
@@ -454,6 +474,28 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/track_chi2_prs.root").c_str());
   c->SaveAs((plots_location+"ccpassed/track_chi2_prs.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_prs.pdf").c_str());
+  l->Clear();
+  c->Clear();
+
+  // Chi2 pion
+  l->AddEntry(h_chi2_pi_mu,"Muons","f");
+  l->AddEntry(h_chi2_pi_pi,"Pions","f");
+  l->AddEntry(h_chi2_pi_pr,"Protons","f");
+
+  double max_chi2_pi = 1.1 * std::max(h_chi2_pi_mu->GetMaximum(), std::max(h_chi2_pi_pi->GetMaximum(),h_chi2_pi_pr->GetMaximum()));
+  h_chi2_pi_mu->GetYaxis()->SetRangeUser(0.,max_chi2_pi);
+  h_chi2_pi_mu->SetTitle("");
+  h_chi2_pi_mu->GetYaxis()->SetTitle("Normalised event rate");
+  h_chi2_pi_mu->GetXaxis()->SetTitle("#chi^{2}_{#pi}");
+  h_chi2_pi_mu->Draw("hist");
+  h_chi2_pi_pi->Draw("hist same");
+  h_chi2_pi_pr->Draw("hist same");
+  l->Draw();
+
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pis.root").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pis.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pis.pdf").c_str());
   l->Clear();
   c->Clear();
 
@@ -466,7 +508,7 @@ int MainTest(const char *config){
   h_chi2_ratio_mu->GetYaxis()->SetRangeUser(0.,max_chi2_ratio);
   h_chi2_ratio_mu->SetTitle("");
   h_chi2_ratio_mu->GetYaxis()->SetTitle("Normalised event rate");
-  h_chi2_ratio_mu->GetXaxis()->SetTitle("#Chi^{2}_{#mu} / #Chi^{2}_{proton}");
+  h_chi2_ratio_mu->GetXaxis()->SetTitle("#chi^{2}_{#mu} / #chi^{2}_{proton}");
   h_chi2_ratio_mu->Draw("hist");
   h_chi2_ratio_pi->Draw("hist same");
   h_chi2_ratio_pr->Draw("hist same");
@@ -474,6 +516,28 @@ int MainTest(const char *config){
 
   c->SaveAs((plots_location+"ccpassed/track_chi2_ratios.root").c_str());
   c->SaveAs((plots_location+"ccpassed/track_chi2_ratios.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_ratios.pdf").c_str());
+  l->Clear();
+  c->Clear();
+
+  // Chi2 muon/proton
+  l->AddEntry(h_chi2_pi_ratio_mu,"Muons","f");
+  l->AddEntry(h_chi2_pi_ratio_pi,"Pions","f");
+  l->AddEntry(h_chi2_pi_ratio_pr,"Protons","f");
+
+  double max_chi2_pi_ratio = 1.1 * std::max(h_chi2_pi_ratio_mu->GetMaximum(), std::max(h_chi2_pi_ratio_pi->GetMaximum(),h_chi2_pi_ratio_pr->GetMaximum()));
+  h_chi2_pi_ratio_mu->GetYaxis()->SetRangeUser(0.,max_chi2_pi_ratio);
+  h_chi2_pi_ratio_mu->SetTitle("");
+  h_chi2_pi_ratio_mu->GetYaxis()->SetTitle("Normalised event rate");
+  h_chi2_pi_ratio_mu->GetXaxis()->SetTitle("#chi^{2}_{#pi} / #chi^{2}_{proton}");
+  h_chi2_pi_ratio_mu->Draw("hist");
+  h_chi2_pi_ratio_pi->Draw("hist same");
+  h_chi2_pi_ratio_pr->Draw("hist same");
+  l->Draw();
+
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pi_ratios.root").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pi_ratios.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/track_chi2_pi_ratios.pdf").c_str());
   l->Clear();
   c->Clear();
 

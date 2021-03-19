@@ -5,17 +5,19 @@
 # June 2020
 #
 
-InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/uboone_selection_doms_files_190620/selection/
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/uboone_selection_doms_files_260121/selection/
 InputFileName     = selection_tree.root
 
-StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/uboone/pid/
-PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/uboone/pid/
-TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/uboone/pid/
-TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/uboone/
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/Jan2021/uboone/pid/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/Jan2021/uboone/pid/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/Jan2021/uboone/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/Jan2021/uboone/
 
 Detector = 1
 
 TotalFiles = 124
+
+TotalPOT = 13.2e20
 
 MinXAV  = -1.55
 MinYAV  = -115.53

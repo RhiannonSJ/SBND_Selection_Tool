@@ -53,8 +53,16 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
 
+  bool Event::CheckMCNeutrino(const int &pdg) const{
+    if(this->GetNeutrinoPdgCode() == pdg)
+      return true;
+    else 
+      return false;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
   bool Event::CheckMCTopology(const TopologyMap &topology) const{
-  
     return this->CheckTopology(topology, m_mc_particles);
   }
 
@@ -325,8 +333,11 @@ namespace selection{
     // Loop over the map
     for( TopologyMap::const_iterator it = topology.begin(); it != topology.end(); ++it ){
       // Define temporary variables for the current map element
-      std::vector< int > pdg_codes = it->first; 
+      std::vector< int > pdg_codes = it->first;
+      // If n_total < 0 it means we want events which don't have abs(n_total) of that particle type
+      // If n_total = -999 it means we do not want events with 0 of that particle type
       int n_total                  = it->second;
+
       // Count the number of particles in the current event with the same PDG codes 
       // as given by the chosen topology
       int counter = 0;
@@ -334,7 +345,10 @@ namespace selection{
       for(unsigned int i = 0; i < pdg_codes.size(); ++i){
         counter += this->CountParticlesWithPdg(pdg_codes[i], particle_list);
       }
-      if(counter != n_total) return false;
+
+      if(n_total >= 0 && counter != n_total) return false;
+      else if(n_total < 0 && n_total > -999 && counter == abs(n_total)) return false;
+      else if(n_total == -999 && counter == 0) return false;
     }
     return true;
   }

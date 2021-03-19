@@ -5,125 +5,185 @@ namespace selection{
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNuMuTopologyMap() {
     TopologyMap signal_map_numu;
-    signal_map_numu.insert(TopologyMap::value_type({14},1));
+    signal_map_numu.insert(TopologyMap::value_type({14},0));
     return signal_map_numu;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNCTopologyMap() {
-    TopologyMap signal_map_nc;
-    signal_map_nc.insert(TopologyMap::value_type({13},0));
-    return signal_map_nc;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC0PiTopologyMap() {
-    TopologyMap signal_map_nc0pi;
-    signal_map_nc0pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc0pi.insert(TopologyMap::value_type({211, -211, 111},0));
-    return signal_map_nc0pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC1PiTopologyMap() {
-    TopologyMap signal_map_nc1pi;
-    signal_map_nc1pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc1pi.insert(TopologyMap::value_type({211, -211},1));
-    signal_map_nc1pi.insert(TopologyMap::value_type({111},0));
-    return signal_map_nc1pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNC1PiNPi0TopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC2PiTopologyMap() {
-    TopologyMap signal_map_nc2pi;
-    signal_map_nc2pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc2pi.insert(TopologyMap::value_type({211, -211},2));
-    signal_map_nc2pi.insert(TopologyMap::value_type({111},0));
-    return signal_map_nc2pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},2));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNCNPiTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},-999));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCIncTopologyMap() {
-    TopologyMap signal_map_cc_inc;
-    signal_map_cc_inc.insert(TopologyMap::value_type({13},1));
-    return signal_map_cc_inc;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0PiTopologyMap() {
-    TopologyMap signal_map_cc_0pi;
-    signal_map_cc_0pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi.insert(TopologyMap::value_type({211, -211, 111},0));
-    return signal_map_cc_0pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi1PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_1p;
-    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_1p.insert(TopologyMap::value_type({2212},1));
-    return signal_map_cc_0pi_1p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi2PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_2p;
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({2212},2));
-    return signal_map_cc_0pi_2p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},2));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi3PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_3p;
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({2212},3));
-    return signal_map_cc_0pi_3p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},3));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi5PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_5p;
-    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_5p.insert(TopologyMap::value_type({2212},5));
-    return signal_map_cc_0pi_5p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},5));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC1PiTopologyMap() { 
-    TopologyMap signal_map_cc_1pi;
-    signal_map_cc_1pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_1pi.insert(TopologyMap::value_type({211, -211},1));
-    signal_map_cc_1pi.insert(TopologyMap::value_type({111},0));
-    return signal_map_cc_1pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  }
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC1PiNPi0TopologyMap() { 
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
   }
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC2PiTopologyMap() { 
-    TopologyMap signal_map_cc_2pi;
-    signal_map_cc_2pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_2pi.insert(TopologyMap::value_type({211, -211},2));
-    signal_map_cc_2pi.insert(TopologyMap::value_type({111},0));
-    return signal_map_cc_2pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},2));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
   }
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCPi0TopologyMap() {
-    TopologyMap signal_map_cc_pi0;
-    signal_map_cc_pi0.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_pi0.insert(TopologyMap::value_type({111},1));
-    signal_map_cc_pi0.insert(TopologyMap::value_type({211, -211},0));
-    return signal_map_cc_pi0;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({111},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCPi0PiCTopologyMap() {
-    TopologyMap signal_map_cc_pi0_pic;
-    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({111},1));
-    signal_map_cc_pi0_pic.insert(TopologyMap::value_type({211, -211},1));
-    return signal_map_cc_pi0_pic;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({111},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
+  } 
+  TopologyMap GeneralAnalysisHelper::GetOtherTopologyMap(const unsigned int e, const std::vector<TopologyMap> &maps) {
+    // Enum for the sample to get other from
+    //  e = 0 : All events
+    //    = 1 : CC events
+    //    = 2 : NC events
+    TopologyMap signal_map;
+    if(e == 1)
+      signal_map.insert(TopologyMap::value_type({13},1));
+    else if(e == 2){
+      signal_map.insert(TopologyMap::value_type({13},0));
+      signal_map.insert(TopologyMap::value_type({11},0));
+    }
+
+    for(const TopologyMap &m : maps){
+      // If we DON'T want 0 of a particle, pass -999 for the topology checker to read
+      TopologyMap::const_iterator it;
+      for(it = m.begin(); it != m.end(); ++it){
+        if(it->second == 0) 
+          signal_map.insert(TopologyMap::value_type(it->first,-999));
+
+        // Pass the negative value of any types which we want n > 0 of
+        signal_map.insert(TopologyMap::value_type(it->first,-it->second));
+      }
+    }
+    return signal_map;
   } 
 
 
   //----------------------------------------------------------------------------------------
   //      DO NOT USE ON RECO 
   //----------------------------------------------------------------------------------------
-  TopologyMap GeneralAnalysisHelper::GetNuETopologyMap() {
-    TopologyMap signal_map_nue;
-    signal_map_nue.insert(TopologyMap::value_type({12},1));
-    return signal_map_nue;
+  TopologyMap GeneralAnalysisHelper::GetNuECCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},1));
+    return signal_map;
   } 
+  
+  TopologyMap GeneralAnalysisHelper::GetNuENCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({12},1));
+    return signal_map;
+  } 
+
 
   //----------------------------------------------------------------------------------------
 
@@ -149,7 +209,7 @@ namespace selection{
     if(det == 0){
       chi2p_cut     = 65.;
       chi2mu_cut    = 19.;
-      chi2ratio_cut = 0.08;
+      chi2ratio_cut = 0.075;
     }
     if(det == 1){
       chi2p_cut     = 65.;
@@ -211,6 +271,7 @@ namespace selection{
           // Now consider chi2 variables
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
+
             //Check for clear protons
             if(det != 2){
               if((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)

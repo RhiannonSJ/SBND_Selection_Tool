@@ -196,7 +196,7 @@ int MainTest(const char *config){
 
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
-    LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
+    selection::LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
     EventSelectionTool::GetTimeLeft(start,total_files,i);
 
     for(const Event &e : events){

@@ -184,6 +184,16 @@ namespace selection{
       float GetLength() const;
 
       /**
+       * @brief  Get the vector of dE/dx values for the particle, only if it has calorimetry
+       */
+      std::vector<float> GetdEdx() const;
+
+      /**
+       * @brief  Get the vector of residual range values for the particle, only if it has calorimetry
+       */
+      std::vector<float> GetResidualRange() const;
+
+      /**
        * @brief  Get the vertex
        */
       TVector3 GetVertex() const;

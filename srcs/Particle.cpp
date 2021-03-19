@@ -209,6 +209,26 @@ namespace selection{
   float Particle::GetLength() const{return m_length;}
 
   //------------------------------------------------------------------------------------------ 
+ 
+  std::vector<float> Particle::GetdEdx() const{
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
+    return m_dedx;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  std::vector<float> Particle::GetResidualRange() const{
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
+    return m_residual_range;
+  }
+
+  //------------------------------------------------------------------------------------------ 
   
   TVector3 Particle::GetVertex() const{return m_vertex;}
 

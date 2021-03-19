@@ -38,16 +38,40 @@ namespace selection{
    * @param  exceptions list of files to skip (if they are empty or broken)
    * @param  fid fiducial volume geometry object
    * @param  av active volume geometry object
+   * @param  runEverything whether to load all branches
    *
    */
   void LoadAllEventsInFile(const std::string &input_loc, 
-                           const std::string &input_name, 
-                           EventSelectionTool::EventList &events, 
-                           const unsigned int &file_index, 
-                           double &pot, 
-                           std::vector<int> &exceptions,
-                           const Geometry &fid,
-                           const Geometry &av);
+      const std::string &input_name, 
+      EventSelectionTool::EventList &events, 
+      const unsigned int &file_index, 
+      double &pot, 
+      std::vector<int> &exceptions,
+      const Geometry &fid,
+      const Geometry &av,
+      const bool &runEverything);
+
+  /**
+   * @brief  Load a single file and fill the event list 
+   *
+   * @param  input_loc location of the input file subdirectories
+   * @param  input_name name of the root file to open
+   * @param  events empty event list to fill
+   * @param  file_index index of the current file
+   * @param  pot empty pot object to add to
+   * @param  exceptions list of files to skip (if they are empty or broken)
+   * @param  fid fiducial volume geometry object
+   * @param  av active volume geometry object
+   *
+   */
+  void LoadAllEventsInFile(const std::string &input_loc, 
+      const std::string &input_name, 
+      EventSelectionTool::EventList &events, 
+      const unsigned int &file_index, 
+      double &pot, 
+      std::vector<int> &exceptions,
+      const Geometry &fid,
+      const Geometry &av);
 
   /**
    * @brief  Fill the list of files to skip

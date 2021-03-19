@@ -1,7 +1,12 @@
 #include "../include/CC0piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
+#include "../include/Geometry.h"
+#include "../include/Plane.h"
 #include "../include/Event.h"
+#include "../include/Particle.h"
+#include "../include/Setup.h"
+#include "../include/ConfigReader.h"
 #include <iostream>
 #include <sstream>
 #include <numeric>
@@ -16,58 +21,76 @@
 #include "TColor.h"
 #include "TObjArray.h"
 
+using namespace cppsecrets;
 using namespace selection;
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions);
+int MainTest(const char *config){
 
-int MainTest(){
-  
   time_t rawtime;
-  struct tm * timeinfo;
-  time (&rawtime);
-  timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
+  GetTime(rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << endl;
- 
-  // Output file location
-  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/";
 
   //------------------------------------------------------------------------------------------
-  //                                       Load events
+  //                                    Configure
   //------------------------------------------------------------------------------------------
-  
+  // Create object of the class ConfigReader
+  // Parse the configuration file
+  // Dump map on the console after parsing it
+  ConfigReader* p = ConfigReader::getInstance();
+  p->parseFile(config);
+  std::cout << " Variables from configuration file: " << std::endl;
+  p->dumpFileValues();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
+  // Get variables from config
+  std::string input_location  = "";
+  std::string input_filename  = "";
+  std::string exceptions_file = "";
+  std::string stats_location  = "";
+  unsigned int total_files = 0;
+  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
+  std::vector<double> minx_fid, miny_fid, minz_fid;
+  std::vector<double> maxx_fid, maxy_fid, maxz_fid;
+  std::vector<double> minx_av, miny_av, minz_av;
+  std::vector<double> maxx_av, maxy_av, maxz_av;
+
+  p->getValue("InputFileLocation",input_location);
+  p->getValue("InputFileName",    input_filename);
+  p->getValue("ExceptionsFile",   exceptions_file);
+  p->getValue("StatFileLocation", stats_location); 
+  p->getValue("Detector",         detector);
+  p->getValue("TotalFiles",       total_files);
+  p->getValue("MinXFid",          minx_fid);
+  p->getValue("MinYFid",          miny_fid);
+  p->getValue("MinZFid",          minz_fid);
+  p->getValue("MaxXFid",          maxx_fid);
+  p->getValue("MaxYFid",          maxy_fid);
+  p->getValue("MaxZFid",          maxz_fid);
+  p->getValue("MinXAV",           minx_av);
+  p->getValue("MinYAV",           miny_av);
+  p->getValue("MinZAV",           minz_av);
+  p->getValue("MaxXAV",           maxx_av);
+  p->getValue("MaxYAV",           maxy_av);
+  p->getValue("MaxZAV",           maxz_av);
+
+  //------------------------------------------------------------------------------------------
+  //                                    Initialise
+  //------------------------------------------------------------------------------------------
+
+  // Get the active and fiducial geometry objects
+  Geometry fiducial(minx_fid,miny_fid,minz_fid,maxx_fid,maxy_fid,maxz_fid,true);
+  Geometry active(minx_av,miny_av,minz_av,maxx_av,maxy_av,maxz_av,false);
+  PlaneList planes = active.GetExternalPlaneList();
+
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
-  
+
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 1;
   double pot = 0.; 
 
   std::vector<int> exceptions;
-  exceptions.clear();
-
-  // Read in txt file of list of empty input directories
-  std::fstream exception_file("exceptions.txt");
-  if(!exception_file)
-    std::cout << " No exceptions file given" << std::endl;
-  else{
-    std::string s_exc;
-    while (std::getline(exception_file, s_exc)) {
-      unsigned int i_exc;
-      std::istringstream ss_exc(s_exc);
-      ss_exc >> i_exc;
-      exceptions.push_back(i_exc);
-      ss_exc.str(std::string());
-      s_exc.clear();
-    }
-  }
-  for(const int & ex : exceptions)
-    std::cout << " - " << ex << " - ";
-  std::cout << std::endl;
-
-  LoadAllEvents(events, total_files, start, pot, exceptions);
+  FillExceptions(exceptions_file.c_str(),exceptions);
 
   TopologyMap cc_signal_map    = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap nc_signal_map    = GeneralAnalysisHelper::GetNCTopologyMap();
@@ -75,6 +98,16 @@ int MainTest(){
   TopologyMap cc1pi_signal_map = GeneralAnalysisHelper::GetCC1PiTopologyMap();
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
+  EventSelectionTool::EventList all_events;
+  for( unsigned int i = 0; i < total_files; ++i ){
+    EventSelectionTool::EventList events;
+    selection::LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
+
+    all_events.insert(all_events.end(), events.begin(), events.end());
+  }
+  std::cout << " Total number of events in sample: " << all_events.size() << std::endl;
+
   time_t rawtime_afterload;
   struct tm * timeinfo_afterload;
   time (&rawtime_afterload);
@@ -85,24 +118,24 @@ int MainTest(){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"icarus_particle_stats.txt");
+  all_file.open(stats_location+"particle_stats.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"icarus_mis_identification_stats.txt");
+  mis_id_file.open(stats_location+"mis_identification_stats.txt");
 
-  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(events, all_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, nc_signal_map, "NC Inclusive",  all_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc_signal_map, "CC Inclusive",  all_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc0pi_signal_map, "CC 0 Pi",    all_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, cc1pi_signal_map, "CC 1 Pi+/-", all_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(events, ccpi0_signal_map, "CC Pi0",     all_file);
+  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(all_events, all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, nc_signal_map, "NC Inclusive",  all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc1pi_signal_map, "CC 1 Pi+/-", all_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, ccpi0_signal_map, "CC Pi0",     all_file);
 
-  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(events, mis_id_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(events, nc_signal_map, "NC Inclusive",  mis_id_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(events, cc_signal_map, "CC Inclusive",  mis_id_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(events, cc1pi_signal_map, "CC 1 Pi+/-", mis_id_file);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(events, ccpi0_signal_map, "CC Pi0",     mis_id_file);
+  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(all_events, mis_id_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, nc_signal_map, "NC Inclusive",  mis_id_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  mis_id_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc1pi_signal_map, "CC 1 Pi+/-", mis_id_file);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, ccpi0_signal_map, "CC Pi0",     mis_id_file);
 
   time_t rawtime_end;
   struct tm * timeinfo_end;
@@ -116,28 +149,3 @@ int MainTest(){
 
 } // MainTest()
 
-void LoadAllEvents(EventSelectionTool::EventList &events, const unsigned int &total_files, const int &start_time, double &pot, std::vector<int> &exceptions) {
-  double total_pot = 0;
-  std::vector<int>::iterator it;
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total_files; ++i ){
-    it = std::find(exceptions.begin(), exceptions.end(),i);
-    if(it != exceptions.end()) continue;
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/merged/"+std::to_string(i)+"/merged_output.root";
-    name = "/sbnd/app/users/rsjones/LArSoft_v08_30_00_SBN/test/icarus_output_file.root";
-//    name = "/pnfs/sbnd/persistent/users/rsjones/sbnd_selection_150620/selection/"+std::to_string(i)+"/output_file.root";
-//    name = "/home/rhiannon/Samples/LocalSamples/analysis/nofiducial_mcp0.9_neutrino_with_subrun/selection/"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
-
-    double temp_pot = 0.;
-    EventSelectionTool::LoadEventList(file_name, events, i, temp_pot);
-    EventSelectionTool::GetTimeLeft(start_time,total_files,i);
-    total_pot += temp_pot;
-  }
-  std::cout << std::endl;
-  pot = total_pot;
-} // LoadAllEvents
