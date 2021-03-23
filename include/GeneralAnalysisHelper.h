@@ -403,6 +403,14 @@ namespace selection{
       static void GetRecoModulusMomentumWithPdg(const Event &e, const int pdg, std::vector<float> &momentum_mod);
       
       /**
+       * @brief  Calculates the uncertainty on the ratio used to calculate efficiencies and purities
+       *
+       * @param  num The numerator used in the ratio calculation
+       * @param  den The denomenator used in the ratio calculation
+       **/
+      static double RatioUncertainty(const double &num, const double &den);
+
+      /**
        * @brief  Calculates the Efficiency, Purity, Background Rejection
        *         Parameters for Efficiency calculation ( MC, signal and selected ) for a given topology : 
        *         0-> No muon, 
@@ -414,8 +422,8 @@ namespace selection{
        * @param  count_mc
        * @param  count_signal 
        * @param  count_selected 
-       **/
-      static double Efficiency(const std::vector< double > &count_mc, const std::vector< double > &count_signal, const std::vector< double > &count_selected, const TopologyMap &topology);
+       *
+      static double Efficiency(const std::vector< double > &count_mc, const std::vector< double > &count_signal, const std::vector< double > &count_selected, const TopologyMap &topology);*/
 
       /**
        * @brief  Save Topology Matrix into a file
@@ -616,9 +624,10 @@ namespace selection{
        * @param  topology
        * @param  topology name
        * @param  file to append
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
        *
        */
-      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os);
+      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex);
 
       /**
        * @brief  for all events, count all mismatched particles by topology and fill file
@@ -627,27 +636,30 @@ namespace selection{
        * @param  topology
        * @param  topology name
        * @param  file to append
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
        *
        */
-      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os);
+      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex);
 
       /**
        * @brief  for all events, count all matched particles and fill file
        *
        * @param  event list
        * @param  file name
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
        *
        */
-      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os);
+      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex);
 
       /**
        * @brief  for all events, count all mismatched particles and fill file
        *
        * @param  event list
        * @param  file name
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
        *
        */
-      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os);
+      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex);
 
       /**
        * @brief  find out if a reconstructed particle has a matching truth particle

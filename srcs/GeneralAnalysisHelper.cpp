@@ -209,7 +209,7 @@ namespace selection{
     if(det == 0){
       chi2p_cut     = 65.;
       chi2mu_cut    = 19.;
-      chi2ratio_cut = 0.075;
+      chi2ratio_cut = 0.08;
     }
     if(det == 1){
       chi2p_cut     = 65.;
@@ -579,7 +579,7 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex){
 
     // Counters for each particle type
     unsigned int mc_selected_muons     = 0;
@@ -636,69 +636,118 @@ namespace selection{
       signal_protons        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 2212);
     }
 
-    os << "    " << topology_name                                                                                               << std::endl;  
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected event, MC particles";
-    os << std::setw(16) << mc_selected_muons;
-    os << std::setw(16) << mc_selected_pions;
-    os << std::setw(16) << mc_selected_protons;
-    os << std::endl;
-    os << std::setw(35) << "Selected event, Reco particles";
-    os << std::setw(16) << reco_selected_muons;
-    os << std::setw(16) << reco_selected_pions;
-    os << std::setw(16) << reco_selected_protons;
-    os << std::endl;
-    os << std::setw(35) << "Selected event, Matched particles";
-    os << std::setw(16) << selected_muons;
-    os << std::setw(16) << selected_pions;
-    os << std::setw(16) << selected_protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal event, MC particles";
-    os << std::setw(16) << mc_signal_muons;
-    os << std::setw(16) << mc_signal_pions;
-    os << std::setw(16) << mc_signal_protons;
-    os << std::endl;
-    os << std::setw(35) << "Signal event, Reco particles";
-    os << std::setw(16) << reco_signal_muons;
-    os << std::setw(16) << reco_signal_pions;
-    os << std::setw(16) << reco_signal_protons;
-    os << std::endl;
-    os << std::setw(35) << "Signal event, Matched particles";
-    os << std::setw(16) << signal_muons;
-    os << std::setw(16) << signal_pions;
-    os << std::setw(16) << signal_protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected, Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(mc_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(mc_selected_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(mc_selected_protons);
-    os << std::endl;
-    os << std::setw(35) << "Selected, Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(reco_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(reco_selected_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(reco_selected_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal, Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(mc_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(mc_signal_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(mc_signal_protons);
-    os << std::endl;
-    os << std::setw(35) << "Signal, Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(reco_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(reco_signal_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(reco_signal_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
+    if(!isTex){
+      os << "    " << topology_name << std::endl;  
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected event, MC particles";
+      os << std::setw(16) << mc_selected_muons;
+      os << std::setw(16) << mc_selected_pions;
+      os << std::setw(16) << mc_selected_protons;
+      os << std::endl;
+      os << std::setw(35) << "Selected event, Reco particles";
+      os << std::setw(16) << reco_selected_muons;
+      os << std::setw(16) << reco_selected_pions;
+      os << std::setw(16) << reco_selected_protons;
+      os << std::endl;
+      os << std::setw(35) << "Selected event, Matched particles";
+      os << std::setw(16) << selected_muons;
+      os << std::setw(16) << selected_pions;
+      os << std::setw(16) << selected_protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal event, MC particles";
+      os << std::setw(16) << mc_signal_muons;
+      os << std::setw(16) << mc_signal_pions;
+      os << std::setw(16) << mc_signal_protons;
+      os << std::endl;
+      os << std::setw(35) << "Signal event, Reco particles";
+      os << std::setw(16) << reco_signal_muons;
+      os << std::setw(16) << reco_signal_pions;
+      os << std::setw(16) << reco_signal_protons;
+      os << std::endl;
+      os << std::setw(35) << "Signal event, Matched particles";
+      os << std::setw(16) << signal_muons;
+      os << std::setw(16) << signal_pions;
+      os << std::setw(16) << signal_protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected, Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_muons/double(mc_selected_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_pions/double(mc_selected_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_protons/double(mc_selected_protons);
+      os << std::endl;
+      os << std::setw(35) << "Selected, Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_muons/double(reco_selected_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_pions/double(reco_selected_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_protons/double(reco_selected_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal, Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_muons/double(mc_signal_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_pions/double(mc_signal_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_protons/double(mc_signal_protons);
+      os << std::endl;
+      os << std::setw(35) << "Signal, Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_muons/double(reco_signal_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_pions/double(reco_signal_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_protons/double(reco_signal_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ m{3.5cm} * {3}{ >{\\centering\\arraybackslash}m{2cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Contents & $\\mu^{-}$ & $\\pi^{\\pm}$ & Proton \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << "}" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "Selected event, MC particles";
+      os << " & \\num{" << mc_selected_muons << "}";
+      os << " & \\num{" << mc_selected_pions << "}";
+      os << " & \\num{" << mc_selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Selected event, Reco particles";
+      os << " & \\num{" << reco_selected_muons << "}";
+      os << " & \\num{" << reco_selected_pions << "}";
+      os << " & \\num{" << reco_selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Selected event, Matched particles";
+      os << " & \\num{" << selected_muons << "}";
+      os << " & \\num{" << selected_pions << "}";
+      os << " & \\num{" << selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Signal event, MC particles";
+      os << " & \\num{" << mc_signal_muons << "}";
+      os << " & \\num{" << mc_signal_pions << "}";
+      os << " & \\num{" << mc_signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Signal event, Reco particles";
+      os << " & \\num{" << reco_signal_muons << "}";
+      os << " & \\num{" << reco_signal_pions << "}";
+      os << " & \\num{" << reco_signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Signal event, Matched particles";
+      os << " & \\num{" << signal_muons << "}";
+      os << " & \\num{" << signal_pions << "}";
+      os << " & \\num{" << signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
   
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex){
   
     /* 
      * Counters for particle type and mis-identified counterpart
@@ -740,81 +789,133 @@ namespace selection{
       signal_muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 13);
       signal_muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 13);
       signal_muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 13);
-      
+
       selected_pion        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 211);
       selected_pion        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 211);
       selected_pion_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 211);
       selected_pion_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, -211);
       selected_pion_proton += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, 211);
       selected_pion_proton += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, -211);
-      
+
       signal_pion          += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 211);
       signal_pion          += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 211);
       signal_pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, 211);
       signal_pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, -211);
       signal_pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 211);
       signal_pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, -211);
-      
+
       selected_proton      += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, 2212);
       selected_proton_muon += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 2212);
       selected_proton_pion += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 2212);
       selected_proton_pion += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 2212);
-      
+
       signal_proton        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 2212);
       signal_proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, 2212);
       signal_proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 2212);
       signal_proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 2212);
     }
 
-    os << "    " << topology_name                                                                                               << std::endl;  
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected event";
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << selected_muon;
-    os << std::setw(16) << selected_pion_muon;
-    os << std::setw(16) << selected_proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << selected_muon_pion;
-    os << std::setw(16) << selected_pion;
-    os << std::setw(16) << selected_proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << selected_muon_proton;
-    os << std::setw(16) << selected_pion_proton;
-    os << std::setw(16) << selected_proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal event";
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << signal_muon;
-    os << std::setw(16) << signal_pion_muon;
-    os << std::setw(16) << signal_proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << signal_muon_pion;
-    os << std::setw(16) << signal_pion;
-    os << std::setw(16) << signal_proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << signal_muon_proton;
-    os << std::setw(16) << signal_pion_proton;
-    os << std::setw(16) << signal_proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
+    if(!isTex){
+      os << "    " << topology_name                                                                                               << std::endl;  
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected event";
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << selected_muon;
+      os << std::setw(16) << selected_pion_muon;
+      os << std::setw(16) << selected_proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << selected_muon_pion;
+      os << std::setw(16) << selected_pion;
+      os << std::setw(16) << selected_proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << selected_muon_proton;
+      os << std::setw(16) << selected_pion_proton;
+      os << std::setw(16) << selected_proton;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal event";
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << signal_muon;
+      os << std::setw(16) << signal_pion_muon;
+      os << std::setw(16) << signal_proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << signal_muon_pion;
+      os << std::setw(16) << signal_pion;
+      os << std::setw(16) << signal_proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << signal_muon_proton;
+      os << std::setw(16) << signal_pion_proton;
+      os << std::setw(16) << signal_proton;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
+      os << "    $\\downarrow$ True &&& \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << ": Selected} \\\\" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << selected_muon << "}";
+      os << " & \\num{" << selected_pion_muon << "}";
+      os << " & \\num{" << selected_proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << selected_muon_pion << "}";
+      os << " & \\num{" << selected_pion << "}";
+      os << " & \\num{" << selected_proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << selected_muon_proton << "}";
+      os << " & \\num{" << selected_pion_proton << "}";
+      os << " & \\num{" << selected_proton << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << ": Signal} \\\\" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << signal_muon << "}";
+      os << " & \\num{" << signal_pion_muon << "}";
+      os << " & \\num{" << signal_proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << signal_muon_pion << "}";
+      os << " & \\num{" << signal_pion << "}";
+      os << " & \\num{" << signal_proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << signal_muon_proton << "}";
+      os << " & \\num{" << signal_pion_proton << "}";
+      os << " & \\num{" << signal_proton << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os){
+  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex){
    
     unsigned int mc_muons           = 0;
     unsigned int mc_protons         = 0;
@@ -847,44 +948,86 @@ namespace selection{
       protons            += GeneralAnalysisHelper::CountMatchedParticlesAll(e, 2212);
     }
 
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << "    All events"                                                                                               << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "MC Particles";
-    os << std::setw(16) << mc_muons;
-    os << std::setw(16) << mc_charged_pions;
-    os << std::setw(16) << mc_protons;
-    os << std::endl;
-    os << std::setw(35) << "Reco Particles";
-    os << std::setw(16) << reco_muons;
-    os << std::setw(16) << reco_charged_pions;
-    os << std::setw(16) << reco_protons;
-    os << std::endl;
-    os << std::setw(35) << "Matched Particles";
-    os << std::setw(16) << muons;
-    os << std::setw(16) << charged_pions;
-    os << std::setw(16) << protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * muons/double(mc_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * charged_pions/double(mc_charged_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * protons/double(mc_protons);
-    os << std::endl;
-    os << std::setw(35) << "Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * muons/double(reco_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * charged_pions/double(reco_charged_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * protons/double(reco_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
+    if(!isTex){
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << "    All events"                                                                                               << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "MC Particles";
+      os << std::setw(16) << mc_muons;
+      os << std::setw(16) << mc_charged_pions;
+      os << std::setw(16) << mc_protons;
+      os << std::endl;
+      os << std::setw(35) << "Reco Particles";
+      os << std::setw(16) << reco_muons;
+      os << std::setw(16) << reco_charged_pions;
+      os << std::setw(16) << reco_protons;
+      os << std::endl;
+      os << std::setw(35) << "Matched Particles";
+      os << std::setw(16) << muons;
+      os << std::setw(16) << charged_pions;
+      os << std::setw(16) << protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * muons/double(mc_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * charged_pions/double(mc_charged_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * protons/double(mc_protons);
+      os << std::endl;
+      os << std::setw(35) << "Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * muons/double(reco_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * charged_pions/double(reco_charged_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * protons/double(reco_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ m{3.5cm} * {3}{ >{\\centering\\arraybackslash}m{2cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Contents & $\\mu^{-}$ & $\\pi^{\\pm}$ & Proton \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "MC particles";
+      os << " & \\num{" << mc_muons << "}";
+      os << " & \\num{" << mc_charged_pions << "}";
+      os << " & \\num{" << mc_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Reco particles";
+      os << " & \\num{" << reco_muons << "}";
+      os << " & \\num{" << reco_charged_pions << "}";
+      os << " & \\num{" << reco_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Matched particles";
+      os << " & \\num{" << muons << "}";
+      os << " & \\num{" << charged_pions << "}";
+      os << " & \\num{" << protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Efficiency";
+      os << " & " << std::fixed << std::setprecision(2) << 100 * muons/double(mc_muons) << "~$\\pm$~" << RatioUncertainty(muons,mc_muons)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * charged_pions/double(mc_charged_pions) << "~$\\pm$~" << RatioUncertainty(charged_pions,mc_charged_pions)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * protons/double(mc_protons) << "~$\\pm$~" << RatioUncertainty(protons,mc_protons)*100;
+      os << " \\\\" << std::endl;
+      os << "Purity";
+      os << " & " << std::fixed << std::setprecision(2) << 100 * muons/double(reco_muons) << "~$\\pm$~" << RatioUncertainty(muons,reco_muons)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * charged_pions/double(reco_charged_pions) << "~$\\pm$~" << RatioUncertainty(charged_pions,reco_charged_pions)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * protons/double(reco_protons) << "~$\\pm$~" << RatioUncertainty(protons,reco_protons)*100;
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   
   }
   
   //----------------------------------------------------------------------------------------
 
-  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os){
+  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex){
     /* 
      * Counters for particle type and mis-identified counterpart
      *    left particle:  reconstructed
@@ -902,50 +1045,108 @@ namespace selection{
     unsigned int proton      = 0;
     unsigned int proton_muon = 0;
     unsigned int proton_pion = 0;
-    
+    unsigned int true_muon   = 0;
+    unsigned int true_pion   = 0;
+    unsigned int true_proton = 0;
+    unsigned int sel_muon    = 0;
+    unsigned int sel_pion    = 0;
+    unsigned int sel_proton  = 0;
+
     for(const Event &e : ev_list){
       if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+
+      true_muon  += e.CountMCParticlesWithPdg(13);
+      true_pion  += e.CountMCParticlesWithPdg(211);
+      true_pion  += e.CountMCParticlesWithPdg(-211);
+      true_proton+= e.CountMCParticlesWithPdg(2212);
       
+      sel_muon  += e.CountRecoParticlesWithPdg(13);
+      sel_pion  += e.CountRecoParticlesWithPdg(211);
+      sel_pion  += e.CountRecoParticlesWithPdg(-211);
+      sel_proton+= e.CountRecoParticlesWithPdg(2212);
+
       muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13);
       muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13);
       muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13);
       muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 13);
-      
+
       pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211);
       pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211);
       pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 211);
       pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, -211);
       pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 211);
       pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, -211);
-      
+
       proton        += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212);
       proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 2212);
       proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 2212);
       proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 2212);
     }
-    
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << "    All events"                                                                           << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << muon;
-    os << std::setw(16) << pion_muon;
-    os << std::setw(16) << proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << muon_pion;
-    os << std::setw(16) << pion;
-    os << std::setw(16) << proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << muon_proton;
-    os << std::setw(16) << pion_proton;
-    os << std::setw(16) << proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    
+
+    if(!isTex){
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << "    All events"                                                                           << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << muon;
+      os << std::setw(16) << pion_muon;
+      os << std::setw(16) << proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << muon_pion;
+      os << std::setw(16) << pion;
+      os << std::setw(16) << proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << muon_proton;
+      os << std::setw(16) << pion_proton;
+      os << std::setw(16) << proton;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
+      os << "    $\\downarrow$ True &&& \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << muon << "}";
+      os << " & \\num{" << pion_muon << "}";
+      os << " & \\num{" << proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << muon_pion << "}";
+      os << " & \\num{" << pion << "}";
+      os << " & \\num{" << proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << muon_proton << "}";
+      os << " & \\num{" << pion_proton << "}";
+      os << " & \\num{" << proton << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Efficiency";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(muon/static_cast<double>(true_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(muon,true_muon) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(pion/static_cast<double>(true_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(pion,true_pion) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(proton/static_cast<double>(true_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(proton,true_proton) << " \\%";
+      os << " \\\\" << std::endl;
+      os << "Purity";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(muon/static_cast<double>(sel_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(muon,sel_muon) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(pion/static_cast<double>(sel_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(pion,sel_pion) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(proton/static_cast<double>(sel_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(proton,sel_proton) << " \\%";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
   
   //----------------------------------------------------------------------------------------
@@ -1112,5 +1313,15 @@ namespace selection{
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
       if(particle_list[i].GetPdgCode() == pdg) momentum_mod.push_back(particle_list[i].GetModulusMomentum());
     }
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  double GeneralAnalysisHelper::RatioUncertainty(const double &num, const double &den){
+    // Bayesian uncertainty calculation from here:
+    // Instead use Bayesean Approach from: https://cds.cern.ch/record/1010669/files/0701199.pdf?version=1
+    double VarA = ((num+1)*(num+2))/static_cast<double>((den+2)*(den+3));
+    double VarB = TMath::Power(num+1,2)/static_cast<double>(TMath::Power(den+2,2));
+    return TMath::Sqrt(VarA - VarB);
   }
 } // selection

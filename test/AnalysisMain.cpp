@@ -170,7 +170,7 @@ int MainTest(const char *config){
           }
         }
       }
-      else if(e.CheckMCTopology(nc_map)) {
+      else if(e.CheckMCNeutrino(14) && e.CheckMCTopology(nc_map)) {
         total_true_ncinc++;
         if(e.IsTrueFiducial()){
           true_fid_true_ncinc++;
@@ -185,7 +185,7 @@ int MainTest(const char *config){
           }
         }
       }
-      else if(e.CheckMCTopology(nue_map)) {
+      else if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12)){
         total_true_nueinc++;
         if(e.IsTrueFiducial()){
           true_fid_true_nueinc++;
@@ -480,12 +480,11 @@ int MainTest(const char *config){
   fileTeX.open(stats_location+"analysis_cuts.tex");
   // TeX file header
   fileTeX << "\\begin{table}[h!] " << std::endl;
-  fileTeX << "  \\small " << std::endl;
   fileTeX << "  \\centering " << std::endl;
   fileTeX << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
-  fileTeX << "  \\begin{tabular}{ m{3cm} * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+  fileTeX << "  \\begin{tabular}{ m{3.4cm} * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
   fileTeX << "    \\hline" << endl;
-  fileTeX << "    True topology~$\\rightarrow$ & \\multirow{2}{*}{CC~Inclusive} & \\multirow{2}{*}{NC~Inclusive} & \\multirow{2}{*}{\\nue} & \\multirow{2}{*}{CC~Purity} \\\\" << std::endl; 
+  fileTeX << "    True topology~$\\rightarrow$ & \\multirow{2}{*}{$\\nu_{\\mu}$~CC} & \\multirow{2}{*}{$\\nu_{\\mu}$~NC} & \\multirow{2}{*}{$\\nu_{e}$~Inc.} & \\multirow{2}{*}{$\\nu_{\\mu}$~CC~Purity} \\\\" << std::endl; 
   fileTeX << "    $\\downarrow$~Cut applied & & & \\\\" << std::endl;
   fileTeX << "    \\hline" << endl;
 
@@ -493,31 +492,31 @@ int MainTest(const char *config){
   fileTeX << "    \\num{ " << static_cast<int>(total_true_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(total_true_ncinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(total_true_nueinc*potScale) << "} & ";
-  fileTeX << std::setprecision(4) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc+total_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
+  fileTeX << std::fixed << std::setprecision(2) << total_true_ccinc / static_cast<double>(total_true_ccinc+total_true_ncinc+total_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
 
   fileTeX << "    True fiducial & "; 
   fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_ncinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(true_fid_true_nueinc*potScale) << "} & ";
-  fileTeX << std::setprecision(4) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc+true_fid_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
+  fileTeX << std::fixed << std::setprecision(2) << true_fid_true_ccinc/static_cast<double>(true_fid_true_ccinc+true_fid_true_ncinc+true_fid_true_nueinc)*100 << "~\\% \\\\ " << std::endl;
 
   fileTeX << "    Reco fiducial & "; 
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_ncinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_true_nueinc*potScale) << "} & ";
-  fileTeX << std::setprecision(4) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc+reco_true_fid_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
+  fileTeX << std::fixed << std::setprecision(2) << reco_true_fid_true_ccinc/static_cast<double>(reco_true_fid_true_ccinc+reco_true_fid_true_ncinc+reco_true_fid_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
 
   fileTeX << "    Max. 1 escapes & "; 
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_ncinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_true_nueinc*potScale) << "} & ";
-  fileTeX << std::setprecision(4) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc+reco_true_fid_max_1_escapes_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
+  fileTeX << std::fixed << std::setprecision(2) << reco_true_fid_max_1_escapes_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_true_ccinc+reco_true_fid_max_1_escapes_true_ncinc+reco_true_fid_max_1_escapes_true_nueinc)*100 << "~\\% \\\\ "  << std::endl;
 
   fileTeX << "    Min. 1 track & "; 
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_ncinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(reco_true_fid_max_1_escapes_min_1_track_true_nueinc*potScale) << "} & ";
-  fileTeX << std::setprecision(4) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc+reco_true_fid_max_1_escapes_min_1_track_true_nueinc)*100 << "~\\% \\\\" << std::endl; 
+  fileTeX << std::fixed << std::setprecision(2) << reco_true_fid_max_1_escapes_min_1_track_true_ccinc/static_cast<double>(reco_true_fid_max_1_escapes_min_1_track_true_ccinc+reco_true_fid_max_1_escapes_min_1_track_true_ncinc+reco_true_fid_max_1_escapes_min_1_track_true_nueinc)*100 << "~\\% \\\\" << std::endl; 
   fileTeX << "    \\hline" << endl;
 
   // Tex file end

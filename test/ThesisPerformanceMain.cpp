@@ -132,50 +132,6 @@ int MainTest(const char *config){
   unsigned int cc0pi_sig   = 0; 
   unsigned int cc0pi_sel   = 0; 
 
-  unsigned int cc1pi_cc0pi = 0;
-  unsigned int cc1pi_cc1pi = 0;
-  unsigned int cc1pi_ccoth = 0;
-  unsigned int cc1pi_nc0pi = 0;
-  unsigned int cc1pi_nc1pi = 0;
-  unsigned int cc1pi_ncoth = 0;
-  unsigned int cc1pi_nue   = 0;
-  unsigned int cc1pi_true  = 0; 
-  unsigned int cc1pi_sig   = 0; 
-  unsigned int cc1pi_sel   = 0; 
-
-  unsigned int ncinc_cc0pi = 0;
-  unsigned int ncinc_cc1pi = 0;
-  unsigned int ncinc_ccoth = 0;
-  unsigned int ncinc_nc0pi = 0;
-  unsigned int ncinc_nc1pi = 0;
-  unsigned int ncinc_ncoth = 0;
-  unsigned int ncinc_nue   = 0;
-  unsigned int ncinc_true  = 0; 
-  unsigned int ncinc_sig   = 0; 
-  unsigned int ncinc_sel   = 0; 
-
-  unsigned int nc0pi_cc0pi = 0;
-  unsigned int nc0pi_cc1pi = 0;
-  unsigned int nc0pi_ccoth = 0;
-  unsigned int nc0pi_nc0pi = 0;
-  unsigned int nc0pi_nc1pi = 0;
-  unsigned int nc0pi_ncoth = 0;
-  unsigned int nc0pi_nue   = 0;
-  unsigned int nc0pi_true  = 0; 
-  unsigned int nc0pi_sig   = 0; 
-  unsigned int nc0pi_sel   = 0; 
-
-  unsigned int nc1pi_cc0pi = 0;
-  unsigned int nc1pi_cc1pi = 0;
-  unsigned int nc1pi_ccoth = 0;
-  unsigned int nc1pi_nc0pi = 0;
-  unsigned int nc1pi_nc1pi = 0;
-  unsigned int nc1pi_ncoth = 0;
-  unsigned int nc1pi_nue   = 0;
-  unsigned int nc1pi_true  = 0; 
-  unsigned int nc1pi_sig   = 0; 
-  unsigned int nc1pi_sel   = 0;
-
   unsigned int all_tracks_contained   = 0;
   unsigned int precuts_passed         = 0;
   unsigned int ccinc_passed           = 0;
@@ -192,17 +148,18 @@ int MainTest(const char *config){
   TopologyMap nc1pinpi0_map = GeneralAnalysisHelper::GetNC1PiNPi0TopologyMap();
   TopologyMap ncnpi_map     = GeneralAnalysisHelper::GetNCNPiTopologyMap();
   TopologyMap nue_map       = GeneralAnalysisHelper::GetNuECCTopologyMap();
+  TopologyMap nuenc_map     = GeneralAnalysisHelper::GetNuECCTopologyMap();
   std::vector<TopologyMap> cc_for_other{cc0pi_map, cc1pinpi0_map};
   std::vector<TopologyMap> nc_for_other{nc0pi_map, nc1pinpi0_map};
   TopologyMap ccoth_map   = GeneralAnalysisHelper::GetOtherTopologyMap(1,cc_for_other);
   TopologyMap ncoth_map   = GeneralAnalysisHelper::GetOtherTopologyMap(2,nc_for_other);
   
-  std::vector< TopologyMap > reco_maps({cc_map, cc0pi_map, cc1pi_map, nc_map, nc0pi_map, ncnpi_map});
+  std::vector< TopologyMap > reco_maps({cc_map, cc0pi_map});
   std::vector< TopologyMap > true_maps({cc0pi_map, cc1pi_map, ccoth_map, nc0pi_map, nc1pi_map, ncoth_map, nue_map});
-  std::vector<std::string> reco_topology_names{"CC~Inc.", "CC~$0\\pi$", "CC~$1\\pi^{\\pm}$", "NC~Inc.", "NC~$0\\pi$", "NC~n$\\pi^{\\pm,0}$"};
-  std::vector<std::string> count_features{"CC~$0\\pi$", "CC~$1\\pi^{\\pm}$", "CC~Oth.", "NC~$0\\pi$", "NC~$1\\pi^{\\pm}$", "NC~Oth.", "$\\nu_{e}$", "True", "Signal", "Selected"};
-  std::vector<std::string> reco_topology_names_notex{"CC Inc.", "CC 0Pi", "CC 1Pi", "NC Inc.", "NC 0Pi", "NC NPi"};
-  std::vector<std::string> count_features_notex{"CC 0Pi", "CC 1Pi", "CC Oth.", "NC 0pi", "NC 1Pi", "NC Oth.", "Nue", "True", "Signal", "Selected"};
+  std::vector<std::string> reco_topology_names{"CC~Inc.", "CC~$0\\pi$"};
+  std::vector<std::string> count_features{"CC~$0\\pi$", "CC~$1\\pi^{\\pm}$", "CC~Oth.", "NC~$0\\pi$", "NC~$1\\pi^{\\pm}$", "NC~Oth.", "$\\nu_{e}$", "True", "Selected", "Signal"};
+  std::vector<std::string> reco_topology_names_notex{"CC Inc.", "CC 0Pi"};
+  std::vector<std::string> count_features_notex{"CC 0Pi", "CC 1Pi", "CC Oth.", "NC 0pi", "NC 1Pi", "NC Oth.", "Nue", "True", "Selected", "Signal"};
   std::map< std::string, std::map<std::string, unsigned int> > topology_count_rates, topology_count_rates_notex;
 
   for(const std::string &f : count_features){
@@ -440,8 +397,8 @@ int MainTest(const char *config){
 
   // Files to hold particle statistics
   ofstream file,fileTeX;
-  file.open(stats_location+"full_topological_breakdown.txt");
-  fileTeX.open(stats_location+"full_topological_breakdown.tex");
+  file.open(stats_location+"thesis_topological_breakdown.txt");
+  fileTeX.open(stats_location+"thesis_topological_breakdown.tex");
 
   // Text file header
   file << "=============================================================================" << std::endl;
@@ -457,7 +414,7 @@ int MainTest(const char *config){
   fileTeX << "  \\small " << std::endl;
   fileTeX << "  \\centering " << std::endl;
   fileTeX << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
-  fileTeX << "  \\begin{tabular}{ m{1.5cm} * {" << reco_topology_names.size() << "}{ >{\\centering\\arraybackslash}m{2cm} } }" << endl;
+  fileTeX << "  \\begin{tabular}{ m{2cm} * {" << reco_topology_names.size() << "}{ >{\\centering\\arraybackslash}m{3cm} } }" << endl;
   fileTeX << "    \\hline" << endl;
   
   //Text file first row
@@ -488,7 +445,7 @@ int MainTest(const char *config){
     }
     file << std::setw(12) << f << " || ";
     for(const std::string &t : reco_topology_names_notex){
-      file << std::setw(10) << std::setprecision(5) << static_cast<int>(topology_count_rates_notex.at(f).at(t)*potScale);
+      file << std::setw(10) << std::fixed << std::setprecision(2) << static_cast<int>(topology_count_rates_notex.at(f).at(t)*potScale);
     }
     file << std::endl;
   }
@@ -502,9 +459,9 @@ int MainTest(const char *config){
     fileTeX << "    " << f << " & ";
     for(unsigned int i = 0; i < reco_topology_names.size()-1; ++i){
       const std::string t = reco_topology_names.at(i);
-      fileTeX << "\\num{ " << std::setprecision(5) << static_cast<int>(topology_count_rates.at(f).at(t)*potScale) << " } &";
+      fileTeX << "\\num{ " << std::fixed << std::setprecision(2) << static_cast<int>(topology_count_rates.at(f).at(t)*potScale) << " } &";
     }
-    fileTeX << "\\num{ " << std::setprecision(5) << static_cast<int>(topology_count_rates.at(f).at(reco_topology_names.at(reco_topology_names.size()-1))*potScale) << " } \\\\ " << std::endl;
+    fileTeX << "\\num{ " << std::fixed << std::setprecision(2) << static_cast<int>(topology_count_rates.at(f).at(reco_topology_names.at(reco_topology_names.size()-1))*potScale) << " } \\\\ " << std::endl;
   }
   fileTeX << "    \\hline" << std::endl;
 
@@ -512,13 +469,15 @@ int MainTest(const char *config){
   file << std::setw(12) << "Efficiency " << " || ";
   for(const std::string &t : reco_topology_names_notex){
     double eff = topology_count_rates_notex.at("Signal").at(t) / static_cast<double>(topology_count_rates_notex.at("True").at(t));
-    file << std::setw(10) << std::setprecision(4) << eff;
+    double err = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates_notex.at("Signal").at(t),topology_count_rates_notex.at("True").at(t));
+    file << std::setw(10) << std::fixed << std::setprecision(2) << eff << " +/-" << std::fixed << std::setprecision(2) << err;
   }
   file << std::endl;
   file << std::setw(12) << "Purity" << " || ";
   for(const std::string &t : reco_topology_names_notex){
     double pur = topology_count_rates_notex.at("Signal").at(t) / static_cast<double>(topology_count_rates_notex.at("Selected").at(t));
-    file << std::setw(10) << std::setprecision(4) << pur;
+    double err = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates_notex.at("Signal").at(t),topology_count_rates_notex.at("Selected").at(t));
+    file << std::setw(10) << std::fixed << std::setprecision(2) << pur << " +/-" << std::fixed << std::setprecision(2) << err;
   }
   file << std::endl;
 
@@ -527,20 +486,24 @@ int MainTest(const char *config){
   for(unsigned int i = 0; i < reco_topology_names.size()-1; ++i){
     const std::string t = reco_topology_names.at(i);
     double eff = topology_count_rates.at("Signal").at(t) / static_cast<double>(topology_count_rates.at("True").at(t));
-    fileTeX << std::setprecision(4) << eff*100 << "~\\% &";
+    double err = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates.at("Signal").at(t),topology_count_rates.at("True").at(t));
+    fileTeX << std::fixed << std::setprecision(2) << eff*100 << "~$\\pm$~" <<  std::fixed << std::setprecision(2) <<err*100 << "~\\% &";
   }
   const std::string te = reco_topology_names.at(reco_topology_names.size()-1);
   double effEnd = topology_count_rates.at("Signal").at(te) / static_cast<double>(topology_count_rates.at("True").at(te));
-  fileTeX << std::setprecision(4) << effEnd*100 << "~\\% \\\\" << std::endl;
+  double errEnd = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates.at("Signal").at(te),topology_count_rates.at("True").at(te));
+  fileTeX << std::fixed << std::setprecision(2) << effEnd*100 << "~$\\pm$~" <<  std::fixed << std::setprecision(2) <<errEnd*100 << "~\\% \\\\" << std::endl;
 
   fileTeX << "    Purity & ";
   for(unsigned int i = 0; i < reco_topology_names.size()-1; ++i){
     const std::string t = reco_topology_names.at(i);
     double pur = topology_count_rates.at("Signal").at(t) / static_cast<double>(topology_count_rates.at("Selected").at(t));
-    fileTeX << std::setprecision(4) << pur*100 << "~\\% &";
+    double err = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates.at("Signal").at(t),topology_count_rates.at("Selected").at(t));
+    fileTeX << std::fixed << std::setprecision(2) << pur*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << err*100 << "~\\% &";
   }
   double purEnd = topology_count_rates.at("Signal").at(te) / static_cast<double>(topology_count_rates.at("Selected").at(te));
-  fileTeX << std::setprecision(4) << purEnd*100 << "~\\% \\\\" << std::endl;
+  errEnd = GeneralAnalysisHelper::RatioUncertainty(topology_count_rates.at("Signal").at(te),topology_count_rates.at("Selected").at(te));
+  fileTeX << std::fixed << std::setprecision(2) << purEnd*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << errEnd*100 << "~\\% \\\\" << std::endl;
   fileTeX << "    \\hline" << std::endl;
 
   // Text file end
@@ -578,10 +541,8 @@ void SetHistErrors(TH1D *h, TH1D *den){
   for(int b = 1; b <= h->GetNbinsX(); ++b){
     double num = h->GetBinContent(b) * den->GetBinContent(b);
     double denom = den->GetBinContent(b);
-    double VarA = ((num+1)*(num+2))/static_cast<double>((denom+2)*(denom+3));
-    double VarB = TMath::Power(num+1,2)/static_cast<double>(TMath::Power(denom+2,2));
-    double sig  = TMath::Sqrt(VarA - VarB);
-    h->SetBinError(b,sig);
+    h->SetBinError(b,GeneralAnalysisHelper::RatioUncertainty(num, denom));
+    
 //    std::cout << " Selected: " << num << ", total: " << denom << std::endl;
 //    std::cout << " Eff: " << h->GetBinContent(b) << " +/- " << sig << std::endl;
   }
