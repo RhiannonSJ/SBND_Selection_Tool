@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <map>
 #include <vector>
 #include <utility>
 #include "TTree.h"
@@ -26,22 +27,40 @@ namespace selection{
 
     public : 
 
-      typedef std::vector<std::pair<int,int> > UniqueEventIdList;
-      typedef std::vector<Plane>               PlaneList;
-      typedef std::vector<Particle>            ParticleList;
-      typedef std::vector<Event>               EventList;
-      typedef std::vector<Track>               TrackList;
-      typedef std::vector<Shower>              ShowerList;
+      typedef std::vector<Plane>                 PlaneList;
+      typedef std::vector<Particle>              ParticleList;
+      typedef std::vector<Event>                 EventList;
+      typedef std::vector<Track>                 TrackList;
+      typedef std::vector<Shower>                ShowerList;
+      typedef std::pair<int,int>                 UniqueId;
+      typedef std::map<UniqueId, TrackList>      UIdToTrackListMap;
+      typedef std::map<UniqueId, ShowerList>     UIdToShowerListMap;
+      typedef std::map<UniqueId, ParticleList>   UIdToParticleListMap;
       
+      /**
+       * @brief get the pot corresponding to each individual file
+       *
+       * @param  subrun tree with the some of the subrun information from larsoft
+       * @param  det detector enumeration
+       *
+       * @return pot from the current file
+       *
+       */
+      static double GetPOT(TTree *subrun, const unsigned int det);
+
       /**
        * @brief  load the list of events to analyse from the root file
        *
        * @param  file_name name of the root file to access
        * @param  event_list vector of events to fill
        * @param  file number of the file of the current event
+       * @param  pot from the current file
+       * @param  fid fiducial volume of this detector
+       * @param  av active volume of this detector
+       * @param  runEverything whether or not to get the really hefty branches
        *
        */
-      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file);
+      static void LoadEventList(const std::string &file_name, EventList &event_list, const int &file, double &pot, const Geometry &fid, const Geometry &av, const bool &runEverything );
 
       /**
        * @brief  Output the length of time left in the running
@@ -52,6 +71,36 @@ namespace selection{
        *
        */
       static void GetTimeLeft(const int start_time, const int total, const unsigned int i);
+      
+      /**
+       * @brief  Load mcparticles
+       *
+       * @param  mcparticle_tree  
+       * @param  map between unique event identifier and list of mcparticle objects
+       * @param  g active volume of the detector
+       *
+       */
+      static void LoadMCParticles(TTree *mcparticle_tree, UIdToParticleListMap &mcparticles, const Geometry &g);
+
+      /**
+       * @brief  Load showers
+       *
+       * @param  shower_tree  
+       * @param  map between unique event identifier and list of shower objects
+       * @param  n number of tracks to help construct unique particle id
+       *
+       */
+      static void LoadShowers(TTree *shower_tree, UIdToShowerListMap &showers, const int &n);
+
+      /**
+       * @brief  Load tracks
+       *
+       * @param  track_tree  
+       * @param  map between unique event identifier and list of track objects
+       * @param  g active volume of the detector
+       *
+       */
+      static void LoadTracks(TTree *track_tree, UIdToTrackListMap &tracks, const Geometry &g, const bool &runEverything );
       
       /**
        * @brief  The the distance between a particle and a defined plane
@@ -126,17 +175,6 @@ namespace selection{
        */
       static bool IsProjectedPointInPlaneBounds(const TVector3 &point, const Plane &plane);
       
-      /*
-       * @brief Get the list of planes for the sbnd active volume
-       */
-      static void GetSBNDAVPlanes(PlaneList &planes);
-
-      /*
-       * @brief Get the list of planes for the sbnd fiducial volume
-       */
-      static void GetSBNDFiducialPlanes(PlaneList &planes);
-
-
     private :
 
       /**
@@ -149,88 +187,70 @@ namespace selection{
       static void CheckAndFlip(const TVector3 &vtx, ParticleList &particles);
       
       /**
-       * @brief  get a list of event IDs which are entirely unique
+       * @brief  get a list of reconstructed particles from track objects in old version
        *
-       * @param  event_tree the event tree from the root file
-       * @param  unique_event_list list of unique events to fill
-       *
-       */
-      static void GetUniqueEventList(TTree *event_tree, UniqueEventIdList &unique_event_list);
-
-      /**
-       * @brief  get the list of track objects
-       *
-       * @param  track_tree tree to take track information from
-       * @param  unique_event_list list of unique events to take track information from
-       * @param  track_list vector of tracks to fill
+       * @param  track_list list of tracks in the event
+       * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
+       * @param  diff_cut length difference cutbetween longest two tracks
+       * @param  longest_cut longest track length cut
+       * @param  chi2p_cut cut on chi2 proton
+       * @param  chi2mu_cut cut on chi2 muon
+       * @param  chi2ratio_cut cut on the ratio chi2mu/chi2p
+       * @param  icarus whether we are calling the ICARUS PID or not
        *
        */
-      static void GetTrackList(unsigned int start, TTree *track_tree, const std::pair<int, int> &unique_event, TrackList &track_list);
-
-      /**
-       * @brief  get the list of shower objects
-       *
-       * @param  shower_tree tree to take shower information from
-       * @param  unique_event_list list of unique events to take shower information from
-       * @param  shower_list vector of showers to fill
-       *
-       */
-      static void GetShowerList(unsigned int start, TTree *shower_tree, const std::pair<int, int> &unique_event, ShowerList &shower_list);
+//      static void GetRecoParticleFromTrack(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      static void GetRecoParticleFromTrack(const TrackList &track_list, 
+                                           ParticleList &recoparticle_list, 
+                                           const Geometry &g,
+                                           const double &diff_cut,
+                                           const double &length_cut,
+                                           const double &longest_cut,
+                                           const double &chi2p_cut,
+                                           const double &chi2mu_cut,
+                                           const double &chi2ratio_cut,
+                                           const unsigned int &det);
       
       /**
-       * @brief  get the list of mc particle objects
-       *
-       * @param  mc particle_tree tree to take mc particle information from
-       * @param  unique_event_list list of unique events to take mc particle information from
-       * @param  mc particle_list vector of mc particles to fill
-       *
-       */
-      static void GetMCParticleList(unsigned int start, TTree *mcparticle_tree, const std::pair<int, int> &unique_event, ParticleList &mcparticle_list);
-
-      /**
-       * @brief  get a list of reconstructed particles from track objects, using Raquel's method in uBooNE
+       * @brief  get a list of reconstructed particles from track objects in SBND
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromTrackRaquel(const TrackList &track_list, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromTrackSBND(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
       
       /**
-       * @brief  get a list of reconstructed particles from track objects, only tagging muons with the chi2 proton variable
+       * @brief  get a list of reconstructed particles from track objects in MicroBooNE
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromTrackChi2P(const TrackList &track_list, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromTrackMicroBooNE(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
       
       /**
-       * @brief  get a list of reconstructed particles from track objects
+       * @brief  get a list of reconstructed particles from track objects in ICARUS
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromTrack1Escaping(const TrackList &track_list, ParticleList &recoparticle_list);
- 
-      /**
-       * @brief  get a list of reconstructed particles from track objects
-       *
-       * @param  track_list list of tracks in the event
-       * @param  recoparticle_list particle list to fill
-       *
-       */
-      static void GetRecoParticleFromTrack1EscapingDistanceCut(const TrackList &track_list, ParticleList &recoparticle_list);
-
+      static void GetRecoParticleFromTrackICARUS(const TrackList &track_list, ParticleList &recoparticle_list, const Geometry &g);
+      
       /**
        * @brief  get a list of reconstructed particles from track objects using original method
        *
        * @param  track_list list of tracks in the event
        * @param  recoparticle_list particle list to fill
+       * @param  g active volume geometry of the outer detector
        *
        */
-      static void GetRecoParticleFromShower(const ShowerList &shower_list, const TVector3 &reco_vertex, ParticleList &recoparticle_list);
+      static void GetRecoParticleFromShower(const ShowerList &shower_list, const TVector3 &reco_vertex, ParticleList &recoparticle_list, const Geometry &g);
 
       /**
        * @brief  get the particle id based on its chi2 value
@@ -261,50 +281,41 @@ namespace selection{
        * @return pdg
        *
        */
-      static int GetMuonByChi2Proton(const Track &track);
+      static int GetMuonByChi2Proton(const Track &track, const unsigned int &det);
       
       /**
        * @brief  get the whether the particle is a proton under the chi^2 proton hypothesis
        *
        * @param  track the track to find the pdg of
+       * @param  detector
        *
        * @return pdg
        *
        */
-      static int GetProtonByChi2Proton(const Track &track);
+      static int GetProtonByChi2Proton(const Track &track, const unsigned int &det);
       
+      /**
+       * @brief  get the whether the particle is a muon candidate from the chi2muon/chi2proton ratio
+       *
+       * @param  track the track to find the pdg of
+       * @param  detector
+       *
+       * @return pdg
+       *
+       */
+      static int GetMuonByChi2MuonProtonRatio(const Track &track, const unsigned int &det);
+
       /**
        * @brief  get the whether the particle is a muon candidate under the chi^2 muon hypothesis
        *
+       * @param  detector
        * @param  track the track to find the pdg of
        *
        * @return pdg
        *
        */
-      static int GetPdgByChi2MuonCandidate(const Track &track);
+      static int GetMuonByChi2Muon(const Track &track, const unsigned int &det);
       
-      /**
-       * @brief  get the particle id based on its PIDA value
-       *
-       * @param  track the track to find the pdg of
-       *
-       * @return pdg
-       *
-       */
-      static int GetPdgByPIDA(const Track &track);
-      
-      /**
-       * @brief  get the particle id based on its PIDA value with strict limits
-       *
-       * @param  track the track to find the pdg of
-       *
-       * @return pdg
-       
-       *
-       */
-      static int GetPdgByPIDAStrict(const Track &track);
-     
-
       /**
        * @brief  Track class 
        */
@@ -315,6 +326,7 @@ namespace selection{
           /**
            * @brief  Constructor
            *
+           * @param  id unique ID
            * @param  mc_id_charge mc TrackID corresponding to MCParticle using charge 
            * @param  mc_id_energy mc TrackID corresponding to MCParticle using energy
            * @param  mc_id_hits mc TrackID corresponding to MCParticle using hits
@@ -327,31 +339,34 @@ namespace selection{
            * @param  kinetic_energy track kinetic energy
            * @param  vertex vertex of the track
            * @param  end end point of the track
-           * @param  contained whether or not the reconstructed track is contained within the SBND fiducial volume
-           * @param  one_end_contained whether or not the reconstructed track has one end contained within the SBND fiducial volume
+           * @param  contained whether or not the reconstructed track is contained within the  fiducial volume
+           * @param  one_end_contained whether or not the reconstructed track has one end contained within the  fiducial volume
            *
            */
-          Track(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained);
+          Track(const int id, const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int n_hits, const float pida, const float chi2_mu, const float chi2_pi, const float chi2_pr, const float chi2_ka, const float length, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const TVector3 &vertex, const TVector3 &end, const bool &contained, const bool &one_end_contained, const std::vector<float> &dedx, const std::vector<float> &residual_range);
 
           // Member variables
-          int      m_mc_id_charge;      ///< mc TrackID corresponding to MCParticle using charge
-          int      m_mc_id_energy;      ///< mc TrackID corresponding to MCParticle using energy
-          int      m_mc_id_hits;        ///< mc TrackID corresponding to MCParticle using hits
-          int      m_n_hits;            ///< number of hits in the track
-          float    m_pida;              ///< pida value
-          float    m_chi2_mu;           ///< chi squared fit to the muon expected dEdx
-          float    m_chi2_pi;           ///< chi squared fit to the pion expected dEdx
-          float    m_chi2_pr;           ///< chi squared fit to the proton expected dEdx 
-          float    m_chi2_ka;           ///< chi squared fit to the kaon expected dEdx
-          float    m_length;            ///< length of the track
-          float    m_kinetic_energy;    ///< kinetic energy of the track
-          float    m_mcs_mom_muon;      ///< multiple coulomb scattering momentum is the particle is an escaping muon
-          float    m_range_mom_muon;    ///< range momentum if the particle is a contained muon 
-          float    m_range_mom_proton;  ///< range momentum if the particle is a contained proton
-          TVector3 m_vertex;            ///< vertex of the track         
-          TVector3 m_end;               ///< end of the track
-          bool     m_contained;         ///< whether or not the reconstructed track is contained
-          bool     m_one_end_contained; ///< whether or not the reconstructed track has one contained end
+          int      m_id;                       ///< unique ID
+          int      m_mc_id_charge;             ///< mc TrackID corresponding to MCParticle using charge
+          int      m_mc_id_energy;             ///< mc TrackID corresponding to MCParticle using energy
+          int      m_mc_id_hits;               ///< mc TrackID corresponding to MCParticle using hits
+          int      m_n_hits;                   ///< number of hits in the track
+          float    m_pida;                     ///< pida value
+          float    m_chi2_mu;                  ///< chi squared fit to the muon expected dEdx
+          float    m_chi2_pi;                  ///< chi squared fit to the pion expected dEdx
+          float    m_chi2_pr;                  ///< chi squared fit to the proton expected dEdx 
+          float    m_chi2_ka;                  ///< chi squared fit to the kaon expected dEdx
+          float    m_length;                   ///< length of the track
+          float    m_kinetic_energy;           ///< kinetic energy of the track
+          float    m_mcs_mom_muon;             ///< multiple coulomb scattering momentum is the particle is an escaping muon
+          float    m_range_mom_muon;           ///< range momentum if the particle is a contained muon 
+          float    m_range_mom_proton;         ///< range momentum if the particle is a contained proton
+          TVector3 m_vertex;                   ///< vertex of the track         
+          TVector3 m_end;                      ///< end of the track
+          bool     m_contained;                ///< whether or not the reconstructed track is contained
+          bool     m_one_end_contained;        ///< whether or not the reconstructed track has one contained end
+          std::vector<float> m_dedx;           ///< vector of the dedx distribution of the reconstructed track
+          std::vector<float> m_residual_range; ///< vector of the residual range distribution of the track
       
       }; // Track
       
@@ -365,15 +380,17 @@ namespace selection{
           /**
            * @brief  Constructor
            *
+           * @param  id unique ID
            * @param  vertex vertex of the shower
            * @param  direction direction of the shower
            * @param  open_angle opening angle at the vertex of the shower
            * @param  length length of the shower
            *
            */
-          Shower(const int n_hits, const TVector3 &vertex, const TVector3 &direction, const float open_angle, const float length, const float energy);
+          Shower(const int id, const int n_hits, const TVector3 &vertex, const TVector3 &direction, const float open_angle, const float length, const float energy);
 
           // Member variables
+          int      m_id;         ///< unique ID
           int      m_n_hits;     ///< number of hits in the shower
           TVector3 m_vertex;     ///< vertex of the shower 
           TVector3 m_direction;  ///< direction of the shower

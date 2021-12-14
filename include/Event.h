@@ -1,6 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#include "Geometry.h"
 #include "Plane.h"
 #include "Particle.h"
 #include "TVector3.h"
@@ -37,10 +38,29 @@ namespace selection{
        * @param  is_cc is this a charged or neutral current event
        * @param  mc_vertex Monte Carlo neutrino vertex 
        * @param  reco_vertex reconstructed neutrino vertex
+       * @param  neutrino_energy energy of the neutrino
+       * @param  neutrino_qsqr qsqr of the neutrino
        * @param  file the file number the event was from
        * @param  id the id of the event
+       * @param  baseline
+       * @param  geometry fiducial volume of the detector for neutrino vertex checks
        */
-      Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id);
+      Event(const ParticleList &mc_particles, 
+            const ParticleList &reco_particles, 
+            const unsigned int interaction, 
+            const unsigned int scatter, 
+            const int neutrino_pdg, 
+            const unsigned int charged_pi, 
+            const unsigned int neutral_pi, 
+            const bool is_cc, 
+            const TVector3 &mc_vertex, 
+            const TVector3 &reco_vertex, 
+            const float neutrino_energy, 
+            const float neutrino_qsqr, 
+            const int &file, 
+            const int &id, 
+            const float &baseline,
+            const Geometry &g);
 
       /**
        * @brief  CountMCParticlesWithPdg
@@ -59,6 +79,15 @@ namespace selection{
        * @return number of reconstructed partices with the given pdg code
        */
       unsigned int CountRecoParticlesWithPdg(const int pdg) const;
+
+      /**
+       * @brief  CheckMCNeutrino
+       * 
+       * @param  pdg neutrino pdg code to check the event against
+       *
+       * @return boolean as to whether the event has the corresponding neutrino flavour
+       */
+      bool CheckMCNeutrino(const int &pdg) const;
 
       /**
        * @brief  CheckMCTopology
@@ -149,11 +178,17 @@ namespace selection{
       int GetNNeutralPions() const;
       
       /**
-       * @brief  Get whether the true neutrino interaction happened within the SBND fiducial 
+       * @brief  Get whether the true neutrino interaction happened within the  fiducial 
        *         volume
        */
-      bool IsSBNDTrueFiducial() const;
+      bool IsTrueFiducial() const;
       
+      /**
+       * @brief  Get whether the reco neutrino interaction happened within the  fiducial 
+       *         volume
+       */
+      bool IsRecoFiducial() const;
+
       /**
        * @brief  Get whether all the reconstructed tracks in an event are contained
        */
@@ -180,6 +215,16 @@ namespace selection{
       float GetTrueNuEnergy() const;
       
       /**
+       * @brief  Get the true neutrino qsqr
+       */
+      float GetTrueNuQ2() const;
+      
+      /**
+       * @brief  Get the baseline 
+       */
+      float GetBaseline() const;
+      
+      /**
        * @brief  Get the most energetic reconstructed particle
        *
        * @return Particle most energetic reco
@@ -194,14 +239,21 @@ namespace selection{
       Particle GetMostEnergeticTrueParticle() const;
 
       /**
-       * @brief  Get the minimum x,y,z positions of the SBND fiducial volume
+       * @brief  Get the minimum x,y,z positions of the  fiducial volume
        *
        * @return Vector of lowest x,y,z positions
        */
       TVector3 GetMinimumFiducialDimensions() const;
 
       /**
-       * @brief  Get the maximum x,y,z positions of the SBND fiducial volume
+       * @brief  Get the central x border of the  fiducial volume
+       *
+       * @return pair of the central x border positions
+       */
+//      std::pair<float,float> GetCentralFiducialDimensions() const;
+
+      /**
+       * @brief  Get the maximum x,y,z positions of the  fiducial volume
        *
        * @return Vector of highest x,y,z positions
        */
@@ -250,30 +302,22 @@ namespace selection{
       Particle GetMostEnergeticParticle(const ParticleList &particle_list) const;
 
       // Member variables
-      ParticleList       m_mc_particles;       ///< vector of Monte Carlo particles
-      ParticleList       m_reco_particles;     ///< vector of reconstructed particles
-      unsigned int       m_interaction;        ///< interaction type of the event
-      unsigned int       m_scatter;            ///< scatter code for the event: physical process
-      int                m_nu_pdg;             ///< Neutrino pdg code of the event
-      unsigned int       m_charged_pi;         ///< Number of charged pions in the event
-      unsigned int       m_neutral_pi;         ///< Number of neutral pions in the event
-      bool               m_is_cc;              ///< whether the event contains and CC or NC interaction
-      TVector3           m_reco_vertex;        ///< reconstructed neutrino vertex
-      TVector3           m_mc_vertex;          ///< reconstructed neutrino vertex
-      float              m_neutrino_energy;    ///< true neutrino energy
-      int                m_file;               ///< file id
-      int                m_id;                 ///< event id
-      float              m_sbnd_border_x;      ///< fiducial border in x for the sbnd detector
-      float              m_sbnd_border_y;      ///< fiducial border in y for the sbnd detector
-      float              m_sbnd_border_z;      ///< fiducial border in z for the sbnd detector
-      float              m_sbnd_offset_x;      ///< offset in x for the sbnd detector
-      float              m_sbnd_offset_y;      ///< offset in y for the sbnd detector
-      float              m_sbnd_offset_z;      ///< offset in z for the sbnd detector
-      float              m_sbnd_half_length_x; ///< detector half length in x
-      float              m_sbnd_half_length_y; ///< detector half length in y
-      float              m_sbnd_half_length_z; ///< detector half length in z
-                                                                               
-
+      ParticleList m_mc_particles;       ///< vector of Monte Carlo particles
+      ParticleList m_reco_particles;     ///< vector of reconstructed particles
+      unsigned int m_interaction;        ///< interaction type of the event
+      unsigned int m_scatter;            ///< scatter code for the event: physical process
+      int          m_nu_pdg;             ///< Neutrino pdg code of the event
+      unsigned int m_charged_pi;         ///< Number of charged pions in the event
+      unsigned int m_neutral_pi;         ///< Number of neutral pions in the event
+      bool         m_is_cc;              ///< whether the event contains and CC or NC interaction
+      TVector3     m_reco_vertex;        ///< reconstructed neutrino vertex
+      TVector3     m_mc_vertex;          ///< reconstructed neutrino vertex
+      float        m_neutrino_energy;    ///< true neutrino energy
+      float        m_neutrino_qsqr;      ///< true neutrino qsqr
+      float        m_baseline;           ///< true baseline of the event from the flux
+      int          m_file;               ///< file id
+      int          m_id;                 ///< event id
+      Geometry     m_geometry;           ///< fiducial geometry of the detector
   }; // Event
 } // selection
 

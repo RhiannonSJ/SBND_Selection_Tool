@@ -5,5 +5,5 @@ gROOT->ProcessLine(".L srcs/Event.cpp+");
 gROOT->ProcessLine(".L srcs/EventSelectionTool.cpp+");
 gROOT->ProcessLine(".L srcs/GeneralAnalysisHelper.cpp+");
 gROOT->ProcessLine(".L srcs/CC0piAnalysisHelper.cpp+");
-gROOT->ProcessLine(".L test/ExampleMain.cpp+");
+gROOT->ProcessLine(".L test/SolidValeriaMain.cpp+");
 }

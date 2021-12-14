@@ -1,0 +1,51 @@
+#
+# SBND configuration file 
+# Should be suitable for use with all analysis macros
+#
+# June 2020
+#
+
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/sbnd_selection_doms_files_260121/selection/
+InputFileName     = selection_tree.root
+
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/Jan2021/sbnd/pid/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/Jan2021/sbnd/pid/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/Jan2021/sbnd/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/Jan2021/sbnd/
+
+Detector = 0
+
+TotalFiles = 150
+
+TotalPOT = 6.6e20
+
+MinXAV  = -199.15
+MinYAV  = -200.0
+MinZAV  = 0.
+MaxXAV  = 199.15
+MaxYAV  = 200.0
+MaxZAV  = 500.0
+
+MinXFid = -190.9, 10.9
+MinYFid = -185.0, -185.0
+MinZFid = 15.0, 15.0
+MaxXFid = 5.6, 190.9
+MaxYFid = 185.0, 185.0
+MaxZFid = 415.0, 415.0
+
+# pre-inclusive cuts
+PreDiffCut      = 0.7
+PreLengthCut    = 10
+PreLongestCut   = 50
+PreChi2PCut     = 65
+PreChi2MuCut    = 19
+PreChi2RatioCut = 0.08
+
+# post-inclusive cuts
+DiffCut      = 0.65
+LengthCut    = 10
+LongestCut   = 100
+Chi2PCut     = 65
+Chi2PCutMu   = 87
+Chi2MuCut    = 14
+Chi2RatioCut = 0.075

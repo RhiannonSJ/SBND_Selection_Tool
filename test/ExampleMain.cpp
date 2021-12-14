@@ -1,127 +1,103 @@
 #include "../include/CC0piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
+#include "../include/Geometry.h"
+#include "../include/Plane.h"
 #include "../include/Event.h"
-#include <iostream>
-#include <sstream>
-#include <numeric>
-#include <time.h>
-#include "TVector3.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TCanvas.h"
-#include "TLegend.h"
-#include "TLatex.h"
-#include "TStyle.h"
-#include "TColor.h"
-#include "TObjArray.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "TLeaf.h"
+#include "../include/Particle.h"
+#include "../include/Setup.h"
+#include "../include/ConfigReader.h"
 
+using namespace cppsecrets;
 using namespace selection;
 
-int MainTest(){
- 
-  // Output file location
-  // I recommend making a directory close to the Selection_Tool directory
-  // to store any output files you might produce
-  // For instance:
-  std::string stats_location = "../Output_Selection_Tool/statistics/";
-  std::string plots_location = "../Output_Selection_Tool/plots/";
+int MainTest(const char *config){
+  
+  time_t rawtime;
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  GetTime(rawtime);
+  std::cout << "-----------------------------------------------------------" << std::endl;
 
   //------------------------------------------------------------------------------------------
-  //                                       Load events
+  //                                    Configure
   //------------------------------------------------------------------------------------------
-  
+  // Create object of the class ConfigReader
+  // Parse the configuration file
+  // Dump map on the console after parsing it
+  ConfigReader* p = ConfigReader::getInstance();
+  p->parseFile(config);
+  std::cout << " Variables from configuration file: " << std::endl;
+  p->dumpFileValues();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
+  // Get variables from config
+  std::string input_location  = "";
+  std::string input_filename  = "";
+  std::string exceptions_file = "";
+  std::string stats_location  = "";
+  std::string plots_location  = "";
+  unsigned int total_files = 0;
+  std::vector<double> minx_fid, miny_fid, minz_fid;
+  std::vector<double> maxx_fid, maxy_fid, maxz_fid;
+  std::vector<double> minx_av, miny_av, minz_av;
+  std::vector<double> maxx_av, maxy_av, maxz_av;
+
+  p->getValue("InputFileLocation",input_location);
+  p->getValue("InputFileName",    input_filename);
+  p->getValue("ExceptionsFile",   exceptions_file);
+  p->getValue("StatFileLocation", stats_location); 
+  p->getValue("PlotFileLocation", plots_location); 
+  p->getValue("TotalFiles",       total_files);
+  p->getValue("MinXFid",          minx_fid);
+  p->getValue("MinYFid",          miny_fid);
+  p->getValue("MinZFid",          minz_fid);
+  p->getValue("MaxXFid",          maxx_fid);
+  p->getValue("MaxYFid",          maxy_fid);
+  p->getValue("MaxZFid",          maxz_fid);
+  p->getValue("MinXAV",           minx_av);
+  p->getValue("MinYAV",           miny_av);
+  p->getValue("MinZAV",           minz_av);
+  p->getValue("MaxXAV",           maxx_av);
+  p->getValue("MaxYAV",           maxy_av);
+  p->getValue("MaxZAV",           maxz_av);
+
+  //------------------------------------------------------------------------------------------
+  //                                    Initialise
+  //------------------------------------------------------------------------------------------
+
+  // Get the active and fiducial geometry objects
+  Geometry fiducial(minx_fid,miny_fid,minz_fid,maxx_fid,maxy_fid,maxz_fid,true);
+  Geometry active(minx_av,miny_av,minz_av,maxx_av,maxy_av,maxz_av,false);
+  PlaneList planes = active.GetExternalPlaneList();
+
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
- 
-  // So that we can estimate how much time is left while we fill the event list
+
   int start = static_cast<int>(time(NULL));
+  double pot = 0.; 
 
-  // Load the events into the event list
-  // ===========================
-  //            FYI
-  //  Running over all 500 files 
-  //  takes ~15 minutes with a 
-  //  good connection
-  //
-  //  I usually test on ~50
-  // ===========================
-  unsigned int total_files = 500;
+  std::vector<int> exceptions;
+  FillExceptions(exceptions_file.c_str(),exceptions);
+
+  // First, ensure all tracks are contained
   for( unsigned int i = 0; i < total_files; ++i ){
-    // These are bad directories in this case, so continue past them
-    //if(i == 0 || i == 1 || i == 2 || i == 6 || i == 7) continue;
-
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-    name = "/pnfs/sbnd/persistent/users/rsjones/analysis_sample/120918_ana_files/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
-
-    //Load the event list with the contents of the current file
-    EventSelectionTool::LoadEventList(file_name, events, i);
-    
-    // See how much time is left in the loading
+    EventSelectionTool::EventList events;
+    LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
     EventSelectionTool::GetTimeLeft(start,total_files,i);
-  }
-  std::cout << std::endl;
-
-  // TopologyMap is a pre-defined map which holds a topology
-  // See include/Event.h for the definition
-  TopologyMap cc0pi_topology = GeneralAnalysisHelper::GetCC0PiTopologyMap();
-
-  // COUNTERS
-  // For a simple check of 
-  //    How many cc0pi events we see in truth
-  //    How many we reconstruct
-  //    How many cc0pi reconstructed events are also true cc0pi events
-  //
-  unsigned int number_of_true_cc0pi_events                   = 0;
-  unsigned int number_of_reconstructed_cc0pi_events          = 0;
-  unsigned int number_of_true_and_reconstructed_cc0pi_events = 0;
-
-  // Loop over all the events we have loaded
-  for(const Event &e : events){
-
-    // Make sure the true vertex is contained and that only 1 track escapes
-    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
     
-    // Find out if the current event was a true cc0pi final state
-    if(e.CheckMCTopology(cc0pi_topology)) {
-      number_of_true_cc0pi_events++;
-      // Now check if it was also a reconstructed cc0pi final state
-      if(e.CheckRecoTopology(cc0pi_topology))
-        number_of_true_and_reconstructed_cc0pi_events++;
-    }
-    // Check if it was a reconstructed cc0pi final state
-    if(e.CheckRecoTopology(cc0pi_topology))
-      number_of_reconstructed_cc0pi_events++;
-
-    // Get the list of reconstructed particle from the current event
-    ParticleList reconstructed_particles = e.GetRecoParticleList();
-    
-    // Loop over the particles
-    for(const Particle &p : reconstructed_particles){
-      // Get the particle's PDG code
-      int pdg = p.GetPdgCode();
+    // Now loop over the events
+    for(const Event &e : events){
     }
   }
-
-  // File to hold particle statistics
-  ofstream file;
-  file.open(stats_location+"example_cc0pi_efficiency_and_purity.txt");
-
-  file << "================================================================" << std::endl;
-  file << " CC 0Pi  efficiency : " << number_of_true_and_reconstructed_cc0pi_events/double(number_of_true_cc0pi_events)          << std::endl; 
-  file << " CC 0Pi  purity     : " << number_of_true_and_reconstructed_cc0pi_events/double(number_of_reconstructed_cc0pi_events) << std::endl; 
-  file << "================================================================" << std::endl;
-
-  file.close();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  time_t rawtime_end;
+  GetTime(rawtime_end);
+  std::cout << "-----------------------------------------------------------" << std::endl;
+  GetTotalTime(rawtime, rawtime_end);
+  std::cout << "-----------------------------------------------------------" << std::endl;
 
   return 0;
 
 } // MainTest()
+
+

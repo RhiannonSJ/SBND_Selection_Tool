@@ -33,8 +33,8 @@ int MainTest(){
   std::cout << "-----------------------------------------------------------" << std::endl;
  
   // Output file location
-  std::string stats_location = "../Output_Selection_Tool/statistics/breakdown/";
-  std::string plots_location  = "../Output_Selection_Tool/plots/breakdown/";
+  std::string stats_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/statistics/mcp2/";
+  std::string plots_location  = "/sbnd/data/users/rsjones/Output_Selection_Tool/plots/mcp2/";
 
   //------------------------------------------------------------------------------------------
   //                                       Load events
@@ -119,7 +119,7 @@ int MainTest(){
   unsigned int tru_outside_numu_cc_1pi       = 0;
 
   int start = static_cast<int>(time(NULL));
-  unsigned int total_files = 500;
+  unsigned int total_files = 50;
 
   // Load the events into the event list
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -129,7 +129,9 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LocalSamples/analysis/200219_neutrino_only/selection/"+std::to_string(i)+"/output_file.root";
+    //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
@@ -137,6 +139,7 @@ int MainTest(){
     //std::cout << "Loaded file " << std::setw(4) << i << '\r' << flush;
     EventSelectionTool::GetTimeLeft(start,total_files,i);
 
+    /*
     TFile f(file_name);
     TTree *cut = (TTree*) f.Get("cut_tree");
 
@@ -151,6 +154,7 @@ int MainTest(){
     contained_vertex += b_contained->GetLeaf("c_contained")->GetValue();
     contained_tracks += b_tracks->GetLeaf("c_contained_tracks")->GetValue();
     min_one          += b_minone->GetLeaf("c_min_one")->GetValue();
+    */
 
   }
   std::cout << std::endl;
@@ -166,70 +170,72 @@ int MainTest(){
     ParticleList reco = e.GetRecoParticleList();
     ParticleList mc   = e.GetMCParticleList();
 
-    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) != 1) continue;
-    
-    // Particle type hit-based studies
-    for(const Particle &p : mc){
-      if(p.GetPdgCode() == 13) total_true_muon++;
-      if(p.GetPdgCode() == 211 || p.GetPdgCode() == -211) total_true_pion++;
-      if(p.GetPdgCode() == 2212) total_true_proton++;
-      if(p.GetNumberOfHits() <= 10){
-        if(p.GetPdgCode() == 13) true_muon_less_than_10_hits++;
-        if(p.GetPdgCode() == 211 || p.GetPdgCode() == -211) true_pion_less_than_10_hits++;
-        if(p.GetPdgCode() == 2212) true_proton_less_than_10_hits++;
+    if(!GeneralAnalysisHelper::MaxOneEscapingTrack(e)) continue;
+
+    if(e.IsSBNDTrueFiducial()){
+      // Topology based contained and external (true) studies
+      true_contained++;
+      // Particle type hit-based studies
+      for(const Particle &p : mc){
+        if(p.GetPdgCode() == 13) total_true_muon++;
+        if(p.GetPdgCode() == 211 || p.GetPdgCode() == -211) total_true_pion++;
+        if(p.GetPdgCode() == 2212) total_true_proton++;
+        if(p.GetNumberOfHits() <= 10){
+          if(p.GetPdgCode() == 13) true_muon_less_than_10_hits++;
+          if(p.GetPdgCode() == 211 || p.GetPdgCode() == -211) true_pion_less_than_10_hits++;
+          if(p.GetPdgCode() == 2212) true_proton_less_than_10_hits++;
+        }
       }
+      // Selected and signal
+      if(e.CheckRecoTopology(numu_signal_map)) {
+        sel_contained_numu++; 
+        if(e.CheckMCTopology(numu_signal_map)) sig_contained_numu++;
+      }
+      if(e.CheckRecoTopology(cc_signal_map)) {
+        sel_contained_numu_cc++; 
+        if(e.CheckMCTopology(cc_signal_map)) sig_contained_numu_cc++;
+      }
+      if(e.CheckRecoTopology(cc0pi_signal_map)) {
+        sel_contained_numu_cc_0pi++; 
+        if(e.CheckMCTopology(cc0pi_signal_map)) sig_contained_numu_cc_0pi++;
+      }
+      if(e.CheckRecoTopology(cc1pi_signal_map)) {
+        sel_contained_numu_cc_1pi++;
+        if(e.CheckMCTopology(cc1pi_signal_map)) sig_contained_numu_cc_1pi++;
+      }
+      // True
+      if(e.CheckMCTopology(numu_signal_map))  tru_contained_numu++; 
+      if(e.CheckMCTopology(cc_signal_map))    tru_contained_numu_cc++; 
+      if(e.CheckMCTopology(cc0pi_signal_map)) tru_contained_numu_cc_0pi++; 
+      if(e.CheckMCTopology(cc1pi_signal_map)) tru_contained_numu_cc_1pi++;
     }
-    // Topology based contained and external (true) studies
-    true_contained++;
-    // Selected and signal
-    if(e.CheckRecoTopology(numu_signal_map)) {
-      sel_contained_numu++; 
-      if(e.CheckMCTopology(numu_signal_map)) sig_contained_numu++;
+    else{
+      true_outside++;
+      // Selected and signal
+      if(e.CheckRecoTopology(numu_signal_map)) {
+        sel_outside_numu++; 
+        if(e.CheckMCTopology(numu_signal_map)) sig_outside_numu++;
+      }
+      if(e.CheckRecoTopology(cc_signal_map)) {
+        sel_outside_numu_cc++; 
+        if(e.CheckMCTopology(cc_signal_map)) sig_outside_numu_cc++;
+      }
+      if(e.CheckRecoTopology(cc0pi_signal_map)) {
+        sel_outside_numu_cc_0pi++; 
+        if(e.CheckMCTopology(cc0pi_signal_map)) sig_outside_numu_cc_0pi++;
+      }
+      if(e.CheckRecoTopology(cc1pi_signal_map)) {
+        sel_outside_numu_cc_1pi++;
+        if(e.CheckMCTopology(cc1pi_signal_map)) sig_outside_numu_cc_1pi++;
+      }
+      // True
+      if(e.CheckMCTopology(numu_signal_map))  tru_outside_numu++; 
+      if(e.CheckMCTopology(cc_signal_map))    tru_outside_numu_cc++; 
+      if(e.CheckMCTopology(cc0pi_signal_map)) tru_outside_numu_cc_0pi++; 
+      if(e.CheckMCTopology(cc1pi_signal_map)) tru_outside_numu_cc_1pi++;
     }
-    if(e.CheckRecoTopology(cc_signal_map)) {
-      sel_contained_numu_cc++; 
-      if(e.CheckMCTopology(cc_signal_map)) sig_contained_numu_cc++;
-    }
-    if(e.CheckRecoTopology(cc0pi_signal_map)) {
-      sel_contained_numu_cc_0pi++; 
-      if(e.CheckMCTopology(cc0pi_signal_map)) sig_contained_numu_cc_0pi++;
-    }
-    if(e.CheckRecoTopology(cc1pi_signal_map)) {
-      sel_contained_numu_cc_1pi++;
-      if(e.CheckMCTopology(cc1pi_signal_map)) sig_contained_numu_cc_1pi++;
-    }
-    // True
-    if(e.CheckMCTopology(numu_signal_map))  tru_contained_numu++; 
-    if(e.CheckMCTopology(cc_signal_map))    tru_contained_numu_cc++; 
-    if(e.CheckMCTopology(cc0pi_signal_map)) tru_contained_numu_cc_0pi++; 
-    if(e.CheckMCTopology(cc1pi_signal_map)) tru_contained_numu_cc_1pi++;
   }
-  else{
-    true_outside++;
-    // Selected and signal
-    if(e.CheckRecoTopology(numu_signal_map)) {
-      sel_outside_numu++; 
-      if(e.CheckMCTopology(numu_signal_map)) sig_outside_numu++;
-    }
-    if(e.CheckRecoTopology(cc_signal_map)) {
-      sel_outside_numu_cc++; 
-      if(e.CheckMCTopology(cc_signal_map)) sig_outside_numu_cc++;
-    }
-    if(e.CheckRecoTopology(cc0pi_signal_map)) {
-      sel_outside_numu_cc_0pi++; 
-      if(e.CheckMCTopology(cc0pi_signal_map)) sig_outside_numu_cc_0pi++;
-    }
-    if(e.CheckRecoTopology(cc1pi_signal_map)) {
-      sel_outside_numu_cc_1pi++;
-      if(e.CheckMCTopology(cc1pi_signal_map)) sig_outside_numu_cc_1pi++;
-    }
-    // True
-    if(e.CheckMCTopology(numu_signal_map))  tru_outside_numu++; 
-    if(e.CheckMCTopology(cc_signal_map))    tru_outside_numu_cc++; 
-    if(e.CheckMCTopology(cc0pi_signal_map)) tru_outside_numu_cc_0pi++; 
-    if(e.CheckMCTopology(cc1pi_signal_map)) tru_outside_numu_cc_1pi++;
-  }
-  
+
   /*
    *
    *      OUTPUTS
@@ -242,11 +248,7 @@ int MainTest(){
 
 
   file << "===========================================================" << std::endl;
-  file << " Total                          : " << total << std::endl;
-  file << " Reconstructed vertex contained : " << contained_vertex << std::endl;
-  file << " Reconstructed tracks contained : " << contained_tracks << std::endl;
-  file << " Minimum 1 reconstructed track  : " << min_one << std::endl;
-  file << "-----------------------------------------------------------" << std::endl;
+  file << " Reco vertex contained          : " << events.size() << std::endl;
   file << " Reco and true vertex contained : " << true_contained << std::endl; 
   file << " Reco contained, true outside   : " << true_outside << std::endl; 
   file << "===========================================================" << std::endl;

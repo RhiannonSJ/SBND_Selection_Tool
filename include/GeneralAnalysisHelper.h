@@ -102,6 +102,16 @@ namespace selection{
        */
       static unsigned int CountMatchedParticles(const Event &e, const ParticleList &particle_list, const int pdg);
 
+      /**
+       * @brief  get the list of MCIds which have been double counted in the truth matching
+       *
+       * @param  event
+       *
+       * @return list of double-counted MC IDs
+       *
+       */
+      static std::vector<int> GetBadIDList(const Event &e);
+
     public : 
 
       typedef std::vector<Particle> ParticleList;
@@ -111,6 +121,16 @@ namespace selection{
        * @brief  Get NuMu topology map
        */
       static TopologyMap GetNuMuTopologyMap();
+
+      /**
+       * @brief  Get NuMuBar topology map
+       */
+      static TopologyMap GetNuMuBarTopologyMap();
+
+      /**
+       * @brief  Get Numu NC topology map
+       */
+      static TopologyMap GetNuMuNCTopologyMap();
 
       /**
        * @brief  Get NC topology map
@@ -128,9 +148,19 @@ namespace selection{
       static TopologyMap GetNC1PiTopologyMap();
 
       /**
+       * @brief  Get NC 1Pi NPi0 topology map
+       */
+      static TopologyMap GetNC1PiNPi0TopologyMap();
+
+      /**
        * @brief  Get NC 2Pi topology map
        */
       static TopologyMap GetNC2PiTopologyMap();
+
+      /**
+       * @brief  Get NC NPi topology map
+       */
+      static TopologyMap GetNCNPiTopologyMap();
 
       /**
        * @brief  Get CC inclusive topology map
@@ -143,6 +173,11 @@ namespace selection{
       static TopologyMap GetCC0PiTopologyMap();
 
       /**
+       * @brief  Get CC 0Pi 1Proton topology map
+       */
+      static TopologyMap GetCC0Pi1PTopologyMap();
+
+      /**
        * @brief  Get CC 0Pi 2Protons topology map
        */
       static TopologyMap GetCC0Pi2PTopologyMap();
@@ -153,9 +188,19 @@ namespace selection{
       static TopologyMap GetCC0Pi3PTopologyMap();
 
       /**
+       * @brief  Get CC 0Pi 5Protons topology map
+       */
+      static TopologyMap GetCC0Pi5PTopologyMap();
+
+      /**
        * @brief  Get CC 1Pi topology map
        */
       static TopologyMap GetCC1PiTopologyMap();
+
+      /**
+       * @brief  Get CC 1Pi Npi0 topology map
+       */
+      static TopologyMap GetCC1PiNPi0TopologyMap();
 
       /**
        * @brief  Get CC 2Pi topology map
@@ -168,6 +213,44 @@ namespace selection{
       static TopologyMap GetCCPi0TopologyMap();
 
       /**
+       * @brief  Get CC 1Pi0 1PiC topology map
+       */
+      static TopologyMap GetCCPi0PiCTopologyMap();
+
+      /*
+       * @brief  Get the NuE CC topology map
+       */
+      static TopologyMap GetNuECCTopologyMap();
+
+      /*
+       * @brief  Get the NuE NC topology map
+       */
+      static TopologyMap GetNuENCTopologyMap();
+
+      /*
+       * @brief  Get the corresponding other topology map w.r.t list passed
+       */
+      static TopologyMap GetOtherTopologyMap(const unsigned int e, const std::vector<TopologyMap> &maps);
+
+      /** 
+       * @brief Function to determine if the event has at least 1 reconstructed track
+       *
+       * @param  e Current event
+       *
+       * @return  true if passed
+       */
+      static bool MinOneRecoTrack(const Event &e);
+      
+      /** 
+       * @brief Function to determine if the event passes the global CC Inclusive selection cuts
+       *
+       * @param  e Current event
+       *
+       * @return  true if passed
+       */
+      static bool PassedCCInclusive(const Event &e, const unsigned int &det);
+
+      /**
        * @brief  Get the number of escaping reconstructed tracks or MCParticles
        *
        * @param  e Current event
@@ -177,13 +260,22 @@ namespace selection{
       static unsigned int NumberEscapingTracks(const Event &e);
       
       /**
-       * @brief  Finds if there is more than one escaping track in an event
+       * @brief  Finds if there is max one escaping track in an event
        *
        * @param  e Current event
        *
        * @return True if there is a maximum of one, false if there are more than one
        */
       static bool MaxOneEscapingTrack(const Event &e);
+      
+      /**
+       * @brief  Finds if there is max one escaping track in an event that's greater than 100 cm
+       *
+       * @param  e Current event
+       *
+       * @return True if there is a maximum of one, false if there are more than one
+       */
+      static bool MaxOneLongEscapingTrack(const Event &e);
       
       /**                                                              
        * @brief  Gives the number of MC, Reco and Coincidences for a given topology                                                           
@@ -225,6 +317,38 @@ namespace selection{
        * @param  lengths 
        */
       static void GetRecoLengthWithPdg(const Event &e, const int pdg, std::vector<float> &lengths);
+
+      /**                                                              
+       * @brief  Get the longest MC track ID for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  id MC particle ID to return
+       */
+      static void LongestMCTrackID(const Event &e, int &id);
+
+      /**                                                              
+       * @brief  Get the longest Reco track ID for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  id Reco particle ID to return
+       */
+      static void LongestRecoTrackID(const Event &e, int &id);
+
+      /**                                                              
+       * @brief  Get the longest MC track length for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  length MC particle length to return
+       */
+      static void LongestMCTrackLength(const Event &e, double &length);
+
+      /**                                                              
+       * @brief  Get the longest Reco track length for a given event
+       *
+       * @param  event to find the longest particle in
+       * @param  length Reco particle length to return
+       */
+      static void LongestRecoTrackLength(const Event &e, double &length);
 
       /**                                                              
        * @brief  Get the cos thetas for given MC pdg
@@ -299,6 +423,14 @@ namespace selection{
       static void GetRecoModulusMomentumWithPdg(const Event &e, const int pdg, std::vector<float> &momentum_mod);
       
       /**
+       * @brief  Calculates the uncertainty on the ratio used to calculate efficiencies and purities
+       *
+       * @param  num The numerator used in the ratio calculation
+       * @param  den The denomenator used in the ratio calculation
+       **/
+      static double RatioUncertainty(const double &num, const double &den);
+
+      /**
        * @brief  Calculates the Efficiency, Purity, Background Rejection
        *         Parameters for Efficiency calculation ( MC, signal and selected ) for a given topology : 
        *         0-> No muon, 
@@ -310,8 +442,8 @@ namespace selection{
        * @param  count_mc
        * @param  count_signal 
        * @param  count_selected 
-       **/
-      static double Efficiency(const std::vector< double > &count_mc, const std::vector< double > &count_signal, const std::vector< double > &count_selected, const TopologyMap &topology);
+       *
+      static double Efficiency(const std::vector< double > &count_mc, const std::vector< double > &count_signal, const std::vector< double > &count_selected, const TopologyMap &topology);*/
 
       /**
        * @brief  Save Topology Matrix into a file
@@ -500,10 +632,11 @@ namespace selection{
        * @param  event
        * @param  true pdg code of particle
        * @param  reconstructed pdg code of particle
+       * @param  truth whether we are counting for the numerator of the efficiency
        *
        * @return number of mis-matched particles for given pdg codes
        */
-      static unsigned int CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg);
+      static unsigned int CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg, const bool &truth);
       
       /**
        * @brief  for all events, count all matched particles by topology and fill file
@@ -512,9 +645,11 @@ namespace selection{
        * @param  topology
        * @param  topology name
        * @param  file to append
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os);
+      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all mismatched particles by topology and fill file
@@ -523,27 +658,33 @@ namespace selection{
        * @param  topology
        * @param  topology name
        * @param  file to append
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os);
+      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all matched particles and fill file
        *
        * @param  event list
        * @param  file name
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os);
+      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all mismatched particles and fill file
        *
        * @param  event list
        * @param  file name
+       * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os);
+      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  find out if a reconstructed particle has a matching truth particle

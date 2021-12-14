@@ -2,7 +2,22 @@
 #include "../include/EventSelectionTool.h"
 namespace selection{
   
-  Event::Event(const ParticleList &mc_particles, const ParticleList &reco_particles, const unsigned int interaction, const unsigned int scatter, const int neutrino_pdg, const unsigned int charged_pi, const unsigned int neutral_pi, const bool is_cc, const TVector3 &mc_vertex, const TVector3 &reco_vertex, const float neutrino_energy, const int &file, const int &id) :
+  Event::Event(const ParticleList &mc_particles, 
+               const ParticleList &reco_particles, 
+               const unsigned int interaction, 
+               const unsigned int scatter, 
+               const int neutrino_pdg, 
+               const unsigned int charged_pi, 
+               const unsigned int neutral_pi, 
+               const bool is_cc, 
+               const TVector3 &mc_vertex, 
+               const TVector3 &reco_vertex, 
+               const float neutrino_energy, 
+               const float neutrino_qsqr, 
+               const int &file, 
+               const int &id, 
+               const float &baseline,
+               const Geometry &g) :
     m_mc_particles(mc_particles),
     m_reco_particles(reco_particles),
     m_interaction(interaction),
@@ -14,29 +29,27 @@ namespace selection{
     m_mc_vertex(mc_vertex),
     m_reco_vertex(reco_vertex), 
     m_neutrino_energy(neutrino_energy),
+    m_neutrino_qsqr(neutrino_qsqr),
     m_file(file),
-    m_id(id) {
-    
-      // Co-ordinate offset in cm
-      m_sbnd_half_length_x = 400;
-      m_sbnd_half_length_y = 400;
-      m_sbnd_half_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
-
-    }
+    m_id(id),
+    m_baseline(baseline),
+    m_geometry(g){}
 
   //------------------------------------------------------------------------------------------ 
     
   unsigned int Event::CountMCParticlesWithPdg(const int pdg) const{
- 
-    return this->CountParticlesWithPdg(pdg, m_mc_particles);
+
+    ParticleList trueList;
+    for(const Particle & p : m_mc_particles){
+      if(p.GetPdgCode() == 2212) {// Make sure the proton energy is realistic for reconstruction
+        if(p.GetKineticEnergy() > 0.021) 
+          trueList.push_back(p);
+      }
+      else{
+        trueList.push_back(p);
+      }
+    }
+    return this->CountParticlesWithPdg(pdg, trueList);
 
   }
 
@@ -50,8 +63,16 @@ namespace selection{
 
   //------------------------------------------------------------------------------------------ 
 
+  bool Event::CheckMCNeutrino(const int &pdg) const{
+    if(this->GetNeutrinoPdgCode() == pdg)
+      return true;
+    else 
+      return false;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+
   bool Event::CheckMCTopology(const TopologyMap &topology) const{
-  
     return this->CheckTopology(topology, m_mc_particles);
   }
 
@@ -150,42 +171,75 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMinimumFiducialDimensions() const{
-    return TVector3((-m_sbnd_offset_x + m_sbnd_border_x), 
-                    (-m_sbnd_offset_y + m_sbnd_border_y), 
-                    (-m_sbnd_offset_z + m_sbnd_border_z));
+    return TVector3(*std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end()),
+                    *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end()),
+                    *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end()));
   }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  /*
+  std::pair<float, float> Event::GetCentralFiducialDimensions() const{
+    std::pair<float, float> central(-m_sbnd_border_x_max1, m_sbnd_border_x_min2);
+    return central;
+  }*/
 
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Event::GetMaximumFiducialDimensions() const{
-    return TVector3((m_sbnd_half_length_x - m_sbnd_offset_x - m_sbnd_border_x), 
-                    (m_sbnd_half_length_y - m_sbnd_offset_y - m_sbnd_border_y), 
-                    (m_sbnd_half_length_z - m_sbnd_offset_z - m_sbnd_border_z));
+    return TVector3(*std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end()),
+                    *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end()),
+                    *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end()));
   }
   
   //------------------------------------------------------------------------------------------ 
   
-  bool Event::IsSBNDTrueFiducial() const{
+  bool Event::IsTrueFiducial() const{
        
     // Check the neutrino interaction vertex is within the fiducial volume      
-     float nu_vertex_x = m_mc_vertex[0];                        
-     float nu_vertex_y = m_mc_vertex[1];                        
-     float nu_vertex_z = m_mc_vertex[2];                
-     float min_fid_x = Event::GetMinimumFiducialDimensions()[0];
-     float min_fid_y = Event::GetMinimumFiducialDimensions()[1];
-     float min_fid_z = Event::GetMinimumFiducialDimensions()[2];
-     float max_fid_x = Event::GetMaximumFiducialDimensions()[0];
-     float max_fid_y = Event::GetMaximumFiducialDimensions()[1];
-     float max_fid_z = Event::GetMaximumFiducialDimensions()[2];
-                                                                                 
-     if (    (nu_vertex_x > max_fid_x)  
-          || (nu_vertex_x < min_fid_x)
-          || (nu_vertex_y > max_fid_y)
-          || (nu_vertex_y < min_fid_y)
-          || (nu_vertex_z > max_fid_z)
-          || (nu_vertex_z < min_fid_z)) return false;
+    float vertex_x = m_mc_vertex[0];                        
+    float vertex_y = m_mc_vertex[1];                        
+    float vertex_z = m_mc_vertex[2];
 
-     return true;
+    bool in_fiducial = false;
+    for(unsigned int n = 0; n < m_geometry.GetNTPCs(); ++n){
+      float min_x = m_geometry.GetMinX().at(n);
+      float min_y = m_geometry.GetMinY().at(n);
+      float min_z = m_geometry.GetMinZ().at(n);
+      float max_x = m_geometry.GetMaxX().at(n);
+      float max_y = m_geometry.GetMaxY().at(n);
+      float max_z = m_geometry.GetMaxZ().at(n);
+      
+      if(vertex_x >= min_x && vertex_x <= max_x &&
+         vertex_y >= min_y && vertex_y <= max_y &&
+         vertex_z >= min_z && vertex_z <= max_z) in_fiducial = true;
+    }
+    return in_fiducial;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+  
+  bool Event::IsRecoFiducial() const{
+       
+    // Check the neutrino interaction vertex is within the fiducial volume      
+    float vertex_x = m_reco_vertex[0];                        
+    float vertex_y = m_reco_vertex[1];                        
+    float vertex_z = m_reco_vertex[2];                
+   
+    bool in_fiducial = false;
+    for(unsigned int n = 0; n < m_geometry.GetNTPCs(); ++n){
+      float min_x = m_geometry.GetMinX().at(n);
+      float min_y = m_geometry.GetMinY().at(n);
+      float min_z = m_geometry.GetMinZ().at(n);
+      float max_x = m_geometry.GetMaxX().at(n);
+      float max_y = m_geometry.GetMaxY().at(n);
+      float max_z = m_geometry.GetMaxZ().at(n);
+
+      if(vertex_x >= min_x && vertex_x <= max_x &&
+         vertex_y >= min_y && vertex_y <= max_y &&
+         vertex_z >= min_z && vertex_z <= max_z) in_fiducial = true;
+    }
+    return in_fiducial;
   }
 
   //------------------------------------------------------------------------------------------ 
@@ -251,12 +305,32 @@ namespace selection{
     return m_neutrino_energy;
 
   }
+
+  //------------------------------------------------------------------------------------------ 
   
+  float Event::GetTrueNuQ2() const{
+  
+    return m_neutrino_qsqr;
+
+  }
+  
+  //------------------------------------------------------------------------------------------ 
+  
+  float Event::GetBaseline() const{
+    
+    return m_baseline;
+
+  }
+
   //------------------------------------------------------------------------------------------ 
 
   unsigned int Event::CountParticlesWithPdg(const int pdg, const ParticleList &particle_list) const{
     unsigned int particle_counter = 0;
-    for(unsigned int i = 0; i < particle_list.size(); ++i) if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) particle_counter++;
+    for(unsigned int i = 0; i < particle_list.size(); ++i) {
+      if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) {
+       particle_counter++;
+      }
+    }
     return particle_counter;
   }
 
@@ -266,8 +340,11 @@ namespace selection{
     // Loop over the map
     for( TopologyMap::const_iterator it = topology.begin(); it != topology.end(); ++it ){
       // Define temporary variables for the current map element
-      std::vector< int > pdg_codes = it->first; 
+      std::vector< int > pdg_codes = it->first;
+      // If n_total < 0 it means we want events which don't have abs(n_total) of that particle type
+      // If n_total = -999 it means we do not want events with 0 of that particle type
       int n_total                  = it->second;
+
       // Count the number of particles in the current event with the same PDG codes 
       // as given by the chosen topology
       int counter = 0;
@@ -275,7 +352,10 @@ namespace selection{
       for(unsigned int i = 0; i < pdg_codes.size(); ++i){
         counter += this->CountParticlesWithPdg(pdg_codes[i], particle_list);
       }
-      if(counter != n_total) return false;
+
+      if(n_total >= 0 && counter != n_total) return false;
+      else if(n_total < 0 && n_total > -999 && counter == abs(n_total)) return false;
+      else if(n_total == -999 && counter == 0) return false;
     }
     return true;
   }

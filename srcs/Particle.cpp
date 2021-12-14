@@ -6,8 +6,17 @@
 
 namespace selection{
 
-  Particle::Particle(const int mc_id, const int pdg, const int status, const int n_hits,  const float mass, const float energy, const TVector3 &vertex, const TVector3 &end, const TVector3 &momentum) : 
-    m_mc_id(mc_id), 
+  Particle::Particle(const int mc_id,
+                     const int pdg, 
+                     const int status, 
+                     const int n_hits,  
+                     const float mass, 
+                     const float energy,
+                     const TVector3 &vertex,
+                     const TVector3 &end,
+                     const TVector3 &momentum,
+                     const Geometry &g) : 
+    m_mc_id(mc_id),
     m_pdg(pdg),
     m_status(status),
     m_n_hits(n_hits),
@@ -17,32 +26,40 @@ namespace selection{
     m_from_reco_track(false),
     m_vertex(vertex),
     m_end(end),
-    m_momentum(momentum){
+    m_momentum(momentum),
+    m_geometry(g){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
-      
-      // Co-ordinate offset in cm
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
-
-  }
+      m_id = m_mc_id;
+    }
 
   //------------------------------------------------------------------------------------------ 
   
-  Particle::Particle(const int mc_id_charge, const int mc_id_energy, const int mc_id_hits, const int pdg, const int n_hits, const float kinetic_energy, const float mcs_momentum_muon, const float range_momentum_muon, const float range_momentum_proton, const float length, const TVector3 &vertex, const TVector3 &end, const float &chi2p, const float &chi2mu, const float &chi2pi) :
+  Particle::Particle(const int mc_id_charge, 
+                     const int mc_id_energy, 
+                     const int mc_id_hits,
+                     const int id,
+                     const int pdg, 
+                     const int n_hits, 
+                     const float kinetic_energy, 
+                     const float mcs_momentum_muon, 
+                     const float range_momentum_muon, 
+                     const float range_momentum_proton, 
+                     const float length, 
+                     const TVector3 &vertex, 
+                     const TVector3 &end, 
+                     const float &chi2p, 
+                     const float &chi2mu, 
+                     const float &chi2pi, 
+                     const std::vector<float> &dedx, 
+                     const std::vector<float> &residual_range, 
+                     const Geometry &g) :
     m_mc_id_charge(mc_id_charge),
     m_mc_id_energy(mc_id_energy),
     m_mc_id_hits(mc_id_hits),
+    m_id(id),
     m_pdg(pdg),
     m_n_hits(n_hits),
+    m_kinetic_energy(kinetic_energy),
     m_mcs_mom_muon(mcs_momentum_muon),
     m_range_mom_muon(range_momentum_muon),
     m_range_mom_proton(range_momentum_proton),
@@ -53,60 +70,46 @@ namespace selection{
     m_end(end),
     m_chi2p(chi2p),
     m_chi2mu(chi2mu),
-    m_chi2pi(chi2pi) {
+    m_chi2pi(chi2pi),
+    m_dedx(dedx),
+    m_residual_range(residual_range),
+    m_geometry(g){
       // Set member variables
-      m_mass            = this->GetMassFromPdg(pdg);
-      m_energy          = m_mass + kinetic_energy/1000.;
+      m_mass   = this->GetMassFromPdg(pdg);
+      m_energy = m_mass + (kinetic_energy/1000.);
       
       // Get the magnitude of the momentum
       double momentum_magnitude = sqrt(pow(m_energy,2) - pow(m_mass,2));
       m_momentum = momentum_magnitude * (m_end - m_vertex)*(1/double((m_end-m_vertex).Mag()));
-      
-      // Co-ordinate offset in cm
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
-
     }
 
   //------------------------------------------------------------------------------------------ 
 
-  Particle::Particle(const int pdg, const int n_hits, const TVector3 &vertex, const TVector3 &end) :
+  Particle::Particle(const int pdg,
+                     const int id,
+                     const int n_hits, 
+                     const TVector3 &vertex, 
+                     const TVector3 &end, 
+                     const float &energy,
+                     const Geometry &g) :
     m_pdg(pdg),
+    m_id(id),
     m_n_hits(n_hits),
     m_mass(this->GetMassFromPdg(pdg)),
-    m_has_calorimetry(false),
+    m_has_calorimetry(true),
     m_from_reco_track(false),
     m_vertex(vertex),
-    m_end(end){
+    m_end(end),
+    m_energy(energy),
+    m_geometry(g){
       m_length = sqrt(pow(end[0] - vertex[0], 2) + pow(end[1] - vertex[1], 2) + pow(end[0] - vertex[0], 2));
-      
-      // Co-ordinate offset in cm
-      m_sbnd_length_x = 400;
-      m_sbnd_length_y = 400;
-      m_sbnd_length_z = 500;
-      
-      m_sbnd_offset_x = 200;
-      m_sbnd_offset_y = 200;
-      m_sbnd_offset_z = 0;
-
-      m_sbnd_border_x = 10;
-      m_sbnd_border_y = 20;
-      m_sbnd_border_z = 10;
-
     }
 
-  
   //------------------------------------------------------------------------------------------ 
   
+  int Particle::ID() const{
+    return m_id;
+  }
   float Particle::GetMassFromPdg(const int pdg) const{
     switch(abs(pdg)){ 
       case 211: 
@@ -115,6 +118,10 @@ namespace selection{
         return 0.1349766;
       case 13:
         return 0.1056583;
+      case 11:
+        return 0.0005489;
+      case 22:
+        return 0.0;
       case 2212:
         return 0.9382720;
       case 321:
@@ -135,7 +142,7 @@ namespace selection{
     if(m_has_calorimetry && !m_from_reco_track){
       return m_status;
     }
-    std::cout << "GetStatusCode" << std::endl;
+    std::cerr << "GetStatusCode" << std::endl;
     throw 5;
   }
       
@@ -150,41 +157,76 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetEnergy() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     return m_energy;
   }
 
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetKineticEnergy() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     return m_energy-m_mass;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2P() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2p;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2Mu() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2mu;
   }
 
   //------------------------------------------------------------------------------------------ 
  
   float Particle::GetChi2Pi() const{
-    if(!m_from_reco_track) throw 1;
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
     return m_chi2pi;
   }
 
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetLength() const{return m_length;}
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  std::vector<float> Particle::GetdEdx() const{
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
+    return m_dedx;
+  }
+
+  //------------------------------------------------------------------------------------------ 
+ 
+  std::vector<float> Particle::GetResidualRange() const{
+    if(!m_from_reco_track) {
+      std::cerr << " Not a track " << std::endl;
+      throw 1;
+    }
+    return m_residual_range;
+  }
 
   //------------------------------------------------------------------------------------------ 
   
@@ -206,13 +248,16 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   TVector3 Particle::GetMomentum() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     if(!m_from_reco_track) return m_momentum;
-    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained() && this->Particle::GetLength() >= 100)
       return this->Particle::GetMCSMomentumMuon();
-    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return this->Particle::GetRangeMomentumMuon();
-    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return this->Particle::GetRangeMomentumProton();
     else
       return m_momentum;
@@ -221,13 +266,16 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
   
   float Particle::GetModulusMomentum() const{
-    if(!m_has_calorimetry) throw 1;
+    if(!m_has_calorimetry) {
+      std::cerr << " No calorimetry " << std::endl;
+      throw 1;
+    }
     if(!m_from_reco_track) return m_momentum.Mag();
-    if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetOneEndTrackContained() && this->Particle::GetLength() >= 100)
       return m_mcs_mom_muon;
-    if(this->Particle::GetPdgCode() == 13 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 13 && this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return m_range_mom_muon;
-    if(this->Particle::GetPdgCode() == 2212 && !this->Particle::GetTrackContained())
+    else if(this->Particle::GetPdgCode() == 2212 && this->Particle::GetTrackContained() && this->Particle::GetLength() >= 50)
       return m_range_mom_proton;
     else
       return m_momentum.Mag();
@@ -256,10 +304,8 @@ namespace selection{
   int Particle::GetMCId() const{ 
     if(m_has_calorimetry && !m_from_reco_track){
       return m_mc_id;
-    }
-    
+    } 
     std::cout << "GetMCId" << std::endl;
-
     throw 5;
   }
 
@@ -331,19 +377,21 @@ namespace selection{
     float end_x    = m_end[0];                        
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
-                                                                                 
-    if (    (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (vertex_x < (-m_sbnd_offset_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (vertex_z < (-m_sbnd_offset_z))
-         || (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (end_x    < (-m_sbnd_offset_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (end_y    < (-m_sbnd_offset_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (end_z    < (-m_sbnd_offset_z))) return false; 
+   
+    // Get the outermost faces of the detector
+    float min_x = *std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end());
+    float min_y = *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end());
+    float min_z = *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end());
+    float max_x = *std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end());
+    float max_y = *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end());
+    float max_z = *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end());
+
+    if(vertex_x < min_x || vertex_x > max_x ||
+       vertex_y < min_y || vertex_y > max_y ||
+       vertex_z < min_z || vertex_z > max_z ||
+       end_x    < min_x || end_x    > max_x ||
+       end_y    < min_y || end_y    > max_y ||
+       end_z    < min_z || end_z    > max_z) return false;
 
     return true;
   }
@@ -363,39 +411,23 @@ namespace selection{
     float end_y    = m_end[1];                        
     float end_z    = m_end[2];                        
    
-    /*
-    bool does_vtx_escape = 
-      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (vertex_x < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (vertex_y < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (vertex_z < (-m_sbnd_offset_z + m_sbnd_border_z)));
+    // Get the outermost faces of the detector
+    float min_x = *std::min_element(m_geometry.GetMinX().begin(),m_geometry.GetMinX().end());
+    float min_y = *std::min_element(m_geometry.GetMinY().begin(),m_geometry.GetMinY().end());
+    float min_z = *std::min_element(m_geometry.GetMinZ().begin(),m_geometry.GetMinZ().end());
+    float max_x = *std::max_element(m_geometry.GetMaxX().begin(),m_geometry.GetMaxX().end());
+    float max_y = *std::max_element(m_geometry.GetMaxY().begin(),m_geometry.GetMaxY().end());
+    float max_z = *std::max_element(m_geometry.GetMaxZ().begin(),m_geometry.GetMaxZ().end());
 
-    bool does_end_escape = 
-      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x - m_sbnd_border_x)) 
-         || (end_x    < (-m_sbnd_offset_x + m_sbnd_border_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y - m_sbnd_border_y)) 
-         || (end_y    < (-m_sbnd_offset_y + m_sbnd_border_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z - m_sbnd_border_z)) 
-         || (end_z    < (-m_sbnd_offset_z + m_sbnd_border_z)));
-    */
     bool does_vtx_escape = 
-      (     (vertex_x > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (vertex_x < (-m_sbnd_offset_x))          
-         || (vertex_y > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (vertex_y < (-m_sbnd_offset_y))          
-         || (vertex_z > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (vertex_z < (-m_sbnd_offset_z)));
-
+      (vertex_x < min_x || vertex_x > max_x ||
+       vertex_y < min_y || vertex_y > max_y ||
+       vertex_z < min_z || vertex_z > max_z);
     bool does_end_escape = 
-      (     (end_x    > (m_sbnd_length_x - m_sbnd_offset_x)) 
-         || (end_x    < (-m_sbnd_offset_x))          
-         || (end_y    > (m_sbnd_length_y - m_sbnd_offset_y)) 
-         || (end_y    < (-m_sbnd_offset_y))          
-         || (end_z    > (m_sbnd_length_z - m_sbnd_offset_z)) 
-         || (end_z    < (-m_sbnd_offset_z))); 
-    
+      (end_x    < min_x || end_x    > max_x ||
+       end_y    < min_y || end_y    > max_y ||
+       end_z    < min_z || end_z    > max_z);
+
     if(does_vtx_escape && does_end_escape) return false;
     if(!does_vtx_escape && !does_end_escape) return false;
 

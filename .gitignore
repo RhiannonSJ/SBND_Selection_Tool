@@ -1,0 +1,11 @@
+Doxyfile
+docs/
+include/Doxyfile
+include/README.md
+srcs/README.md
+LArEvdSmall.jpeg
+exceptions.txt
+test/TEST.cpp
+*.d
+*.so
+*.pcm

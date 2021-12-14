@@ -1,0 +1,50 @@
+#
+# ICARUS configuration file 
+# Should be suitable for use with all analysis macros
+#
+# June 2020
+#
+
+InputFileLocation = /pnfs/sbnd/persistent/users/rsjones/icarus_selection_doms_files_260121/selection/
+InputFileName     = selection_tree.root
+
+StatFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/statistics/dom/Jan2021/icarus/pid/
+PlotFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/plots/dom/Jan2021/icarus/pid/
+TreeFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/files/dom/Jan2021/icarus/pid/
+TMVAFileLocation  = /sbnd/data/users/rsjones/Output_Selection_Tool/tmva/dom/Jan2021/icarus/
+
+Detector = 2
+
+TotalFiles = 116
+
+TotalPOT = 6.6e20
+
+MinXAV  = -364.49, 67.94
+MinYAV  = -177.41, -173.41
+MinZAV  = -909.950652, -909.950652
+MaxXAV  = -67.94, 364.49
+MaxYAV  = 143.41, 143.41
+MaxZAV  = 879.950652, 879.950652
+
+MinXFid = -356.24, -207.89, 76.19, 224.54
+MinYFid = -158.41, -158.41, -158.41, -158.41
+MinZFid = -894.950652, -894.950652, -894.950652, -894.950652
+MaxXFid = -224.54, -76.19, 207.89, 356.24
+MaxYFid = 128.41, 128.41, 128.41, 128.41
+MaxZFid = 799.950652, 799.950652, 799.950652, 799.950652
+
+# pre-inclusive cuts
+PreDiffCut      = 0.7
+PreLengthCut    = 10
+PreLongestCut   = 50
+PreChi2PCut     = 15
+PreChi2MuCut    = 26
+PreChi2RatioCut = 1.
+
+# post-inclusive cuts
+DiffCut      = 0.65
+LengthCut    = 10
+LongestCut   = 100
+Chi2PCut     = 20
+Chi2MuCut    = 26
+Chi2RatioCut = 1

@@ -1,7 +1,13 @@
 #include "../include/CC0piAnalysisHelper.h"
 #include "../include/GeneralAnalysisHelper.h"
 #include "../include/EventSelectionTool.h"
+#include "../include/Geometry.h"
+#include "../include/Plane.h"
 #include "../include/Event.h"
+#include "../include/Particle.h"
+#include "../include/Setup.h"
+#include "../include/ConfigReader.h"
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -21,64 +27,82 @@
 #include "TColor.h"
 #include "TObjArray.h"
 
+using namespace cppsecrets;
 using namespace selection;
 
-int MainTest(){
+int MainTest(const char *config){
   
   time_t rawtime;
   struct tm * timeinfo;
   time (&rawtime);
   timeinfo = localtime (&rawtime);
   std::cout << "-----------------------------------------------------------" << std::endl;
-  std::cout << " Start local time and date:  " << asctime(timeinfo)          << std::endl;
+  std::cout << " Start local time and date:  " << asctime(timeinfo)         << std::endl;
   std::cout << "-----------------------------------------------------------" << std::endl;
  
-  // Output file location
-  std::string plots = "../Output_Selection_Tool/plots/proton_loss/september2018/";
+  //------------------------------------------------------------------------------------------
+  //                                    Configure
+  //------------------------------------------------------------------------------------------
+  // Create object of the class ConfigReader
+  // Parse the configuration file
+  // Dump map on the console after parsing it
+  ConfigReader* p = ConfigReader::getInstance();
+  p->parseFile(config);
+  std::cout << " Variables from configuration file: " << std::endl;
+  p->dumpFileValues();
+  std::cout << "-----------------------------------------------------------" << std::endl;
+
+  // Get variables from config
+  std::string input_location  = "";
+  std::string input_filename  = "";
+  std::string exceptions_file = "";
+  std::string stats_location  = "";
+  std::string plots_location  = "";
+  unsigned int total_files = 0;
+  unsigned int detector = 0; // 0 = sbnd, 1 = uboone, 2 = icarus
+  std::vector<double> minx_fid, miny_fid, minz_fid;
+  std::vector<double> maxx_fid, maxy_fid, maxz_fid;
+  std::vector<double> minx_av, miny_av, minz_av;
+  std::vector<double> maxx_av, maxy_av, maxz_av;
+
+  p->getValue("InputFileLocation",input_location);
+  p->getValue("InputFileName",    input_filename);
+  p->getValue("ExceptionsFile",   exceptions_file);
+  p->getValue("StatFileLocation", stats_location); 
+  p->getValue("PlotFileLocation", plots_location); 
+  p->getValue("TotalFiles",       total_files);
+  p->getValue("Detector",         detector);
+  p->getValue("MinXFid",          minx_fid);
+  p->getValue("MinYFid",          miny_fid);
+  p->getValue("MinZFid",          minz_fid);
+  p->getValue("MaxXFid",          maxx_fid);
+  p->getValue("MaxYFid",          maxy_fid);
+  p->getValue("MaxZFid",          maxz_fid);
+  p->getValue("MinXAV",           minx_av);
+  p->getValue("MinYAV",           miny_av);
+  p->getValue("MinZAV",           minz_av);
+  p->getValue("MaxXAV",           maxx_av);
+  p->getValue("MaxYAV",           maxy_av);
+  p->getValue("MaxZAV",           maxz_av);
 
   //------------------------------------------------------------------------------------------
-  //                                       Load events
+  //                                    Initialise
   //------------------------------------------------------------------------------------------
-  
+
+  // Get the active and fiducial geometry objects
+  Geometry fiducial(minx_fid,miny_fid,minz_fid,maxx_fid,maxy_fid,maxz_fid,true);
+  Geometry active(minx_av,miny_av,minz_av,maxx_av,maxy_av,maxz_av,false);
+  PlaneList planes = active.GetExternalPlaneList();
+
   // Initialise event list and the topology maps
   EventSelectionTool::EventList events;
-  
+
   int start = static_cast<int>(time(NULL));
-  unsigned int total = 500;
+  double pot = 0.; 
 
-  // Load the events into the event list
-  for( unsigned int i = 0; i < total; ++i ){
-    // Get the filenames
-    std::string name;
-    name.clear();
-    char file_name[1024];
-    name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
-    strcpy( file_name, name.c_str() );
+  std::vector<int> exceptions;
+  FillExceptions(exceptions_file.c_str(),exceptions);
 
-    EventSelectionTool::LoadEventList(file_name, events, i);
-    EventSelectionTool::GetTimeLeft(start,total,i);
-  }
-  std::cout << std::endl;
- 
-  /*
-   * Proton loss and mis-identification energy and length study
-   *
-   * Loop over events
-   *   Loop over list of reconstructed particles
-   *      If true == 2212 && reco == 2212: Matched
-   *        Get kinetic energy of true
-   *        Get length of true
-   *      If reco != 2212 && true == 2212: Mis-identified true proton
-   *        Get kinetic energy of true
-   *        Get length of true
-   *   Loop over list of MC particles
-   *      If true == 2212
-   *        Loop over reconstructed particles and see if any have corresponding MC ID
-   *          If not: missed proton
-   *            Get kinetic energy of true
-   *            Get length of true
-   *  
-   */
   TopologyMap cc    = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap nc    = GeneralAnalysisHelper::GetNCTopologyMap();
   TopologyMap cc0pi = GeneralAnalysisHelper::GetCC0PiTopologyMap();
@@ -87,103 +111,76 @@ int MainTest(){
 
   std::vector<float> signal_energy, signal_length, background_energy, background_length, missed_energy, missed_length;
   std::vector<int>   signal_hits, background_hits, missed_hits;
-  unsigned int missed = 0;
+  unsigned int total           = 0;
+  unsigned int missed          = 0;
   unsigned int missed_below_25 = 0;
   unsigned int missed_below_10 = 0;
 
-  // Proton multiplicity counters
-  unsigned int ccqe  = 0;
-  unsigned int ccmec = 0;
-  unsigned int ccres = 0;
-  unsigned int ccdis = 0;
-  unsigned int ncany = 0;
-  
-  TH1D *h_ccqe  = new TH1D("h_ccqe",  "Proton multiplicity", 10, 0, 9);
-  TH1D *h_ccmec = new TH1D("h_ccmec", "Proton multiplicity", 10, 0, 9);
-  TH1D *h_ccres = new TH1D("h_ccres", "Proton multiplicity", 10, 0, 9);
-  TH1D *h_ccdis = new TH1D("h_ccdis", "Proton multiplicity", 10, 0, 9);
-  TH1D *h_nc    = new TH1D("h_nc",    "Proton multiplicity", 10, 0, 9);
-  std::vector<TH1D*> signal;
-
-  for(const Event &e : events){
-
-    if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+  // First, ensure all tracks are contained
+  for( unsigned int i = 0; i < total_files; ++i ){
+    EventSelectionTool::EventList events;
+    LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
+    EventSelectionTool::GetTimeLeft(start,total_files,i);
     
-    ParticleList reco_particles = e.GetRecoParticleList(); 
-    ParticleList true_particles = e.GetMCParticleList();
+    // Now loop over the events
+    for(const Event &e : events){
+      bool cc_inclusive_passed = GeneralAnalysisHelper::PassedCCInclusive(e,detector);
 
-    for(Particle &p_reco : reco_particles){
-      // If the particle is a reconstructed track (not pi0)
-      if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
-        Particle p_match = GeneralAnalysisHelper::GetBestMCParticle(e,p_reco);
-        if(p_match.GetPdgCode() == 2212 && p_match.GetNumberOfHits() >= 5){
-          if(p_reco.GetPdgCode() == 2212 && p_reco.GetNumberOfHits() >= 5){
-            // True and reconstructed proton: signal
-            signal_energy.push_back(p_match.GetKineticEnergy());
-            signal_length.push_back(p_match.GetLength());
-            signal_hits.push_back(p_match.GetNumberOfHits());
-          }
-          else if(p_reco.GetPdgCode() != 2212 && p_reco.GetNumberOfHits() >= 5){
-            // True and mis-indentified proton
-            background_energy.push_back(p_match.GetKineticEnergy());
-            background_length.push_back(p_match.GetLength());
-            background_hits.push_back(p_match.GetNumberOfHits());
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+
+      ParticleList reco_particles = e.GetRecoParticleList(); 
+      ParticleList true_particles = e.GetMCParticleList();
+
+      for(Particle &p_reco : reco_particles){
+        // If the particle is a reconstructed track (not pi0)
+        if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
+          Particle p_match = GeneralAnalysisHelper::GetBestMCParticle(e,p_reco);
+          if(p_match.GetPdgCode() == 2212 && p_match.GetNumberOfHits() >= 5 && p_match.GetKineticEnergy() > 0.021){
+            if(p_reco.GetPdgCode() == 2212 && p_reco.GetNumberOfHits() >= 5 && p_reco.GetKineticEnergy() > 0.021){
+              // True and reconstructed proton: signal
+              signal_energy.push_back(p_match.GetKineticEnergy());
+              signal_length.push_back(p_match.GetLength());
+              signal_hits.push_back(p_match.GetNumberOfHits());
+            }
+            else if(p_reco.GetPdgCode() != 2212 && p_reco.GetNumberOfHits() >= 5 && p_reco.GetKineticEnergy() > 0.021){
+              // True and mis-indentified proton
+              background_energy.push_back(p_match.GetKineticEnergy());
+              background_length.push_back(p_match.GetLength());
+              background_hits.push_back(p_match.GetNumberOfHits());
+            }
           }
         }
       }
-    }
-    for(Particle &p_true : true_particles){
-      if(p_true.GetPdgCode() == 2212 && !GeneralAnalysisHelper::HasBeenReconstructed(e, p_true) && p_true.GetNumberOfHits() >= 5){
-        // True proton, not reconstructed
-        missed_energy.push_back(p_true.GetKineticEnergy());
-        missed_length.push_back(p_true.GetLength());
-        missed_hits.push_back(p_true.GetNumberOfHits());
-        missed++;
-        if(p_true.GetNumberOfHits() < 25) missed_below_25++;
-        if(p_true.GetNumberOfHits() < 10) missed_below_10++;
-      }
-    }
-    if(e.CheckMCTopology(cc0pi)){
-      for(const Particle &mc : true_particles){
-        if(mc.GetPdgCode() == 2212 && mc.GetNumberOfHits() >= 5){
-          if(e.GetPhysicalProcess() == 1 && e.GetIsCC())  ccqe++;
-          if(e.GetPhysicalProcess() == 3 && e.GetIsCC())  ccdis++;
-          if(e.GetPhysicalProcess() == 4 && e.GetIsCC())  ccres++;
-          if(e.GetPhysicalProcess() == 10 && e.GetIsCC()) ccmec++;
-          if(!e.GetIsCC()) ncany++;
+      for(Particle &p_true : true_particles){
+        if(p_true.GetPdgCode() == 2212 && !GeneralAnalysisHelper::HasBeenReconstructed(e, p_true) && p_true.GetNumberOfHits() >= 5 && p_true.GetKineticEnergy() > 0.021){
+          // True proton, not reconstructed
+          missed_energy.push_back(p_true.GetKineticEnergy());
+          missed_length.push_back(p_true.GetLength());
+          missed_hits.push_back(p_true.GetNumberOfHits());
+          missed++;
+          if(p_true.GetNumberOfHits() < 25) missed_below_25++;
+          if(p_true.GetNumberOfHits() < 10) missed_below_10++;
         }
+        else if(p_true.GetPdgCode() == 2212 && GeneralAnalysisHelper::HasBeenReconstructed(e, p_true) && p_true.GetNumberOfHits() >= 5 && p_true.GetKineticEnergy() > 0.021)
+          total++;
       }
-    }
-    if(e.CheckMCTopology(cc0pi)){
-      h_ccqe->Fill(ccqe);
-      h_ccmec->Fill(ccmec);
-      h_ccres->Fill(ccres);
-      h_ccdis->Fill(ccdis);
-      h_nc->Fill(ncany);
-      signal.push_back(h_ccqe);
-      signal.push_back(h_ccmec);
-      signal.push_back(h_ccres);
-      signal.push_back(h_ccdis);
-      signal.push_back(h_nc);
     }
   }
+  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",80,0,0.6);
+  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",80,0,15);
+  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",80,0,160);
 
-  /*
-   *
-   * Fill
-   *
-   */
-  TH1D *h_signal_energy = new TH1D("h_signal_energy","Correctly reconstructed proton kinetic energies",40,0,0.6);
-  TH1D *h_signal_length = new TH1D("h_signal_length","Correctly reconstructed proton lengths",40,0,15);
-  TH1D *h_signal_hits   = new TH1D("h_signal_hits",  "Correctly reconstructed proton hits",40,0,40);
+  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",80,0,0.6);
+  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",80,0,15);
+  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",80,0,160);
 
-  TH1D *h_missed_energy = new TH1D("h_missed_energy","Missed proton kinetic energies",40,0,0.6);
-  TH1D *h_missed_length = new TH1D("h_missed_length","Missed proton lengths",40,0,15);
-  TH1D *h_missed_hits   = new TH1D("h_missed_hits",  "Missed proton hits",40,0,40);
-
-  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",40,0,0.6);
-  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",40,0,15);
-  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",40,0,40);
+  TH1D *h_background_energy = new TH1D("h_background_energy","Mis-identified proton kinetic energies",80,0,0.6);
+  TH1D *h_background_length = new TH1D("h_background_length","Mis-identified proton lengths",80,0,15);
+  TH1D *h_background_hits   = new TH1D("h_background_hits",  "Mis-identified proton hits",80,0,160);
 
 
   for(unsigned int i = 0; i < signal_energy.size(); ++i){
@@ -202,161 +199,112 @@ int MainTest(){
     h_missed_hits->Fill(missed_hits[i]);
   }
 
-  /*
-   *
-   * Stack
-   *
-   */
-  TCanvas *c = new TCanvas();
-  TLegend *l = new TLegend( 0.38, 0.53, 0.88, 0.88 );
+  TCanvas *c = new TCanvas("c","",900,900);
+  c->SetLeftMargin  (0.138796 );
+  c->SetRightMargin (0.0334448);
+  c->SetBottomMargin(0.132404 );
+  c->SetTopMargin   (0.0734);
+
+  TLegend *l = new TLegend(0.15, 0.94, 0.97, 0.99);
+  l->SetFillStyle(0);
   l->SetBorderSize(0);
-
-  /*
-  int pal[5];
-  pal[0]  = kRed;
-  pal[1]  = kGreen + 2;
-  pal[2]  = kOrange + 7;
-  pal[3]  = kBlue;
-  pal[4]  = kMagenta + 1;
+  l->SetTextSize(0.045);
+  l->SetNColumns(3);
+  l->SetMargin(0.2);
+  l->SetTextFont(132);
   
-  gStyle->SetPalette( 12, pal );
-  gStyle->SetHatchesLineWidth( 1 );
-  gStyle->SetHatchesSpacing( 0.5 );
-  gStyle->SetTitleOffset(1.5, "Y");
-  gStyle->SetOptStat( 0 );
-  
-  THStack *hsT = new THStack("hsT","pre-FSI");
+  // Style
+  std::vector<TH1D*> h_signal     = {h_signal_energy,h_signal_length,h_signal_hits};
+  std::vector<TH1D*> h_background = {h_background_energy,h_background_length,h_background_hits};
+  std::vector<TH1D*> h_missed     = {h_missed_energy,h_missed_length,h_missed_hits};
 
-  double norm = 0;
-  
-  for (unsigned int i = 0; i < signal.size(); ++i){
-      norm += signal[i]->Integral();
-  }
+  SetHistogramStyle(h_signal,     3001, 1, 905, 905, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_background, 3001, 1, 867, 867, 2, 132, 1, 1.2, false);
+  SetHistogramStyle(h_missed,     3001, 1, 835, 835, 2, 132, 1, 1.2, false);
 
-  for ( unsigned int i = 0; i < signal.size(); ++i ){
-    if(norm > 0){
-      signal[i]->SetFillColor(pal[i]);
-      signal[i]->SetLineColor(pal[i]);
-      signal[i]->Scale(1/norm);
-      hsT->Add(signal[i]);
-    }
-  }
-  l->AddEntry(h_ccqe,  "CC QE",   "f");
-  l->AddEntry(h_ccres, "CC RES",  "f");
-  l->AddEntry(h_ccmec, "CC MEC",  "f");
-  l->AddEntry(h_ccdis, "CC DIS",  "f");
-  l->AddEntry(h_nc,    "NC",      "f");
-*/
-  /*
-   *
-   * Draw
-   *
-   */
-  /*
-  hsT->Draw("hist");
-  const char *x_label = "Proton multiplicity";
-  const char *y_label = "Normalised event rate";
-  hsT->GetXaxis()->SetTitle(x_label);   
-  hsT->GetYaxis()->SetTitle(y_label);   
-  //c->Modified(); 
+  l->AddEntry( h_signal_energy,     " Reconstructed", "f" );
+  l->AddEntry( h_background_energy, " Misidentified", "f" );
+  l->AddEntry( h_missed_energy,     " Missed", "f" );
   
-  l->Draw();
-  c->SaveAs((plots+"multiplicity_pre_fsi.png").c_str());
-  c->SaveAs((plots+"multiplicity_pre_fsi.root").c_str());
-
-  l->Clear();
-  c->Clear();
-*/  
-  gStyle->SetPalette(55);
-  gStyle->SetNumberContours(250);
-
-  l->AddEntry( h_signal_energy,     " True, reconstructed proton", "l" );
-  l->AddEntry( h_background_energy, " True, misidentified proton", "l" );
-  l->AddEntry( h_missed_energy,     " True, missed proton", "l" );
+  h_signal_energy->Scale(1/double(h_signal_energy->Integral()));
+  h_background_energy->Scale(1/double(h_background_energy->Integral()));
+  h_missed_energy->Scale(1/double(h_missed_energy->Integral()));
   
-  h_signal_energy->SetLineColor(2);
-  h_signal_energy->SetStats(kFALSE);
-  h_signal_energy->Scale(1/double(signal_energy.size()));
-  h_background_energy->SetLineColor(4);
-  h_background_energy->SetStats(kFALSE);
+  h_background_energy->GetYaxis()->SetTitle("Normalised event rate");
   h_background_energy->GetXaxis()->SetTitle("Proton Kinetic Energy [GeV]");
-  h_background_energy->Scale(1/double(background_energy.size()));
-  h_missed_energy->SetLineColor(8);
-  h_missed_energy->SetStats(kFALSE);
-  h_missed_energy->Scale(1/double(missed_energy.size()));
-
+  
   float max_y_e = std::max(h_background_energy->GetMaximum(), std::max(h_signal_energy->GetMaximum(),h_missed_energy->GetMaximum()));
   
   h_background_energy->GetYaxis()->SetRangeUser(0,max_y_e*1.1);
+  h_background_energy->SetTitle("");
   h_background_energy->Draw("hist");
   h_missed_energy->Draw("hist same");
   h_signal_energy->Draw("hist same");
   l->Draw();
 
-  c->SaveAs((plots+"proton_kinetic_energy.root").c_str());
-  c->SaveAs((plots+"proton_kinetic_energy.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_kinetic_energy.root").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_kinetic_energy.png").c_str());
   c->Clear();
 
   l->Clear();
-  l->AddEntry( h_signal_length,     " True, reconstructed proton", "l" );
-  l->AddEntry( h_background_length, " True, misidentified proton", "l" );
-  l->AddEntry( h_missed_length,     " True, missed proton", "l" );
+  l->AddEntry( h_signal_length,     " Reconstructed", "f" );
+  l->AddEntry( h_background_length, " Misidentified", "f" );
+  l->AddEntry( h_missed_length,     " Missed", "f" );
     
-  h_signal_length->SetLineColor(2);
-  h_signal_length->SetStats(kFALSE);
-  h_signal_length->Scale(1/double(signal_length.size()));
-  h_background_length->SetLineColor(4);
-  h_background_length->SetStats(kFALSE);
+  h_signal_length->Scale(1/double(h_signal_length->Integral()));
+  h_background_length->Scale(1/double(h_background_length->Integral()));
+  h_missed_length->Scale(1/double(h_missed_length->Integral()));
+  
+  h_background_length->GetYaxis()->SetTitle("Normalised event rate");
   h_background_length->GetXaxis()->SetTitle("Proton Length [cm]");
-  h_background_length->Scale(1/double(background_length.size()));
-  h_missed_length->SetLineColor(8);
-  h_missed_length->SetStats(kFALSE);
-  h_missed_length->Scale(1/double(missed_length.size()));
 
   float max_y_l = std::max(h_background_length->GetMaximum(), std::max(h_signal_length->GetMaximum(),h_missed_length->GetMaximum()));
   h_background_length->GetYaxis()->SetRangeUser(0,max_y_l*1.1);
+  h_background_length->SetTitle("");
   h_background_length->Draw("hist");
   h_missed_length->Draw("hist same");
   h_signal_length->Draw("hist same");
   l->Draw();
 
-  c->SaveAs((plots+"proton_length.root").c_str());
-  c->SaveAs((plots+"proton_length.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_length.root").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_length.png").c_str());
   c->Clear();
 
   l->Clear();
-  l->AddEntry( h_signal_hits,     " True, reconstructed proton", "l" );
-  l->AddEntry( h_background_hits, " True, misidentified proton", "l" );
-  l->AddEntry( h_missed_hits,     " True, missed proton", "l" );
+  l->AddEntry( h_signal_hits,     " Reconstructed", "f" );
+  l->AddEntry( h_background_hits, " Misidentified", "f" );
+  l->AddEntry( h_missed_hits,     " Missed", "f" );
   
-  h_signal_hits->SetLineColor(2);
-  h_signal_hits->SetStats(kFALSE);
-  h_signal_hits->Scale(1/double(signal_hits.size()));
-  h_background_hits->SetLineColor(4);
-  h_background_hits->SetStats(kFALSE);
+  h_signal_hits->Scale(1/double(h_signal_hits->Integral()));
+  h_background_hits->Scale(1/double(h_background_hits->Integral()));
+  h_missed_hits->Scale(1/double(h_missed_hits->Integral()));
+  
+  h_background_hits->GetYaxis()->SetTitle("Normalised event rate");
   h_background_hits->GetXaxis()->SetTitle("Proton Hits [GeV]");
-  h_background_hits->Scale(1/double(background_hits.size()));
-  h_missed_hits->SetLineColor(8);
-  h_missed_hits->SetStats(kFALSE);
-  h_missed_hits->Scale(1/double(missed_hits.size()));
 
   float max_y_h = std::max(h_background_hits->GetMaximum(), std::max(h_signal_hits->GetMaximum(),h_missed_hits->GetMaximum()));
   
   h_background_hits->GetYaxis()->SetRangeUser(0,max_y_h*1.1);
+  h_background_hits->SetTitle("");
   h_background_hits->Draw("hist");
   h_missed_hits->Draw("hist same");
   h_signal_hits->Draw("hist same");
   l->Draw();
 
-  c->SaveAs((plots+"proton_hits.root").c_str());
-  c->SaveAs((plots+"proton_hits.png").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_hits.root").c_str());
+  c->SaveAs((plots_location+"ccpassed/proton_hits.png").c_str());
   c->Clear();
 
-  std::cout << " Missed protons :                                      " << missed << std::endl;
-  std::cout << " Missed protons with less than 25 hits :               " << missed_below_25 << std::endl;
-  std::cout << " Missed protons with less than 10 hits  :               " << missed_below_10 << std::endl;
-  std::cout << " Percentage of missed protons with less than 25 hits : " << missed_below_25 / double(missed) << std::endl;
-  std::cout << " Percentage of missed protons with less than 10 hits  : " << missed_below_10 / double(missed) << std::endl;
+  // Stats file
+  std::ofstream stats;
+  stats.open(stats_location+"proton_loss.txt");
+
+  stats << " Total number of reconstructed protons :                " << total << std::endl;
+  stats << " Missed protons :                                       " << missed << std::endl;
+  stats << " Missed protons with less than 25 hits :                " << missed_below_25 << std::endl;
+  stats << " Missed protons with less than 10 hits  :               " << missed_below_10 << std::endl;
+  stats << " Percentage of missed protons with less than 25 hits :  " << missed_below_25 / double(missed) << std::endl;
+  stats << " Percentage of missed protons with less than 10 hits  : " << missed_below_10 / double(missed) << std::endl;
 
   time_t rawtime_end;
   struct tm * timeinfo_end;

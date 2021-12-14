@@ -44,7 +44,8 @@ int MainTest(){
     std::string name;
     name.clear();
     char file_name[1024];
-    name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    name = "/home/rhiannon/Samples/LiverpoolSamples/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
+    //name = "/hepstore/rjones/Samples/FNAL/120918_analysis_sample/11509725_"+std::to_string(i)+"/output_file.root";
     strcpy( file_name, name.c_str() );
 
     EventSelectionTool::LoadEventList(file_name, events, i);
@@ -56,6 +57,7 @@ int MainTest(){
   TopologyMap cc0pi   = GeneralAnalysisHelper::GetCC0PiTopologyMap();
   TopologyMap cc0pi2p = GeneralAnalysisHelper::GetCC0Pi2PTopologyMap();
   TopologyMap cc0pi3p = GeneralAnalysisHelper::GetCC0Pi3PTopologyMap();
+  TopologyMap cc0pi5p = GeneralAnalysisHelper::GetCC0Pi5PTopologyMap();
  
   // Initialise the file to hold file and event ids for different topologies 
   ofstream file;
@@ -114,6 +116,13 @@ int MainTest(){
     if(e.CheckMCTopology(cc0pi3p) && e.IsSBNDTrueFiducial()){
       if(e.CheckRecoTopology(cc0pi3p))
         file << std::setw(16) << " CC 0Pi 3P " << std::setw(16) << " Signal " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
+    }
+    // CC0Pi3 Signal
+    if(e.CheckMCTopology(cc0pi5p) && e.IsSBNDTrueFiducial()){
+      if(e.CheckRecoTopology(cc0pi5p)){
+        file      << std::setw(16) << " CC 0Pi 5P " << std::setw(16) << " Signal " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
+        std::cout << std::setw(16) << " CC 0Pi 5P " << std::setw(16) << " Signal " << std::setw(8) << e.GetFileId() << std::setw(8) << e.GetId() << std::endl;
+      }
     }
     // Muon-pion mixup 
     if(e.CheckMCTopology(cc0pi) && e.IsSBNDTrueFiducial() && !e.CheckRecoTopology(cc0pi)){

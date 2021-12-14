@@ -4,95 +4,313 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNuMuTopologyMap() {
-    TopologyMap signal_map_numu;
-    signal_map_numu.insert(TopologyMap::value_type({14},1));
-    return signal_map_numu;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({14},1));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuMuBarTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({-14},1));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuMuNCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNCTopologyMap() {
-    TopologyMap signal_map_nc;
-    signal_map_nc.insert(TopologyMap::value_type({13},0));
-    return signal_map_nc;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC0PiTopologyMap() {
-    TopologyMap signal_map_nc0pi;
-    signal_map_nc0pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc0pi.insert(TopologyMap::value_type({211, -211, 111},0));
-    return signal_map_nc0pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC1PiTopologyMap() {
-    TopologyMap signal_map_nc1pi;
-    signal_map_nc1pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc1pi.insert(TopologyMap::value_type({211, -211},1));
-    return signal_map_nc1pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNC1PiNPi0TopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNC2PiTopologyMap() {
-    TopologyMap signal_map_nc2pi;
-    signal_map_nc2pi.insert(TopologyMap::value_type({13},0));
-    signal_map_nc2pi.insert(TopologyMap::value_type({211, -211},2));
-    return signal_map_nc2pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({211, -211},2));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNCNPiTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},0));
+    signal_map.insert(TopologyMap::value_type({13},0));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},-999));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCIncTopologyMap() {
-    TopologyMap signal_map_cc_inc;
-    signal_map_cc_inc.insert(TopologyMap::value_type({13},1));
-    return signal_map_cc_inc;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0PiTopologyMap() {
-    TopologyMap signal_map_cc_0pi;
-    signal_map_cc_0pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi.insert(TopologyMap::value_type({211, -211, 111},0));
-    return signal_map_cc_0pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC0Pi1PTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},1));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi2PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_2p;
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_2p.insert(TopologyMap::value_type({2212},2));
-    return signal_map_cc_0pi_2p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},2));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC0Pi3PTopologyMap() {
-    TopologyMap signal_map_cc_0pi_3p;
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({211, -211, 111},0));
-    signal_map_cc_0pi_3p.insert(TopologyMap::value_type({2212},3));
-    return signal_map_cc_0pi_3p;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},3));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC0Pi5PTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211, 111},0));
+    signal_map.insert(TopologyMap::value_type({2212},5));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC1PiTopologyMap() { 
-    TopologyMap signal_map_cc_1pi;
-    signal_map_cc_1pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_1pi.insert(TopologyMap::value_type({211, -211},1));
-    return signal_map_cc_1pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
+  }
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCC1PiNPi0TopologyMap() { 
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
   }
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCC2PiTopologyMap() { 
-    TopologyMap signal_map_cc_2pi;
-    signal_map_cc_2pi.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_2pi.insert(TopologyMap::value_type({211, -211},2));
-    return signal_map_cc_2pi;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},2));
+    signal_map.insert(TopologyMap::value_type({111},0));
+    return signal_map;
   }
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetCCPi0TopologyMap() {
-    TopologyMap signal_map_cc_pi0;
-    signal_map_cc_pi0.insert(TopologyMap::value_type({13},1));
-    signal_map_cc_pi0.insert(TopologyMap::value_type({111},1));
-    return signal_map_cc_pi0;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({111},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},0));
+    return signal_map;
   } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetCCPi0PiCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},1));
+    signal_map.insert(TopologyMap::value_type({111},1));
+    signal_map.insert(TopologyMap::value_type({211, -211},1));
+    return signal_map;
+  } 
+  TopologyMap GeneralAnalysisHelper::GetOtherTopologyMap(const unsigned int e, const std::vector<TopologyMap> &maps) {
+    // Enum for the sample to get other from
+    //  e = 0 : All events
+    //    = 1 : CC events
+    //    = 2 : NC events
+    TopologyMap signal_map;
+    if(e == 1)
+      signal_map.insert(TopologyMap::value_type({13},1));
+    else if(e == 2){
+      signal_map.insert(TopologyMap::value_type({13},0));
+      signal_map.insert(TopologyMap::value_type({11},0));
+    }
+
+    for(const TopologyMap &m : maps){
+      // If we DON'T want 0 of a particle, pass -999 for the topology checker to read
+      TopologyMap::const_iterator it;
+      for(it = m.begin(); it != m.end(); ++it){
+        if(it->second == 0) 
+          signal_map.insert(TopologyMap::value_type(it->first,-999));
+
+        // Pass the negative value of any types which we want n > 0 of
+        signal_map.insert(TopologyMap::value_type(it->first,-it->second));
+      }
+    }
+    return signal_map;
+  } 
+
+
+  //----------------------------------------------------------------------------------------
+  //      DO NOT USE ON RECO 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuECCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({11},1));
+    return signal_map;
+  } 
+  
+  TopologyMap GeneralAnalysisHelper::GetNuENCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({12},1));
+    return signal_map;
+  } 
+
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::MinOneRecoTrack(const Event &e){
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      return true;
+    }
+    return false;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::PassedCCInclusive(const Event &e, const unsigned int &det){
+    // Define cut variables per detector
+    double diff_cut      = 0.7;
+    double length_cut    = 10.;
+    double longest_cut   = 50.;
+    double escaping_cut  = 90.;
+    double chi2p_cut     = 0.;
+    double chi2mu_cut    = 0.;
+    double chi2ratio_cut = 0.;
+    if(det == 0){
+      chi2p_cut     = 65.;
+      chi2mu_cut    = 19.;
+      chi2ratio_cut = 0.08;
+    }
+    if(det == 1){
+      chi2p_cut     = 65.;
+      chi2mu_cut    = 21.;
+      chi2ratio_cut = 0.08;
+      diff_cut      = 0.78;
+    }
+    if(det == 2){
+      chi2p_cut     = 15.;
+      chi2mu_cut    = 26.;
+      chi2ratio_cut = 1.;
+    }
+
+    if(!e.IsRecoFiducial() || !MaxOneLongEscapingTrack(e) || !MinOneRecoTrack(e)) return false;
+
+    // Get the longest and second longest tracks
+    double longest = -std::numeric_limits<double>::max();
+    double second  = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    int second_id  = -1;
+    GeneralAnalysisHelper::LongestRecoTrackLength(e,longest);
+    GeneralAnalysisHelper::LongestRecoTrackID(e,longest_id);
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      if(p.ID() != longest_id && p.GetLength() > second){
+        second_id = p.ID();
+        second = p.GetLength();
+      }
+    }
+
+    // Get the fractional difference between the longest and second longest track lengths
+    double diff = -999.;
+    bool min_2_tracks = (longest_id != -1 && second_id != -1);
+    if(min_2_tracks)
+      diff = (longest - second)/longest;
+
+    // If 1 track escapes return true
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1)
+      return true;
+
+    // If no tracks escape
+    else{
+      // Not considering protons first
+      bool track_cut_passed = false;
+      for(Particle &p : e.GetRecoParticleList()){
+        if(!p.GetFromRecoTrack()) continue;
+        if(p.GetLength() > length_cut){
+          track_cut_passed = true;
+          break;
+        }
+      }
+      if(track_cut_passed){
+        // If we have two tracks and the longest two are very different in length, pass
+        if(min_2_tracks && diff > diff_cut)
+          return true;
+
+        // Otherwise look at other variables
+        else if((min_2_tracks && diff <= diff_cut) || !min_2_tracks){
+          // Now consider chi2 variables
+          for(const Particle &p : e.GetRecoParticleList()){
+            if(!p.GetFromRecoTrack()) continue;
+
+            //Check for clear protons
+            if(det != 2){
+              if((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+                return true;
+            }
+            else if((p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)
+              return true;
+
+          }
+        }
+      }
+    }
+    // Otherwise, we haven't passed any cuts - return false
+    return false;
+  }
 
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::NumberEscapingTracks(const Event &e){
     unsigned int escaping_tracks = 0;
+    int i = -1;
     for(const Particle &p : e.GetRecoParticleList()){
+      i++;
       // Make sure the particle is a reconstructed track and check if it escapes
-     if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) escaping_tracks++;
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()) {
+        escaping_tracks++;
+      }
     }
     return escaping_tracks;
   }
@@ -102,6 +320,23 @@ namespace selection{
   bool GeneralAnalysisHelper::MaxOneEscapingTrack(const Event &e){
     if(GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) return false;
     return true;
+  }
+
+
+  //----------------------------------------------------------------------------------------
+
+  bool GeneralAnalysisHelper::MaxOneLongEscapingTrack(const Event &e){
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) return false;
+    if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 0) return true;
+    double escaping_particle_length = 0;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(p.GetFromRecoTrack() && p.GetOneEndTrackContained()){
+        escaping_particle_length = p.GetLength();
+        break;
+      }
+    }
+    if(escaping_particle_length >= 100) return true;
+    return false;
   }
 
   //----------------------------------------------------------------------------------------
@@ -143,7 +378,7 @@ namespace selection{
     // Check that we are looking at an MC particle
     int true_id = p.GetMCId();
     ParticleList reco_particles = e.GetRecoParticleList();
-    for(Particle &p_reco : reco_particles){
+    for(const Particle &p_reco : reco_particles){
       if(p_reco.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p_reco) >= 0){
         if(GeneralAnalysisHelper::GetBestMCParticle(e,p_reco).GetMCId() == true_id) return true;
       }
@@ -191,7 +426,7 @@ namespace selection{
     for(const Particle &p : particle_list) {
       if(p.GetMCId() == id) return p;
     }
-    std::cout << "GetMCParticle" << std::endl;
+    std::cerr << "GetMCParticle" << std::endl;
     throw 8;
   }
   
@@ -214,7 +449,7 @@ namespace selection{
     else if(GeneralAnalysisHelper::ParticleHasAMatch(e, particle) == 2){
       return GeneralAnalysisHelper::GetMCParticleEnergy(e, particle);
     }
-    std::cout << "GetBestMCParticle" << std::endl;
+    std::cerr << "GetBestMCParticle" << std::endl;
     throw 9;
   }
   
@@ -222,7 +457,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
     // Check if the event is a selected event
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
     }
     else return 0;  
@@ -232,7 +467,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
     // Check if the event is a signal event
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology) && e.CheckMCTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology) && e.CheckMCTopology(topology)){
       return GeneralAnalysisHelper::CountMatchedParticles(e, e.GetRecoParticleList(), pdg);
     }
     else return 0;
@@ -282,7 +517,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMCParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountMCParticlesWithPdg(pdg);
     }
     return 0;
@@ -291,7 +526,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMCParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
       return e.CountMCParticlesWithPdg(pdg);
     }
     return 0;
@@ -300,7 +535,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountRecoParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
       return e.CountRecoParticlesWithPdg(pdg);
     }
     return 0;
@@ -309,7 +544,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountRecoParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
       return e.CountRecoParticlesWithPdg(pdg);
     }
     return 0;
@@ -318,8 +553,8 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
-    if(e.IsSBNDTrueFiducial() && e.CheckRecoTopology(topology)){
-      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
+    if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
+      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg, false);
     }
     return 0;
   }
@@ -327,15 +562,66 @@ namespace selection{
   //----------------------------------------------------------------------------------------
   
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
-    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsSBNDTrueFiducial()){
-      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
+    if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
+      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg, false);
     }
     return 0;
   }
   
   //----------------------------------------------------------------------------------------
+ 
+  std::vector<int> GeneralAnalysisHelper::GetBadIDList(const Event &e){
+    // Get the particle list
+    ParticleList particles = e.GetRecoParticleList();
+
+    // To be fair to ourselves, only count it as 'double counting' if the thing was reconstructable in the first place
+    std::vector<int> usedIDs, badIDs;
+    for(const Particle &p : particles){
+      if(p.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
+        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == 2212){
+            if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetKineticEnergy() > 0.021){
+              if(usedIDs.size() == 0){
+                usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+              }
+              else{
+                bool alreadyCounted = false;
+                for(const int &id: usedIDs){
+                  if(id == GeneralAnalysisHelper::GetBestMCParticle(e, p).ID()){
+                    alreadyCounted = true;
+                    badIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+                  }
+                }
+                if(!alreadyCounted)
+                  usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+              }
+            }
+          }
+          else{
+            if(usedIDs.size() == 0){
+              usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+            }
+            else{
+              bool alreadyCounted = false;
+              for(const int &id: usedIDs){
+                if(id == GeneralAnalysisHelper::GetBestMCParticle(e, p).ID()){
+                  alreadyCounted = true;
+                  badIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+                }
+              }
+              if(!alreadyCounted)
+                usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+            }
+          }
+        }
+      }
+    }
+    return badIDs;
+  }
   
-  unsigned int GeneralAnalysisHelper::CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg){
+  //----------------------------------------------------------------------------------------
+ 
+  unsigned int GeneralAnalysisHelper::CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg, const bool &truth){
     /*
      * Loop over given event's reconstructed particle list, if the current particle 
      * misidentification corresponds to 
@@ -344,11 +630,56 @@ namespace selection{
     * add to mismatched_particles counter
     *
     */
+
+    // Important quantities
     unsigned int mismatched_particles = 0;
     ParticleList particles = e.GetRecoParticleList();
+    std::vector<int> badIDs = GetBadIDList(e);
+    
+    // Now that we know what we are working with, count everything
     for(const Particle &p : particles){
       if(p.GetPdgCode() == reco_pdg && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
-        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5) mismatched_particles++;
+        // If we are looking for the specified true_pdg, proceed as normal, otherwise count anything other than pions, protons and muons
+        if(true_pdg != -999){
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+
+            // If we are counting for the numerator of the efficiency, skip any double-counted truth-level information
+            if(truth){
+              // Skip the counting if we have defined this true particle as 'bad'
+              bool isBad = false;
+              for(const int &id: badIDs){
+                if(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID() == id)
+                  isBad = true;
+              }
+              if(isBad) continue;
+            }
+
+            mismatched_particles++;
+          }
+        }
+        else{
+          // Check that the true pdg is NOT a muon, proton or pion
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 211 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != -211 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 2212 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 13){
+
+            if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+
+              // If we are counting for the numerator of the efficiency, skip any double-counted truth-level information
+              if(truth){
+                // Skip the counting if we have defined this true particle as 'bad'
+                bool isBad = false;
+                for(const int &id: badIDs){
+                  if(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID() == id)
+                    isBad = true;
+                }
+                if(isBad) continue;
+              }
+              mismatched_particles++;
+            }
+          }
+        }
       }
     }
     return mismatched_particles;
@@ -356,7 +687,7 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector){
 
     // Counters for each particle type
     unsigned int mc_selected_muons     = 0;
@@ -380,7 +711,14 @@ namespace selection{
 
     for(const Event &e : ev_list){
       
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+      //if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
 
       mc_selected_muons     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
       mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
@@ -413,69 +751,118 @@ namespace selection{
       signal_protons        += GeneralAnalysisHelper::CountMatchedParticlesByTopologySignal(e, topology, 2212);
     }
 
-    os << "    " << topology_name                                                                                               << std::endl;  
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected event, MC particles";
-    os << std::setw(16) << mc_selected_muons;
-    os << std::setw(16) << mc_selected_pions;
-    os << std::setw(16) << mc_selected_protons;
-    os << std::endl;
-    os << std::setw(35) << "Selected event, Reco particles";
-    os << std::setw(16) << reco_selected_muons;
-    os << std::setw(16) << reco_selected_pions;
-    os << std::setw(16) << reco_selected_protons;
-    os << std::endl;
-    os << std::setw(35) << "Selected event, Matched particles";
-    os << std::setw(16) << selected_muons;
-    os << std::setw(16) << selected_pions;
-    os << std::setw(16) << selected_protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal event, MC particles";
-    os << std::setw(16) << mc_signal_muons;
-    os << std::setw(16) << mc_signal_pions;
-    os << std::setw(16) << mc_signal_protons;
-    os << std::endl;
-    os << std::setw(35) << "Signal event, Reco particles";
-    os << std::setw(16) << reco_signal_muons;
-    os << std::setw(16) << reco_signal_pions;
-    os << std::setw(16) << reco_signal_protons;
-    os << std::endl;
-    os << std::setw(35) << "Signal event, Matched particles";
-    os << std::setw(16) << signal_muons;
-    os << std::setw(16) << signal_pions;
-    os << std::setw(16) << signal_protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected, Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(mc_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(mc_selected_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(mc_selected_protons);
-    os << std::endl;
-    os << std::setw(35) << "Selected, Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_muons/double(reco_selected_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_pions/double(reco_selected_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * selected_protons/double(reco_selected_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal, Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(mc_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(mc_signal_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(mc_signal_protons);
-    os << std::endl;
-    os << std::setw(35) << "Signal, Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_muons/double(reco_signal_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_pions/double(reco_signal_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * signal_protons/double(reco_signal_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
+    if(!isTex){
+      os << "    " << topology_name << std::endl;  
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected event, MC particles";
+      os << std::setw(16) << mc_selected_muons;
+      os << std::setw(16) << mc_selected_pions;
+      os << std::setw(16) << mc_selected_protons;
+      os << std::endl;
+      os << std::setw(35) << "Selected event, Reco particles";
+      os << std::setw(16) << reco_selected_muons;
+      os << std::setw(16) << reco_selected_pions;
+      os << std::setw(16) << reco_selected_protons;
+      os << std::endl;
+      os << std::setw(35) << "Selected event, Matched particles";
+      os << std::setw(16) << selected_muons;
+      os << std::setw(16) << selected_pions;
+      os << std::setw(16) << selected_protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal event, MC particles";
+      os << std::setw(16) << mc_signal_muons;
+      os << std::setw(16) << mc_signal_pions;
+      os << std::setw(16) << mc_signal_protons;
+      os << std::endl;
+      os << std::setw(35) << "Signal event, Reco particles";
+      os << std::setw(16) << reco_signal_muons;
+      os << std::setw(16) << reco_signal_pions;
+      os << std::setw(16) << reco_signal_protons;
+      os << std::endl;
+      os << std::setw(35) << "Signal event, Matched particles";
+      os << std::setw(16) << signal_muons;
+      os << std::setw(16) << signal_pions;
+      os << std::setw(16) << signal_protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected, Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_muons/double(mc_selected_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_pions/double(mc_selected_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_protons/double(mc_selected_protons);
+      os << std::endl;
+      os << std::setw(35) << "Selected, Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_muons/double(reco_selected_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_pions/double(reco_selected_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * selected_protons/double(reco_selected_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal, Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_muons/double(mc_signal_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_pions/double(mc_signal_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_protons/double(mc_signal_protons);
+      os << std::endl;
+      os << std::setw(35) << "Signal, Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_muons/double(reco_signal_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_pions/double(reco_signal_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * signal_protons/double(reco_signal_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ m{3.5cm} * {3}{ >{\\centering\\arraybackslash}m{2cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Contents & $\\mu^{-}$ & $\\pi^{\\pm}$ & Proton \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << "}" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "Selected event, MC particles";
+      os << " & \\num{" << mc_selected_muons << "}";
+      os << " & \\num{" << mc_selected_pions << "}";
+      os << " & \\num{" << mc_selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Selected event, Reco particles";
+      os << " & \\num{" << reco_selected_muons << "}";
+      os << " & \\num{" << reco_selected_pions << "}";
+      os << " & \\num{" << reco_selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Selected event, Matched particles";
+      os << " & \\num{" << selected_muons << "}";
+      os << " & \\num{" << selected_pions << "}";
+      os << " & \\num{" << selected_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Signal event, MC particles";
+      os << " & \\num{" << mc_signal_muons << "}";
+      os << " & \\num{" << mc_signal_pions << "}";
+      os << " & \\num{" << mc_signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Signal event, Reco particles";
+      os << " & \\num{" << reco_signal_muons << "}";
+      os << " & \\num{" << reco_signal_pions << "}";
+      os << " & \\num{" << reco_signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Signal event, Matched particles";
+      os << " & \\num{" << signal_muons << "}";
+      os << " & \\num{" << signal_pions << "}";
+      os << " & \\num{" << signal_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
   
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector){
   
     /* 
      * Counters for particle type and mis-identified counterpart
@@ -506,8 +893,15 @@ namespace selection{
     unsigned int selected_proton_pion = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+     
       selected_muon        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 13);
@@ -517,81 +911,133 @@ namespace selection{
       signal_muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 13);
       signal_muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 13);
       signal_muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 13);
-      
+
       selected_pion        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 211);
       selected_pion        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 211);
       selected_pion_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 211);
       selected_pion_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, -211);
       selected_pion_proton += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, 211);
       selected_pion_proton += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, -211);
-      
+
       signal_pion          += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 211);
       signal_pion          += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 211);
       signal_pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, 211);
       signal_pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, -211);
       signal_pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 211);
       signal_pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, -211);
-      
+
       selected_proton      += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 2212, 2212);
       selected_proton_muon += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 2212);
       selected_proton_pion += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 2212);
       selected_proton_pion += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 2212);
-      
+
       signal_proton        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 2212, 2212);
       signal_proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 13, 2212);
       signal_proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, 211, 2212);
       signal_proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(e, topology, -211, 2212);
     }
 
-    os << "    " << topology_name                                                                                               << std::endl;  
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Selected event";
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << selected_muon;
-    os << std::setw(16) << selected_pion_muon;
-    os << std::setw(16) << selected_proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << selected_muon_pion;
-    os << std::setw(16) << selected_pion;
-    os << std::setw(16) << selected_proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << selected_muon_proton;
-    os << std::setw(16) << selected_pion_proton;
-    os << std::setw(16) << selected_proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Signal event";
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << signal_muon;
-    os << std::setw(16) << signal_pion_muon;
-    os << std::setw(16) << signal_proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << signal_muon_pion;
-    os << std::setw(16) << signal_pion;
-    os << std::setw(16) << signal_proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << signal_muon_proton;
-    os << std::setw(16) << signal_pion_proton;
-    os << std::setw(16) << signal_proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
+    if(!isTex){
+      os << "    " << topology_name                                                                                               << std::endl;  
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Selected event";
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << selected_muon;
+      os << std::setw(16) << selected_pion_muon;
+      os << std::setw(16) << selected_proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << selected_muon_pion;
+      os << std::setw(16) << selected_pion;
+      os << std::setw(16) << selected_proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << selected_muon_proton;
+      os << std::setw(16) << selected_pion_proton;
+      os << std::setw(16) << selected_proton;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Signal event";
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << signal_muon;
+      os << std::setw(16) << signal_pion_muon;
+      os << std::setw(16) << signal_proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << signal_muon_pion;
+      os << std::setw(16) << signal_pion;
+      os << std::setw(16) << signal_proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << signal_muon_proton;
+      os << std::setw(16) << signal_pion_proton;
+      os << std::setw(16) << signal_proton;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{3cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
+      os << "    $\\downarrow$ True &&& \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << ": Selected} \\\\" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << selected_muon << "}";
+      os << " & \\num{" << selected_pion_muon << "}";
+      os << " & \\num{" << selected_proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << selected_muon_pion << "}";
+      os << " & \\num{" << selected_pion << "}";
+      os << " & \\num{" << selected_proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << selected_muon_proton << "}";
+      os << " & \\num{" << selected_pion_proton << "}";
+      os << " & \\num{" << selected_proton << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "    \\multicolumn{4}{c}{" << topology_name << ": Signal} \\\\" << std::endl; 
+      os << "    \\hdashline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << signal_muon << "}";
+      os << " & \\num{" << signal_pion_muon << "}";
+      os << " & \\num{" << signal_proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << signal_muon_pion << "}";
+      os << " & \\num{" << signal_pion << "}";
+      os << " & \\num{" << signal_proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << signal_muon_proton << "}";
+      os << " & \\num{" << signal_pion_proton << "}";
+      os << " & \\num{" << signal_proton << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os){
+  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector){
    
     unsigned int mc_muons           = 0;
     unsigned int mc_protons         = 0;
@@ -606,7 +1052,16 @@ namespace selection{
     unsigned int charged_pions      = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+     
+      //if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
       mc_muons           += e.CountMCParticlesWithPdg(13);
       mc_charged_pions   += e.CountMCParticlesWithPdg(211);
@@ -624,44 +1079,86 @@ namespace selection{
       protons            += GeneralAnalysisHelper::CountMatchedParticlesAll(e, 2212);
     }
 
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << "    All events"                                                                                               << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "MC Particles";
-    os << std::setw(16) << mc_muons;
-    os << std::setw(16) << mc_charged_pions;
-    os << std::setw(16) << mc_protons;
-    os << std::endl;
-    os << std::setw(35) << "Reco Particles";
-    os << std::setw(16) << reco_muons;
-    os << std::setw(16) << reco_charged_pions;
-    os << std::setw(16) << reco_protons;
-    os << std::endl;
-    os << std::setw(35) << "Matched Particles";
-    os << std::setw(16) << muons;
-    os << std::setw(16) << charged_pions;
-    os << std::setw(16) << protons;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"           << std::endl;
-    os << std::setw(35) << "Efficiency";
-    os << std::setw(16) << std::setprecision(5) << 100 * muons/double(mc_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * charged_pions/double(mc_charged_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * protons/double(mc_protons);
-    os << std::endl;
-    os << std::setw(35) << "Purity";
-    os << std::setw(16) << std::setprecision(5) << 100 * muons/double(reco_muons);
-    os << std::setw(16) << std::setprecision(5) << 100 * charged_pions/double(reco_charged_pions);
-    os << std::setw(16) << std::setprecision(5) << 100 * protons/double(reco_protons);
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
+    if(!isTex){
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << "    All events"                                                                                               << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "MC Particles";
+      os << std::setw(16) << mc_muons;
+      os << std::setw(16) << mc_charged_pions;
+      os << std::setw(16) << mc_protons;
+      os << std::endl;
+      os << std::setw(35) << "Reco Particles";
+      os << std::setw(16) << reco_muons;
+      os << std::setw(16) << reco_charged_pions;
+      os << std::setw(16) << reco_protons;
+      os << std::endl;
+      os << std::setw(35) << "Matched Particles";
+      os << std::setw(16) << muons;
+      os << std::setw(16) << charged_pions;
+      os << std::setw(16) << protons;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"           << std::endl;
+      os << std::setw(35) << "Efficiency";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * muons/double(mc_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * charged_pions/double(mc_charged_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * protons/double(mc_protons);
+      os << std::endl;
+      os << std::setw(35) << "Purity";
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * muons/double(reco_muons);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * charged_pions/double(reco_charged_pions);
+      os << std::setw(16) << std::fixed << std::setprecision(2) << 100 * protons/double(reco_protons);
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ m{3.5cm} * {3}{ >{\\centering\\arraybackslash}m{2cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Contents & $\\mu^{-}$ & $\\pi^{\\pm}$ & Proton \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "MC particles";
+      os << " & \\num{" << mc_muons << "}";
+      os << " & \\num{" << mc_charged_pions << "}";
+      os << " & \\num{" << mc_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Reco particles";
+      os << " & \\num{" << reco_muons << "}";
+      os << " & \\num{" << reco_charged_pions << "}";
+      os << " & \\num{" << reco_protons << "}";
+      os << " \\\\" << std::endl;
+      os << "Matched particles";
+      os << " & \\num{" << muons << "}";
+      os << " & \\num{" << charged_pions << "}";
+      os << " & \\num{" << protons << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Efficiency";
+      os << " & " << std::fixed << std::setprecision(2) << 100 * muons/double(mc_muons) << "~$\\pm$~" << RatioUncertainty(muons,mc_muons)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * charged_pions/double(mc_charged_pions) << "~$\\pm$~" << RatioUncertainty(charged_pions,mc_charged_pions)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * protons/double(mc_protons) << "~$\\pm$~" << RatioUncertainty(protons,mc_protons)*100;
+      os << " \\\\" << std::endl;
+      os << "Purity";
+      os << " & " << std::fixed << std::setprecision(2) << 100 * muons/double(reco_muons) << "~$\\pm$~" << RatioUncertainty(muons,reco_muons)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * charged_pions/double(reco_charged_pions) << "~$\\pm$~" << RatioUncertainty(charged_pions,reco_charged_pions)*100;
+      os << " & " << std::fixed << std::setprecision(2) << 100 * protons/double(reco_protons) << "~$\\pm$~" << RatioUncertainty(protons,reco_protons)*100;
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   
   }
   
   //----------------------------------------------------------------------------------------
 
-  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os){
+  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector){
     /* 
      * Counters for particle type and mis-identified counterpart
      *    left particle:  reconstructed
@@ -670,59 +1167,151 @@ namespace selection{
      * e.g. muon_charged_pion = charged pion has been misidentified as a muon
      *
      */
-    unsigned int muon        = 0;
-    unsigned int muon_pion   = 0;
-    unsigned int muon_proton = 0;
-    unsigned int pion        = 0;
-    unsigned int pion_muon   = 0;
-    unsigned int pion_proton = 0;
-    unsigned int proton      = 0;
-    unsigned int proton_muon = 0;
-    unsigned int proton_pion = 0;
-    
+    unsigned int muon         = 0;
+    unsigned int muon_pion    = 0;
+    unsigned int muon_proton  = 0;
+    unsigned int pion         = 0;
+    unsigned int pion_muon    = 0;
+    unsigned int pion_proton  = 0;
+    unsigned int proton       = 0;
+    unsigned int proton_muon  = 0;
+    unsigned int proton_pion  = 0;
+    unsigned int true_muon    = 0;
+    unsigned int true_pion    = 0;
+    unsigned int true_proton  = 0;
+    unsigned int sig_muon     = 0;
+    unsigned int sig_pion     = 0;
+    unsigned int sig_proton   = 0;
+    unsigned int sel_muon     = 0;
+    unsigned int sel_pion     = 0;
+    unsigned int sel_proton   = 0;
+    unsigned int muon_other   = 0;
+    unsigned int pion_other   = 0;
+    unsigned int proton_other = 0;
+
     for(const Event &e : ev_list){
-      if(!e.IsSBNDTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
-      muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13);
-      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13);
-      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13);
-      muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 13);
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+
+      true_muon  += e.CountMCParticlesWithPdg(13);
+      true_pion  += e.CountMCParticlesWithPdg(211);
+      true_pion  += e.CountMCParticlesWithPdg(-211);
+      true_proton+= e.CountMCParticlesWithPdg(2212);
       
-      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211);
-      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211);
-      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 211);
-      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, -211);
-      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 211);
-      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, -211);
-      
-      proton        += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212);
-      proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 2212);
-      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 2212);
-      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 2212);
+      muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13, false);
+      sig_muon      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13, true);
+      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13, false);
+      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13, false);
+      muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 13, false);
+      muon_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 13, false);
+
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, -211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, -211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211, false);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, -211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, -211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211, true);
+      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 211, false);
+      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, -211, false);
+      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 211, false);
+      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, -211, false);
+      pion_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 211, false);
+      pion_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, -211, false);
+
+      proton        += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212, false);
+      sig_proton    += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212, true);
+      proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 2212, false);
+      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 2212, false);
+      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 2212, false);
+      proton_other  += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 2212, false);
     }
-    
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << "    All events"                                                                           << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    os << std::setw(35) << "Muon";
-    os << std::setw(16) << muon;
-    os << std::setw(16) << pion_muon;
-    os << std::setw(16) << proton_muon;
-    os << std::endl;
-    os << std::setw(35) << "Charged pion";
-    os << std::setw(16) << muon_pion;
-    os << std::setw(16) << pion;
-    os << std::setw(16) << proton_pion;
-    os << std::endl;
-    os << std::setw(35) << "Proton";
-    os << std::setw(16) << muon_proton;
-    os << std::setw(16) << pion_proton;
-    os << std::setw(16) << proton;
-    os << std::endl;
-    os << "-------------------------------------------------------------------------------------"    << std::endl;
-    
+
+    sel_muon   = muon+muon_pion+muon_proton+muon_other;
+    sel_pion   = pion+pion_muon+pion_proton+pion_other;
+    sel_proton = proton+proton_pion+proton_muon+proton_other;
+
+    if(!isTex){
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << "    All events"                                                                           << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "True/Reco" << std::setw(16) << "Muon" << std::setw(16) << "Charged pion" << std::setw(16) << std::setw(16) << "Proton" << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+      os << std::setw(35) << "Muon";
+      os << std::setw(16) << muon;
+      os << std::setw(16) << pion_muon;
+      os << std::setw(16) << proton_muon;
+      os << std::endl;
+      os << std::setw(35) << "Charged pion";
+      os << std::setw(16) << muon_pion;
+      os << std::setw(16) << pion;
+      os << std::setw(16) << proton_pion;
+      os << std::endl;
+      os << std::setw(35) << "Proton";
+      os << std::setw(16) << muon_proton;
+      os << std::setw(16) << pion_proton;
+      os << std::setw(16) << proton;
+      os << std::endl;
+      os << std::setw(35) << "Other";
+      os << std::setw(16) << muon_other;
+      os << std::setw(16) << pion_other;
+      os << std::setw(16) << proton_other;
+      os << std::endl;
+      os << "-------------------------------------------------------------------------------------"    << std::endl;
+    }
+    else{
+      // TeX file header
+      os << "\\begin{table}[h!] " << std::endl;
+      os << "  \\centering " << std::endl;
+      os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{3cm} } }" << endl;
+      os << "    \\hline" << endl;
+      os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
+      os << "    $\\downarrow$ True &&& \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      os << "$\\mu^{-}$";
+      os << " & \\num{" << muon << "}";
+      os << " & \\num{" << pion_muon << "}";
+      os << " & \\num{" << proton_muon << "}";
+      os << " \\\\" << std::endl;
+      os << "$\\pi^{\\pm}$";
+      os << " & \\num{" << muon_pion << "}";
+      os << " & \\num{" << pion << "}";
+      os << " & \\num{" << proton_pion << "}";
+      os << " \\\\" << std::endl;
+      os << "Proton";
+      os << " & \\num{" << muon_proton << "}";
+      os << " & \\num{" << pion_proton << "}";
+      os << " & \\num{" << proton << "}";
+      os << " \\\\" << std::endl;
+      os << "Other";
+      os << " & \\num{" << muon_other << "}";
+      os << " & \\num{" << pion_other << "}";
+      os << " & \\num{" << proton_other << "}";
+      os << " \\\\" << std::endl;
+      os << "    \\hdashline" << endl;
+      os << "Efficiency";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_muon/static_cast<double>(true_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_muon,true_muon) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_pion/static_cast<double>(true_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_pion,true_pion) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_proton/static_cast<double>(true_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_proton,true_proton) << " \\%";
+      os << " \\\\" << std::endl;
+      os << "Purity";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(muon/static_cast<double>(sel_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(muon,sel_muon) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(pion/static_cast<double>(sel_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(pion,sel_pion) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(proton/static_cast<double>(sel_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(proton,sel_proton) << " \\%";
+      os << " \\\\" << std::endl;
+      os << "    \\hline" << endl;
+      // Tex file end
+      os << "  \\end{tabular}"<< endl;
+      os << "\\end{table}" << std::endl;
+    }
   }
   
   //----------------------------------------------------------------------------------------
@@ -747,6 +1336,72 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
 
+  void GeneralAnalysisHelper::LongestMCTrackID(const Event &e, int &id) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    for(const Particle & p : e.GetMCParticleList()){
+      if(p.GetLength() > longest){
+        longest_id = p.ID();
+        longest = p.GetLength();
+      }
+    }
+    id = longest_id;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestRecoTrackID(const Event &e, int &id) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    for(const Particle &p : e.GetRecoParticleList()){
+      if(!p.GetFromRecoTrack()) continue;
+      if(p.GetLength() > longest){
+        longest_id = p.ID();
+        longest = p.GetLength();
+      }
+    }
+    id = longest_id;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestMCTrackLength(const Event &e, double &length) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    LongestMCTrackID(e,longest_id);
+    if(longest_id != -1){
+      for(const Particle & p : e.GetMCParticleList()){
+        if(p.ID() == longest_id){
+          length = p.GetLength();
+          break;
+        }
+      }
+    }
+    else
+      length = longest;
+  }
+
+  //----------------------------------------------------------------------------------------
+
+  void GeneralAnalysisHelper::LongestRecoTrackLength(const Event &e, double &length) {
+    double longest = -std::numeric_limits<double>::max();
+    int longest_id = -1;
+    LongestRecoTrackID(e,longest_id);
+    if(longest_id != -1){
+      for(const Particle &p : e.GetRecoParticleList()){
+        if(!p.GetFromRecoTrack()) continue;
+        if(p.ID() == longest_id){
+          length = p.GetLength();
+          break;
+        }
+      }
+    }
+    else
+      length = longest;
+  }
+  
+  //----------------------------------------------------------------------------------------
+  
   void GeneralAnalysisHelper::GetRecoCosThetaWithPdg(const Event &e, const int pdg, std::vector<float> &cos_thetas) {
     CosThetaWithPdg(pdg, e.GetRecoParticleList(), cos_thetas);
   }
@@ -824,199 +1479,14 @@ namespace selection{
       if(particle_list[i].GetPdgCode() == pdg) momentum_mod.push_back(particle_list[i].GetModulusMomentum());
     }
   }
-  
+
   //----------------------------------------------------------------------------------------
- 
-  double GeneralAnalysisHelper::Efficiency(const std::vector< double > & count_mc, const std::vector< double > & count_signal, const std::vector< double > & count_selected, const TopologyMap &topology) {
-    ofstream rfile;
-    rfile.open( "../Output_Selection_Tool/statistics/results.txt" );
 
-    for( int i = 0; i<5; ++i ){
-      rfile << "__________________________________________________________"                                                             << "\n";
-      rfile                                                                                                                             << "\n";
-      rfile << "                 TOPOLOGY NUMBER " << i                                                                                 << "\n";
-      rfile << "__________________________________________________________"                                                             << "\n";
-      rfile << "Count MC = "                      << count_mc[i]                                                                        << "\n";
-      rfile << "Count Selected = "                << count_selected[i]                                                                  << "\n";
-      rfile << "Count Signal = "                  << count_signal[i]                                                                    << "\n";
-      rfile << "Background = "                    << count_selected[i] - count_signal[i]                                                << "\n";
-      rfile << "Correct Reconstructed Events[%]=" << ( count_signal[i] / count_mc[i] ) * 100                                            << "\n";
-      rfile << "Purity[%]="                       << (( count_signal[i] ) / count_selected[i] ) * 100                                   << "\n";
-      rfile << "Background_Rejection[%]="         << (1-( count_selected[i] - count_signal[i] ) / ( count_mc[0]+count_mc[1]-count_mc[i] ) ) * 100 << "\n";
-      rfile << "__________________________________________________________"                                                             << "\n";
-    }
-
-    if( topology == GeneralAnalysisHelper::GetNCTopologyMap() )    return ( count_signal[0] / count_mc[0] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCCIncTopologyMap() ) return ( count_signal[1] / count_mc[1] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCC0PiTopologyMap() ) return ( count_signal[2] / count_mc[2] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCC1PiTopologyMap() ) return ( count_signal[3] / count_mc[3] ) * 100;
-    if( topology == GeneralAnalysisHelper::GetCCPi0TopologyMap() ) return ( count_signal[4] / count_mc[4] ) * 100;
-    return 0;
-  }
-  
-  //------------------------------------------------------------------------------------------
-  
-  void GeneralAnalysisHelper::SaveTopologyMatrix(const ParticleMatrix &count_mc_topology, const ParticleMatrix &count_signal_topology, const ParticleMatrix &count_selected_topology) {
-   ofstream TMfile ;
-   TMfile.open( "../Output_Selection_Tool/statistics/TopologyMatrix.txt" ) ;
-    TMfile                                                                   << "\n";
-    TMfile << "____________________________________________________________" << "\n";
-    TMfile                                                                   << "\n";
-    TMfile << "  TOPOLOGY MATRIX - TRUE RECO  (#_TReco / #_Total_MC) : "     << "\n";
-    TMfile << "____________________________________________________________" << "\n";
-    for( unsigned int i = 0 ; i < 5; ++i ){
-      TMfile << "(";
-      for( unsigned int k = 0 ; k < 5 ; ++k ) {
-        if( count_signal_topology[i][k]!=0 ){
-          TMfile << ( count_signal_topology[i][k] / count_mc_topology[i][k] ) * 100 << "   ,   ";
-	      } 
-        else TMfile << "   --   ";
-      }
-      TMfile <<")"                                                           << "\n";
-    }
-  }
-  
-  //------------------------------------------------------------------------------------------
- 
-  void GeneralAnalysisHelper::EventInformationParticles(const Event &e, std::string event_file, const int event_number) {
-    ofstream efile ;
-    efile.open( event_file , std::ofstream::app);
-
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << " EVENT NUMBER =                                            " << event_number                       << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "TRUE EVENTS      : "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "   muons         : " << e.CountMCParticlesWithPdg(13)                                              << "\n";
-    efile << "   pi+/-         : " << e.CountMCParticlesWithPdg(211) + e.CountMCParticlesWithPdg(-211)           << "\n";
-    efile << "   pi0           : " << e.CountMCParticlesWithPdg(111)                                             << "\n";
-    efile << "   protons       : " << e.CountMCParticlesWithPdg(2212)                                            << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "TRUE TOPOLOGY    : "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()))    efile << "   NC           : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE"   << "\n";
-    if(e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE"   << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << " SELECTED EVENTS :                                         "                                       << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "   muons         : " << e.CountRecoParticlesWithPdg(13)                                            << "\n";
-    efile << "   pi+/-         : " << e.CountRecoParticlesWithPdg(211) + e.CountRecoParticlesWithPdg(-211)       << "\n";
-    efile << "   pi0           : " << e.CountRecoParticlesWithPdg(111)                                           << "\n";
-    efile << "   protons       : " << e.CountRecoParticlesWithPdg(2212)                                          << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    efile << "SELECTED TOPOLOGY: "                                                                               << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()))    efile << "   NC           : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCCIncTopologyMap())) efile << "   ccincl.       : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCC0PiTopologyMap())) efile << "   cc0pi         : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap())) efile << "   cc1pi+/-      : " << "TRUE" << "\n";
-    if(e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap())) efile << "   cc1pi0        : " << "TRUE" << "\n";
-    efile << "-----------------------------------------------------------"                                       << "\n";
-
-  }
-  
-  //------------------------------------------------------------------------------------------
-  
-  void GeneralAnalysisHelper::EventProperties(const Event &e, const TopologyMap &topology, std::string event_file, const int event_number) {
-    ofstream lfile, afile, Kfile ;
-    lfile.open( event_file+="_length.txt" , std::ofstream::app);
-    afile.open( event_file+="_angle.txt"  , std::ofstream::app);
-    Kfile.open( event_file+="_KineticEnergy.txt" , std::ofstream::app);
-
-    /*
-    if( e.CheckMCTopology( topology ) ) { // Change the topology here
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "EVENT NUMBER      : " << event_number                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "LENGTH INFORMATION: "                                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "TRUE EVENTS       : "                                        << "\n";
-      lfile << "-----------------------------------------------------------" << "\n";
-      lfile << "Muon length         : " << GeneralAnalysisHelper::GetMCLengthWithPdg(  13  )  << "\n";
-      lfile << "pi+/- length        : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 211  )  << "\n";
-      lfile << "pi0   length        : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 111  )  << "\n";
-      lfile << "p length            : " << GeneralAnalysisHelper::GetMCLengthWithPdg( 2212 )  << "\n";
-      
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "EVENT NUMBER       : " << event_number                       << "\n";
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "ANGULAR INFORMATION: "                                       << "\n";
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "TRUE EVENTS        : "                                       << "\n"; 
-      afile << "-----------------------------------------------------------" << "\n";
-      afile << "Muon angle       : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg(  13  )  << "\n";
-      afile << "Pion angle       : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 211  )  << "\n";
-      afile << "pi0   angle      : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 111  )  << "\n";
-      afile << "Proton angle     : " << GeneralAnalysisHelper::GetMCCosThetaWithPdg( 2212 )  << "\n";
-
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "EVENT NUMBER       : " << event_number                       << "\n";
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "KINETIC ENERGY [GeV] : "                                     << "\n";
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "TRUE EVENTS        : "                                       << "\n"; 
-      Kfile << "-----------------------------------------------------------" << "\n";
-      Kfile << "Muon Kenergy       : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg(  13  )  << "\n";
-      Kfile << "Pion Kenergy       : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg( 211  )  << "\n";
-       
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile << "Proton Kenergy     : " << GeneralAnalysisHelper::GetMCKineticEnergyWithPdg( 2212 )  << "\n";
-      if( e.CheckRecoTopology( topology ) ) {
-         lfile << "-----------------------------------------------------------"     << "\n";
-         lfile << "SIGNAL EVENTS     : "                                            << "\n";
-         lfile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) )lfile     << "Muon length       : " << GeneralAnalysisHelper::GetRecoLengthWithPdg(  13  ) << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile   << "pi+/- length      : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 211  ) << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile   << "pi0   length      : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 111  ) << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 )lfile                                << "p length          : " << GeneralAnalysisHelper::GetRecoLengthWithPdg( 2212 ) << "\n";
-
-         afile << "-----------------------------------------------------------"     << "\n";
-         afile << "SIGNAL EVENTS      : "                                           << "\n"; 
-         afile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap())) afile     << "Muon angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg(  13  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) afile  << "Pion angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 211  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) ) afile  << "Pi0 angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 111  )  << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 ) afile                               << "Proton angle      : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 2212 )  << "\n";
-         
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         Kfile << "KINETIC ENERGY [GeV] : "                                         << "\n";
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         Kfile << "TRUE EVENTS        : "                                           << "\n"; 
-         Kfile << "-----------------------------------------------------------"     << "\n";
-         if( !e.CheckMCTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile    << "Muon Kenergy      : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-         if( e.CheckMCTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) Kfile  << "Pion Kenergy      : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 211  )  << "\n";
-         if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile                               << "Proton Kenergy    : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
-      }
-    }
-    if( e.CheckRecoTopology( topology ) ) { // Change topology here
-
-      lfile << "-----------------------------------------------------------"                                 << "\n";
-      lfile << "SELECTED EVENTS   : "                                                                        << "\n";
-      lfile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) lfile  << "Muon length       : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg(  13  ) << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) )lfile << "pi+/- length      : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 211  ) << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) )lfile << "pi0   length      : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 111  ) << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) lfile                               << "p length          : "   << GeneralAnalysisHelper::GetRecoLengthWithPdg( 2212 ) << "\n";
-      
-      afile << "-----------------------------------------------------------"                                 << "\n";
-      afile << "SELECTED EVENTS      : "                                                                     << "\n"; 
-      afile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) afile   << "Muon angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg(  13  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) afile << "Pion angle         : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 211  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCCPi0TopologyMap()) ) afile << "pi0   angle        : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 111  )  << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) afile                                << "Proton angle       : " << GeneralAnalysisHelper::GetRecoCosThetaWithPdg( 2212 )  << "\n";
-
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      Kfile << "KINETIC ENERGY [GeV] : "                                                                     << "\n";
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      Kfile << "TRUE EVENTS        : "                                                                       << "\n"; 
-      Kfile << "-----------------------------------------------------------"                                 << "\n";
-      if( !e.CheckRecoTopology(GeneralAnalysisHelper::GetNCTopologyMap()) ) Kfile   << "Muon Kenergy       : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg(  13  )  << "\n";
-      if( e.CheckRecoTopology(GeneralAnalysisHelper::GetCC1PiTopologyMap()) ) Kfile << "Pion Kenergy       : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 211  )  << "\n";
-      if( e.CountMCParticlesWithPdg(2212)!=0 ) Kfile                                << "Proton Kenergy     : " << GeneralAnalysisHelper::GetRecoKineticEnergyWithPdg( 2212 )  << "\n";
-    }
-  */
+  double GeneralAnalysisHelper::RatioUncertainty(const double &num, const double &den){
+    // Bayesian uncertainty calculation from here: https://indico.cern.ch/event/66256/contributions/2071577/attachments/1017176/1447814/EfficiencyErrors.pdf
+    // Instead use Bayesean Approach from: https://cds.cern.ch/record/1010669/files/0701199.pdf?version=1
+    double VarA = ((num+1)*(num+2))/static_cast<double>((den+2)*(den+3));
+    double VarB = TMath::Power(num+1,2)/static_cast<double>(TMath::Power(den+2,2));
+    return TMath::Sqrt(VarA - VarB);
   }
 } // selection
