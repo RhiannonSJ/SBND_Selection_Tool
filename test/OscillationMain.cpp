@@ -151,7 +151,9 @@ int MainTest(const char *config){
   t_subrun->Branch("pot",        &pot,           "pot/D");
 
   // Counter to quantify how many events have strange particle energies in them
-  int bad_events = 0;
+  int bad_events      = 0;
+  int total_events    = 0;
+  int selected_events = 0;
 
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
@@ -263,12 +265,16 @@ int MainTest(const char *config){
             true_topology = 4;
 
           t_run->Fill();
+          selected_events++;
         } // Chosen Topology
       } // CCInc Precuts
+      total_events++;
     } // Events
   } // Files
   std::cout << " Total events with particles with energy > 10GeV (skipped) : " << bad_events << std::endl;
   // Print the total pot from all the samples
+  std::cout << " Total events   : " << total_events << std::endl;
+  std::cout << " Selected events: " << selected_events << std::endl;
   std::cout << " Total POT in the samples is: " << pot << std::endl;
   t_subrun->Fill();
 

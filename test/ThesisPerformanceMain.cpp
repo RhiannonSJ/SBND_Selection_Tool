@@ -110,27 +110,29 @@ int MainTest(const char *config){
   // COUNTERS
   unsigned int nue_true  = 0; 
 
-  unsigned int ccinc_cc0pi = 0;
-  unsigned int ccinc_cc1pi = 0;
-  unsigned int ccinc_ccoth = 0;
-  unsigned int ccinc_nc0pi = 0;
-  unsigned int ccinc_nc1pi = 0;
-  unsigned int ccinc_ncoth = 0;
-  unsigned int ccinc_nue   = 0;
-  unsigned int ccinc_true  = 0; 
-  unsigned int ccinc_sig   = 0; 
-  unsigned int ccinc_sel   = 0; 
+  unsigned int ccinc_cc0pi   = 0;
+  unsigned int ccinc_cc1pi   = 0;
+  unsigned int ccinc_ccoth   = 0;
+  unsigned int ccinc_nc0pi   = 0;
+  unsigned int ccinc_nc1pi   = 0;
+  unsigned int ccinc_ncoth   = 0;
+  unsigned int ccinc_nue     = 0;
+  unsigned int ccinc_numubar = 0;
+  unsigned int ccinc_true    = 0; 
+  unsigned int ccinc_sig     = 0; 
+  unsigned int ccinc_sel     = 0; 
 
-  unsigned int cc0pi_cc0pi = 0;
-  unsigned int cc0pi_cc1pi = 0;
-  unsigned int cc0pi_ccoth = 0;
-  unsigned int cc0pi_nc0pi = 0;
-  unsigned int cc0pi_nc1pi = 0;
-  unsigned int cc0pi_ncoth = 0;
-  unsigned int cc0pi_nue   = 0;
-  unsigned int cc0pi_true  = 0; 
-  unsigned int cc0pi_sig   = 0; 
-  unsigned int cc0pi_sel   = 0; 
+  unsigned int cc0pi_cc0pi   = 0;
+  unsigned int cc0pi_cc1pi   = 0;
+  unsigned int cc0pi_ccoth   = 0;
+  unsigned int cc0pi_nc0pi   = 0;
+  unsigned int cc0pi_nc1pi   = 0;
+  unsigned int cc0pi_ncoth   = 0;
+  unsigned int cc0pi_nue     = 0;
+  unsigned int cc0pi_numubar = 0;
+  unsigned int cc0pi_true    = 0; 
+  unsigned int cc0pi_sig     = 0; 
+  unsigned int cc0pi_sel     = 0; 
 
   unsigned int all_tracks_contained   = 0;
   unsigned int precuts_passed         = 0;
@@ -148,18 +150,19 @@ int MainTest(const char *config){
   TopologyMap nc1pinpi0_map = GeneralAnalysisHelper::GetNC1PiNPi0TopologyMap();
   TopologyMap ncnpi_map     = GeneralAnalysisHelper::GetNCNPiTopologyMap();
   TopologyMap nue_map       = GeneralAnalysisHelper::GetNuECCTopologyMap();
-  TopologyMap nuenc_map     = GeneralAnalysisHelper::GetNuECCTopologyMap();
+  TopologyMap nuenc_map     = GeneralAnalysisHelper::GetNuENCTopologyMap();
+  TopologyMap numubar_map   = GeneralAnalysisHelper::GetNuMuBarTopologyMap();
   std::vector<TopologyMap> cc_for_other{cc0pi_map, cc1pinpi0_map};
   std::vector<TopologyMap> nc_for_other{nc0pi_map, nc1pinpi0_map};
   TopologyMap ccoth_map   = GeneralAnalysisHelper::GetOtherTopologyMap(1,cc_for_other);
   TopologyMap ncoth_map   = GeneralAnalysisHelper::GetOtherTopologyMap(2,nc_for_other);
   
   std::vector< TopologyMap > reco_maps({cc_map, cc0pi_map});
-  std::vector< TopologyMap > true_maps({cc0pi_map, cc1pi_map, ccoth_map, nc0pi_map, nc1pi_map, ncoth_map, nue_map});
+  std::vector< TopologyMap > true_maps({cc0pi_map, cc1pi_map, ccoth_map, nc0pi_map, nc1pi_map, ncoth_map, nue_map, numubar_map});
   std::vector<std::string> reco_topology_names{"CC~Inc.", "CC~$0\\pi$"};
-  std::vector<std::string> count_features{"CC~$0\\pi$", "CC~$1\\pi^{\\pm}$", "CC~Oth.", "NC~$0\\pi$", "NC~$1\\pi^{\\pm}$", "NC~Oth.", "$\\nu_{e}$", "True", "Selected", "Signal"};
+  std::vector<std::string> count_features{"CC~$0\\pi$", "CC~$1\\pi^{\\pm}$", "CC~Oth.", "NC~$0\\pi$", "NC~$1\\pi^{\\pm}$", "NC~Oth.", "$\\nu_{e}$,~$\\bar{\\nu}_{e}$", "$\\bar{\\nu}_{\\mu}$", "True", "Selected", "Signal"};
   std::vector<std::string> reco_topology_names_notex{"CC Inc.", "CC 0Pi"};
-  std::vector<std::string> count_features_notex{"CC 0Pi", "CC 1Pi", "CC Oth.", "NC 0pi", "NC 1Pi", "NC Oth.", "Nue", "True", "Selected", "Signal"};
+  std::vector<std::string> count_features_notex{"CC 0Pi", "CC 1Pi", "CC Oth.", "NC 0pi", "NC 1Pi", "NC Oth.", "Nue", "NumuBar", "True", "Selected", "Signal"};
   std::map< std::string, std::map<std::string, unsigned int> > topology_count_rates, topology_count_rates_notex;
 
   for(const std::string &f : count_features){
@@ -214,6 +217,12 @@ int MainTest(const char *config){
               }
               else if(currMC.Contains("Nue")){
                 if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12)){
+                  topology_count_rates.at(count_features.at(k)).at(reco_topology_names.at(j))++;
+                  topology_count_rates_notex.at(count_features_notex.at(k)).at(reco_topology_names_notex.at(j))++;
+                }
+              }
+              else if(currMC.Contains("NumuBar")){
+                if(e.CheckMCNeutrino(-14)){
                   topology_count_rates.at(count_features.at(k)).at(reco_topology_names.at(j))++;
                   topology_count_rates_notex.at(count_features_notex.at(k)).at(reco_topology_names_notex.at(j))++;
                 }

@@ -99,6 +99,7 @@ int MainTest(const char *config){
   TopologyMap ccpi0_signal_map = GeneralAnalysisHelper::GetCCPi0TopologyMap();
  
   EventSelectionTool::EventList all_events;
+
   for( unsigned int i = 0; i < total_files; ++i ){
     EventSelectionTool::EventList events;
     selection::LoadAllEventsInFile(input_location, input_filename, events, i, pot, exceptions, fiducial, active);
@@ -106,7 +107,7 @@ int MainTest(const char *config){
 
     all_events.insert(all_events.end(), events.begin(), events.end());
   }
-  std::cout << " Total number of events in sample: " << all_events.size() << std::endl;
+  std::cout << " Total number of events in sample:         " << all_events.size() << std::endl;
 
   time_t rawtime_afterload;
   struct tm * timeinfo_afterload;
@@ -118,33 +119,33 @@ int MainTest(const char *config){
 
   // Files to hold particle statistics
   ofstream all_file;
-  all_file.open(stats_location+"particle_stats.txt");
+  all_file.open(stats_location+"particle_stats_post_ccinc.txt");
 
   ofstream mis_id_file;
-  mis_id_file.open(stats_location+"mis_identification_stats.txt");
+  mis_id_file.open(stats_location+"mis_identification_stats_post_ccinc.txt");
 
-  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(all_events, all_file, false);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  all_file, false);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    all_file, false);
+  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(all_events, all_file, false, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  all_file, false, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    all_file, false, detector);
 
-  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(all_events, mis_id_file, false);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  mis_id_file, false);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file, false);
+  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(all_events, mis_id_file, false, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  mis_id_file, false, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file, false, detector);
 
   ofstream all_file_tex;
-  all_file_tex.open(stats_location+"particle_stats.tex");
+  all_file_tex.open(stats_location+"particle_stats_post_ccinc.tex");
 
   ofstream mis_id_file_tex;
-  mis_id_file_tex.open(stats_location+"mis_identification_stats.tex");
+  mis_id_file_tex.open(stats_location+"mis_identification_stats_post_ccinc.tex");
 
-  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(all_events, all_file_tex, true);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  all_file_tex, true);
-  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    all_file_tex, true);
+  GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(all_events, all_file_tex, true, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  all_file_tex, true, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    all_file_tex, true, detector);
 
-  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(all_events, mis_id_file_tex, true);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  mis_id_file_tex, true);
-  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file_tex, true);
-
+  GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(all_events, mis_id_file_tex, true, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc_signal_map, "CC Inclusive",  mis_id_file_tex, true, detector);
+  GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(all_events, cc0pi_signal_map, "CC 0 Pi",    mis_id_file_tex, true, detector);
+  
   time_t rawtime_end;
   struct tm * timeinfo_end;
   time (&rawtime_end);

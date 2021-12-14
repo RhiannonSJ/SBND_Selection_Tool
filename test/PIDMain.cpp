@@ -97,7 +97,7 @@ int MainTest(const char *config){
   std::vector<int> exceptions;
   FillExceptions(exceptions_file.c_str(),exceptions);
 
-  TopologyMap nc_map      = GeneralAnalysisHelper::GetNCTopologyMap();
+  TopologyMap nc_map      = GeneralAnalysisHelper::GetNuMuNCTopologyMap();
   TopologyMap cc_map      = GeneralAnalysisHelper::GetCCIncTopologyMap();
   TopologyMap cc0pi_map   = GeneralAnalysisHelper::GetCC0PiTopologyMap();
   TopologyMap cc1pi_map   = GeneralAnalysisHelper::GetCC1PiTopologyMap();
@@ -149,43 +149,43 @@ int MainTest(const char *config){
   // COUNTERS
   unsigned int total_ccinc  = 0;
   unsigned int total_ncinc  = 0;
-  unsigned int total_nueinc = 0;
+  unsigned int total_nuoth = 0;
   
   unsigned int total_fiducial_cuts_ccinc  = 0;
   unsigned int total_fiducial_cuts_ncinc  = 0;
-  unsigned int total_fiducial_cuts_nueinc = 0;
+  unsigned int total_fiducial_cuts_nuoth = 0;
 
   unsigned int one_escaping_ccinc = 0;
   unsigned int one_escaping_ncinc = 0;
-  unsigned int one_escaping_nueinc = 0;
+  unsigned int one_escaping_nuoth = 0;
 
   unsigned int longest_escaping_ccinc = 0;
   unsigned int longest_escaping_ncinc = 0;
-  unsigned int longest_escaping_nueinc = 0;
+  unsigned int longest_escaping_nuoth = 0;
 
   // If all tracks are contained
   // Considering muons
   unsigned int track_length_cut_ccinc = 0;
   unsigned int track_length_cut_ncinc = 0;
-  unsigned int track_length_cut_nueinc = 0;
+  unsigned int track_length_cut_nuoth = 0;
 
   unsigned int track_length_min2_ccinc = 0;
   unsigned int track_length_min2_ncinc = 0;
-  unsigned int track_length_min2_nueinc = 0;
+  unsigned int track_length_min2_nuoth = 0;
 
   unsigned int track_length_diff_cut_ccinc = 0;
   unsigned int track_length_diff_cut_ncinc = 0;
-  unsigned int track_length_diff_cut_nueinc = 0;
+  unsigned int track_length_diff_cut_nuoth = 0;
 
   // Considering protons
   unsigned int chi2_cuts_ccinc = 0;
   unsigned int chi2_cuts_ncinc = 0;
-  unsigned int chi2_cuts_nueinc = 0;
+  unsigned int chi2_cuts_nuoth = 0;
 
   // Considering protons
   unsigned int all_cuts_ccinc = 0;
   unsigned int all_cuts_ncinc = 0;
-  unsigned int all_cuts_nueinc = 0;
+  unsigned int all_cuts_nuoth = 0;
 
   // First, ensure all tracks are contained
   for( unsigned int i = 0; i < total_files; ++i ){
@@ -198,10 +198,13 @@ int MainTest(const char *config){
          !e.IsTrueFiducial()) continue;
       if(e.CheckMCTopology(cc_map))
         total_ccinc++;
-      if(e.CheckMCTopology(nc_map))
+      else if(e.CheckMCNeutrino(14) && e.CheckMCTopology(nc_map))
         total_ncinc++;
-      if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12))
-        total_nueinc++;
+      else if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12) || e.CheckMCNeutrino(-14))
+        total_nuoth++;
+      else{
+        std::cout << " Missed something" << std::endl;
+      }
 
       if(!e.IsRecoFiducial() || 
          !e.IsTrueFiducial() || 
@@ -387,15 +390,15 @@ int MainTest(const char *config){
           }
         }
       }
-      else if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12)){
-        total_fiducial_cuts_nueinc++;
+      else if(e.CheckMCNeutrino(12) || e.CheckMCNeutrino(-12) || e.CheckMCNeutrino(-14)){
+        total_fiducial_cuts_nuoth++;
         if(GeneralAnalysisHelper::NumberEscapingTracks(e) == 1){
-          one_escaping_nueinc++;
+          one_escaping_nuoth++;
           for(const Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
-            all_cuts_nueinc++;
+            all_cuts_nuoth++;
             if(p.ID() == longest_id && p.GetOneEndTrackContained() && longest > longest_cut){
-              longest_escaping_nueinc++;
+              longest_escaping_nuoth++;
               break;
             }
           }
@@ -405,17 +408,17 @@ int MainTest(const char *config){
           for(Particle &p : e.GetRecoParticleList()){
             if(!p.GetFromRecoTrack()) continue;
             if(p.GetLength() > length_cut){
-              track_length_cut_nueinc++; 
+              track_length_cut_nuoth++; 
               track_cut_passed = true;
               break;
             }
           }
           if(track_cut_passed){
             if(min_2_tracks){
-              track_length_min2_nueinc++;
+              track_length_min2_nuoth++;
               if(diff > diff_cut){
-                track_length_diff_cut_nueinc++;
-                all_cuts_nueinc++;
+                track_length_diff_cut_nuoth++;
+                all_cuts_nuoth++;
               }
             }
             if((min_2_tracks && diff <= diff_cut) || !min_2_tracks){
@@ -427,15 +430,15 @@ int MainTest(const char *config){
                 if(detector != 2){
                   if(found_p_mu == false && ((p.GetChi2Mu()/p.GetChi2P()) < chi2ratio_cut || (p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)){
                     found_p_mu = true;
-                    chi2_cuts_nueinc++;
-                    all_cuts_nueinc++;
+                    chi2_cuts_nuoth++;
+                    all_cuts_nuoth++;
                   }
                 }
                 else{
                   if(found_p_mu == false && ((p.GetChi2P() > chi2p_cut && p.GetChi2Mu() < chi2mu_cut) || longest > longest_cut)){
                     found_p_mu = true;
-                    chi2_cuts_nueinc++;
-                    all_cuts_nueinc++;
+                    chi2_cuts_nuoth++;
+                    all_cuts_nuoth++;
                   }
                 }
               }
@@ -788,20 +791,20 @@ int MainTest(const char *config){
   file << std::setw(20) << " Total " << "||";
   file << std::setw(15) << total_ccinc;
   file << std::setw(15) << total_ncinc;
-  file << std::setw(15) << total_nueinc;
-  file << std::setw(15) << total_ccinc / static_cast<double>(total_ccinc+total_ncinc+total_nueinc) << std::endl;
+  file << std::setw(15) << total_nuoth;
+  file << std::setw(15) << total_ccinc / static_cast<double>(total_ccinc+total_ncinc+total_nuoth) << std::endl;
 
   file << std::setw(20) << " Total fiducial " << "||";
   file << std::setw(15) << total_fiducial_cuts_ccinc;
   file << std::setw(15) << total_fiducial_cuts_ncinc;
-  file << std::setw(15) << total_fiducial_cuts_nueinc;
-  file << std::setw(15) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nueinc) << std::endl;
+  file << std::setw(15) << total_fiducial_cuts_nuoth;
+  file << std::setw(15) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nuoth) << std::endl;
 
   file << std::setw(20) << " All cuts "   << "||";
   file << std::setw(15) << all_cuts_ccinc;
   file << std::setw(15) << all_cuts_ncinc;
-  file << std::setw(15) << all_cuts_nueinc;
-  file << std::setw(15) << all_cuts_ccinc / static_cast<double>(all_cuts_ccinc+all_cuts_ncinc+all_cuts_nueinc) << std::endl;
+  file << std::setw(15) << all_cuts_nuoth;
+  file << std::setw(15) << all_cuts_ccinc / static_cast<double>(all_cuts_ccinc+all_cuts_ncinc+all_cuts_nuoth) << std::endl;
 
 
   file << "===================================================================================================" << std::endl;
@@ -809,16 +812,16 @@ int MainTest(const char *config){
   file << std::setw(20) << " One escaping "    << "||";
   file << std::setw(15) << one_escaping_ccinc;
   file << std::setw(15) << one_escaping_ncinc;
-  file << std::setw(15) << one_escaping_nueinc;
-  file << std::setw(15) << one_escaping_ccinc / static_cast<double>(one_escaping_ccinc+one_escaping_ncinc+one_escaping_nueinc) << std::endl;
+  file << std::setw(15) << one_escaping_nuoth;
+  file << std::setw(15) << one_escaping_ccinc / static_cast<double>(one_escaping_ccinc+one_escaping_ncinc+one_escaping_nuoth) << std::endl;
 
   file << "---------------------------------------------------------------------------------------------------" << std::endl;
 
   file << std::setw(20) << " None escaping "    << "||";
   file << std::setw(15) << total_fiducial_cuts_ccinc-one_escaping_ccinc;
   file << std::setw(15) << total_fiducial_cuts_ncinc-one_escaping_ncinc;
-  file << std::setw(15) << total_fiducial_cuts_nueinc-one_escaping_nueinc;
-  file << std::setw(15) << (total_fiducial_cuts_ccinc-one_escaping_ccinc) / static_cast<double>((total_fiducial_cuts_ccinc-one_escaping_ccinc)+(total_fiducial_cuts_ncinc-one_escaping_ncinc)+(total_fiducial_cuts_nueinc-one_escaping_nueinc)) << std::endl;
+  file << std::setw(15) << total_fiducial_cuts_nuoth-one_escaping_nuoth;
+  file << std::setw(15) << (total_fiducial_cuts_ccinc-one_escaping_ccinc) / static_cast<double>((total_fiducial_cuts_ccinc-one_escaping_ccinc)+(total_fiducial_cuts_ncinc-one_escaping_ncinc)+(total_fiducial_cuts_nuoth-one_escaping_nuoth)) << std::endl;
 
   file << "---------------------------------------------------------------------------------------------------" << std::endl;
   file << " If all tracks are contained: "                                        << std::endl;
@@ -827,14 +830,14 @@ int MainTest(const char *config){
   file << std::setw(20) << " 1 track > 10cm "   << "||";
   file << std::setw(15) << track_length_cut_ccinc;
   file << std::setw(15) << track_length_cut_ncinc;
-  file << std::setw(15) << track_length_cut_nueinc;
-  file << std::setw(15) << track_length_cut_ccinc / static_cast<double>(track_length_cut_ccinc+track_length_cut_ncinc+track_length_cut_nueinc) << std::endl;
+  file << std::setw(15) << track_length_cut_nuoth;
+  file << std::setw(15) << track_length_cut_ccinc / static_cast<double>(track_length_cut_ccinc+track_length_cut_ncinc+track_length_cut_nuoth) << std::endl;
 
   file << std::setw(20) << " Min 2 tracks "   << "||";
   file << std::setw(15) << track_length_min2_ccinc;
   file << std::setw(15) << track_length_min2_ncinc;
-  file << std::setw(15) << track_length_min2_nueinc;
-  file << std::setw(15) << track_length_min2_ccinc / static_cast<double>(track_length_min2_ccinc+track_length_min2_ncinc+track_length_min2_nueinc) << std::endl;
+  file << std::setw(15) << track_length_min2_nuoth;
+  file << std::setw(15) << track_length_min2_ccinc / static_cast<double>(track_length_min2_ccinc+track_length_min2_ncinc+track_length_min2_nuoth) << std::endl;
 
   file << "---------------------------------------------------------------------------------------------------" << std::endl;
   file << " If all tracks are contained & track cut passed: "                     << std::endl;
@@ -843,23 +846,23 @@ int MainTest(const char *config){
   file << std::setw(20) << " Diff "   << "||";
   file << std::setw(15) << track_length_diff_cut_ccinc;
   file << std::setw(15) << track_length_diff_cut_ncinc;
-  file << std::setw(15) << track_length_diff_cut_nueinc;
-  file << std::setw(15) << track_length_diff_cut_ccinc / static_cast<double>(track_length_diff_cut_ccinc+track_length_diff_cut_ncinc+track_length_diff_cut_nueinc) << std::endl;
+  file << std::setw(15) << track_length_diff_cut_nuoth;
+  file << std::setw(15) << track_length_diff_cut_ccinc / static_cast<double>(track_length_diff_cut_ccinc+track_length_diff_cut_ncinc+track_length_diff_cut_nuoth) << std::endl;
 
   file << std::setw(20) << " Chi2 & length "   << "||";
   file << std::setw(15) << chi2_cuts_ccinc;
   file << std::setw(15) << chi2_cuts_ncinc;
-  file << std::setw(15) << chi2_cuts_nueinc;
-  file << std::setw(15) << chi2_cuts_ccinc / static_cast<double>(chi2_cuts_ccinc+chi2_cuts_ncinc+chi2_cuts_nueinc) << std::endl;
+  file << std::setw(15) << chi2_cuts_nuoth;
+  file << std::setw(15) << chi2_cuts_ccinc / static_cast<double>(chi2_cuts_ccinc+chi2_cuts_ncinc+chi2_cuts_nuoth) << std::endl;
 
   file << "===================================================================================================" << std::endl;
 
   double potScale = totPOT / static_cast<double>(pot);
   std::cout << " Total POT: " << totPOT << ", constructed with: " << pot << " POT --> scale = " << potScale << std::endl;
   
-  double total_escaping = one_escaping_ccinc+one_escaping_ncinc+one_escaping_nueinc;
-  double total_diff_cut = track_length_diff_cut_ccinc+track_length_diff_cut_ncinc+track_length_diff_cut_nueinc;
-  double total_chi2     = chi2_cuts_ccinc+chi2_cuts_ncinc+chi2_cuts_nueinc;
+  double total_escaping = one_escaping_ccinc+one_escaping_ncinc+one_escaping_nuoth;
+  double total_diff_cut = track_length_diff_cut_ccinc+track_length_diff_cut_ncinc+track_length_diff_cut_nuoth;
+  double total_chi2     = chi2_cuts_ccinc+chi2_cuts_ncinc+chi2_cuts_nuoth;
 
   ofstream fileTeX;
   fileTeX.open(stats_location+"preselection_cut_rates.tex");
@@ -869,15 +872,15 @@ int MainTest(const char *config){
   fileTeX << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
   fileTeX << "  \\begin{tabular}{ m{3.1cm} * {2}{ >{\\centering\\arraybackslash}m{1.6cm} } *{1}{ >{\\centering\\arraybackslash}m{1.3cm} } * {2}{ >{\\centering\\arraybackslash}m{2.7cm} } }" << endl;
   fileTeX << "    \\hline" << endl;
-  fileTeX << "    True topology~$\\rightarrow$ & \\multirow{2}{*}{$\\nu_{\\mu}$~CC} & \\multirow{2}{*}{$\\nu_{\\mu}$~NC} & \\multirow{2}{*}{$\\nu_{e}$~Inc.} & \\multirow{2}{*}{$\\nu_{\\mu}$~CC~Pur.} & \\multirow{2}{*}{$\\nu_{\\mu}$~CC~Eff.} \\\\" << std::endl; 
+  fileTeX << "    True topology~$\\rightarrow$ & \\multirow{2}{*}{$\\nu_{\\mu}$~CC} & \\multirow{2}{*}{$\\nu_{\\mu}$~NC} & \\multirow{2}{*}{$\\nu,\\bar{\\nu}$~Other} & \\multirow{2}{*}{$\\nu_{\\mu}$~CC~Pur.} & \\multirow{2}{*}{$\\nu_{\\mu}$~CC~Eff.} \\\\" << std::endl; 
   fileTeX << "    $\\downarrow$~Cut applied & & & \\\\" << std::endl;
   fileTeX << "    \\hline" << endl;
 
   fileTeX << "    Total & ";
   fileTeX << "    \\num{ " << static_cast<int>(total_fiducial_cuts_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(total_fiducial_cuts_ncinc*potScale) << "} & ";
-  fileTeX << "    \\num{ " << static_cast<int>(total_fiducial_cuts_nueinc*potScale) << "} & ";
-  fileTeX << std::fixed << std::setprecision(2) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nueinc)*100 <<  "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(total_fiducial_cuts_ccinc,total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nueinc)*100 << "~\\% & ";
+  fileTeX << "    \\num{ " << static_cast<int>(total_fiducial_cuts_nuoth*potScale) << "} & ";
+  fileTeX << std::fixed << std::setprecision(2) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nuoth)*100 <<  "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(total_fiducial_cuts_ccinc,total_fiducial_cuts_ccinc+total_fiducial_cuts_ncinc+total_fiducial_cuts_nuoth)*100 << "~\\% & ";
   fileTeX << std::fixed << std::setprecision(2) << total_fiducial_cuts_ccinc / static_cast<double>(total_fiducial_cuts_ccinc)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(total_fiducial_cuts_ccinc,total_fiducial_cuts_ccinc)*100 <<"~\\% \\\\ " << std::endl;
   
   fileTeX << "    \\hdashline" << endl;
@@ -885,7 +888,7 @@ int MainTest(const char *config){
   fileTeX << "    One escapes & ";
   fileTeX << "    \\num{ " << static_cast<int>(one_escaping_ccinc*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>(one_escaping_ncinc*potScale) << "} & ";
-  fileTeX << "    \\num{ " << static_cast<int>(one_escaping_nueinc*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>(one_escaping_nuoth*potScale) << "} & ";
   fileTeX << std::fixed << std::setprecision(2) << one_escaping_ccinc / static_cast<double>(total_escaping)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(one_escaping_ccinc,total_escaping)*100 <<"~\\% & ";
   fileTeX << std::fixed << std::setprecision(2) << one_escaping_ccinc / static_cast<double>(total_fiducial_cuts_ccinc)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(one_escaping_ccinc,total_fiducial_cuts_ccinc)*100 <<"~\\% \\\\ ";
   fileTeX << std::endl;
@@ -893,7 +896,7 @@ int MainTest(const char *config){
   fileTeX << "    + $\\Delta L / L_{\\text{longest}}$ & ";
   fileTeX << "    \\num{ " << static_cast<int>((track_length_diff_cut_ccinc+one_escaping_ccinc)*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>((track_length_diff_cut_ncinc+one_escaping_ncinc)*potScale) << "} & ";
-  fileTeX << "    \\num{ " << static_cast<int>((track_length_diff_cut_nueinc+one_escaping_nueinc)*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>((track_length_diff_cut_nuoth+one_escaping_nuoth)*potScale) << "} & ";
   fileTeX << std::fixed << std::setprecision(2) << (track_length_diff_cut_ccinc+one_escaping_ccinc) / static_cast<double>(total_escaping+total_diff_cut)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(track_length_diff_cut_ccinc+one_escaping_ccinc,total_escaping+total_diff_cut)*100 <<"~\\% & ";
   fileTeX << std::fixed << std::setprecision(2) << (track_length_diff_cut_ccinc+one_escaping_ccinc) / static_cast<double>(total_fiducial_cuts_ccinc)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(track_length_diff_cut_ccinc+one_escaping_ccinc,total_fiducial_cuts_ccinc)*100 <<"~\\% \\\\ ";
   fileTeX << std::endl;
@@ -901,7 +904,7 @@ int MainTest(const char *config){
   fileTeX << "    + $\\chi^{2}$ \\& length & ";
   fileTeX << "    \\num{ " << static_cast<int>((chi2_cuts_ccinc+track_length_diff_cut_ccinc+one_escaping_ccinc)*potScale) << "} & ";
   fileTeX << "    \\num{ " << static_cast<int>((chi2_cuts_ncinc+track_length_diff_cut_ncinc+one_escaping_ncinc)*potScale) << "} & ";
-  fileTeX << "    \\num{ " << static_cast<int>((chi2_cuts_nueinc+track_length_diff_cut_nueinc+one_escaping_nueinc)*potScale) << "} & ";
+  fileTeX << "    \\num{ " << static_cast<int>((chi2_cuts_nuoth+track_length_diff_cut_nuoth+one_escaping_nuoth)*potScale) << "} & ";
   fileTeX << std::fixed << std::setprecision(2) << (chi2_cuts_ccinc+track_length_diff_cut_ccinc+one_escaping_ccinc) / static_cast<double>(total_escaping+total_diff_cut+total_chi2)*100 << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(chi2_cuts_ccinc+track_length_diff_cut_ccinc+one_escaping_ccinc,total_escaping+total_diff_cut+total_chi2)*100 << "~\\% & ";
   fileTeX << std::fixed << std::setprecision(2) << (chi2_cuts_ccinc+track_length_diff_cut_ccinc+one_escaping_ccinc) / static_cast<double>(total_fiducial_cuts_ccinc)*100  << "~$\\pm$~" << std::fixed << std::setprecision(2) << GeneralAnalysisHelper::RatioUncertainty(chi2_cuts_ccinc+track_length_diff_cut_ccinc+one_escaping_ccinc,total_fiducial_cuts_ccinc)*100 << "~\\% \\\\ ";
   fileTeX << std::endl;
