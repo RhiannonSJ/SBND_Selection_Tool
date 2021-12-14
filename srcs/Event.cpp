@@ -38,8 +38,18 @@ namespace selection{
   //------------------------------------------------------------------------------------------ 
     
   unsigned int Event::CountMCParticlesWithPdg(const int pdg) const{
- 
-    return this->CountParticlesWithPdg(pdg, m_mc_particles);
+
+    ParticleList trueList;
+    for(const Particle & p : m_mc_particles){
+      if(p.GetPdgCode() == 2212) {// Make sure the proton energy is realistic for reconstruction
+        if(p.GetKineticEnergy() > 0.021) 
+          trueList.push_back(p);
+      }
+      else{
+        trueList.push_back(p);
+      }
+    }
+    return this->CountParticlesWithPdg(pdg, trueList);
 
   }
 
@@ -318,10 +328,7 @@ namespace selection{
     unsigned int particle_counter = 0;
     for(unsigned int i = 0; i < particle_list.size(); ++i) {
       if(particle_list[i].GetPdgCode() == pdg && particle_list[i].GetNumberOfHits() >= 5) {
-        if(pdg == 2212) {// Make sure the proton energy is realistic for reconstruction
-          if(particle_list[i].GetKineticEnergy() > 0.021) particle_counter++;
-        }
-        else particle_counter++;
+       particle_counter++;
       }
     }
     return particle_counter;
