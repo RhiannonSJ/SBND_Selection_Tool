@@ -102,6 +102,16 @@ namespace selection{
        */
       static unsigned int CountMatchedParticles(const Event &e, const ParticleList &particle_list, const int pdg);
 
+      /**
+       * @brief  get the list of MCIds which have been double counted in the truth matching
+       *
+       * @param  event
+       *
+       * @return list of double-counted MC IDs
+       *
+       */
+      static std::vector<int> GetBadIDList(const Event &e);
+
     public : 
 
       typedef std::vector<Particle> ParticleList;
@@ -111,6 +121,16 @@ namespace selection{
        * @brief  Get NuMu topology map
        */
       static TopologyMap GetNuMuTopologyMap();
+
+      /**
+       * @brief  Get NuMuBar topology map
+       */
+      static TopologyMap GetNuMuBarTopologyMap();
+
+      /**
+       * @brief  Get Numu NC topology map
+       */
+      static TopologyMap GetNuMuNCTopologyMap();
 
       /**
        * @brief  Get NC topology map
@@ -612,10 +632,11 @@ namespace selection{
        * @param  event
        * @param  true pdg code of particle
        * @param  reconstructed pdg code of particle
+       * @param  truth whether we are counting for the numerator of the efficiency
        *
        * @return number of mis-matched particles for given pdg codes
        */
-      static unsigned int CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg);
+      static unsigned int CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg, const bool &truth);
       
       /**
        * @brief  for all events, count all matched particles by topology and fill file
@@ -625,9 +646,10 @@ namespace selection{
        * @param  topology name
        * @param  file to append
        * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex);
+      static void FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all mismatched particles by topology and fill file
@@ -637,9 +659,10 @@ namespace selection{
        * @param  topology name
        * @param  file to append
        * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex);
+      static void FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all matched particles and fill file
@@ -647,9 +670,10 @@ namespace selection{
        * @param  event list
        * @param  file name
        * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex);
+      static void FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  for all events, count all mismatched particles and fill file
@@ -657,9 +681,10 @@ namespace selection{
        * @param  event list
        * @param  file name
        * @param  isTex whether we're writing to a tex file (true) or a plain text file (false)
+       * @param  detector enumeration
        *
        */
-      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex);
+      static void FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector);
 
       /**
        * @brief  find out if a reconstructed particle has a matching truth particle
