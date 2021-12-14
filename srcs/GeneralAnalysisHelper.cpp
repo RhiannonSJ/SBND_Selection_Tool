@@ -4,9 +4,21 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNuMuTopologyMap() {
-    TopologyMap signal_map_numu;
-    signal_map_numu.insert(TopologyMap::value_type({14},0));
-    return signal_map_numu;
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({14},1));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuMuBarTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({-14},1));
+    return signal_map;
+  } 
+  //----------------------------------------------------------------------------------------
+  TopologyMap GeneralAnalysisHelper::GetNuMuNCTopologyMap() {
+    TopologyMap signal_map;
+    signal_map.insert(TopologyMap::value_type({13},0));
+    return signal_map;
   } 
   //----------------------------------------------------------------------------------------
   TopologyMap GeneralAnalysisHelper::GetNCTopologyMap() {
@@ -542,7 +554,7 @@ namespace selection{
 
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
     if(e.IsTrueFiducial() && e.CheckRecoTopology(topology)){
-      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
+      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg, false);
     }
     return 0;
   }
@@ -551,14 +563,65 @@ namespace selection{
   
   unsigned int GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySignal(const Event &e, const TopologyMap &topology, const int true_pdg, const int reco_pdg){
     if(e.CheckRecoTopology(topology) && e.CheckMCTopology(topology) && e.IsTrueFiducial()){
-      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg);
+      return GeneralAnalysisHelper::CountMisMatchedParticles(e, true_pdg, reco_pdg, false);
     }
     return 0;
   }
   
   //----------------------------------------------------------------------------------------
+ 
+  std::vector<int> GeneralAnalysisHelper::GetBadIDList(const Event &e){
+    // Get the particle list
+    ParticleList particles = e.GetRecoParticleList();
+
+    // To be fair to ourselves, only count it as 'double counting' if the thing was reconstructable in the first place
+    std::vector<int> usedIDs, badIDs;
+    for(const Particle &p : particles){
+      if(p.GetFromRecoTrack() && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
+        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == 2212){
+            if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetKineticEnergy() > 0.021){
+              if(usedIDs.size() == 0){
+                usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+              }
+              else{
+                bool alreadyCounted = false;
+                for(const int &id: usedIDs){
+                  if(id == GeneralAnalysisHelper::GetBestMCParticle(e, p).ID()){
+                    alreadyCounted = true;
+                    badIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+                  }
+                }
+                if(!alreadyCounted)
+                  usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+              }
+            }
+          }
+          else{
+            if(usedIDs.size() == 0){
+              usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+            }
+            else{
+              bool alreadyCounted = false;
+              for(const int &id: usedIDs){
+                if(id == GeneralAnalysisHelper::GetBestMCParticle(e, p).ID()){
+                  alreadyCounted = true;
+                  badIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+                }
+              }
+              if(!alreadyCounted)
+                usedIDs.push_back(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID());
+            }
+          }
+        }
+      }
+    }
+    return badIDs;
+  }
   
-  unsigned int GeneralAnalysisHelper::CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg){
+  //----------------------------------------------------------------------------------------
+ 
+  unsigned int GeneralAnalysisHelper::CountMisMatchedParticles(const Event &e, const int true_pdg, const int reco_pdg, const bool &truth){
     /*
      * Loop over given event's reconstructed particle list, if the current particle 
      * misidentification corresponds to 
@@ -567,11 +630,56 @@ namespace selection{
     * add to mismatched_particles counter
     *
     */
+
+    // Important quantities
     unsigned int mismatched_particles = 0;
     ParticleList particles = e.GetRecoParticleList();
+    std::vector<int> badIDs = GetBadIDList(e);
+    
+    // Now that we know what we are working with, count everything
     for(const Particle &p : particles){
       if(p.GetPdgCode() == reco_pdg && GeneralAnalysisHelper::ParticleHasAMatch(e, p) >= 0){
-        if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5) mismatched_particles++;
+        // If we are looking for the specified true_pdg, proceed as normal, otherwise count anything other than pions, protons and muons
+        if(true_pdg != -999){
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() == true_pdg && GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+
+            // If we are counting for the numerator of the efficiency, skip any double-counted truth-level information
+            if(truth){
+              // Skip the counting if we have defined this true particle as 'bad'
+              bool isBad = false;
+              for(const int &id: badIDs){
+                if(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID() == id)
+                  isBad = true;
+              }
+              if(isBad) continue;
+            }
+
+            mismatched_particles++;
+          }
+        }
+        else{
+          // Check that the true pdg is NOT a muon, proton or pion
+          if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 211 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != -211 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 2212 &&
+             GeneralAnalysisHelper::GetBestMCParticle(e, p).GetPdgCode() != 13){
+
+            if(GeneralAnalysisHelper::GetBestMCParticle(e, p).GetNumberOfHits() >= 5 && p.GetNumberOfHits() >= 5){
+
+              // If we are counting for the numerator of the efficiency, skip any double-counted truth-level information
+              if(truth){
+                // Skip the counting if we have defined this true particle as 'bad'
+                bool isBad = false;
+                for(const int &id: badIDs){
+                  if(GeneralAnalysisHelper::GetBestMCParticle(e, p).ID() == id)
+                    isBad = true;
+                }
+                if(isBad) continue;
+              }
+              mismatched_particles++;
+            }
+          }
+        }
       }
     }
     return mismatched_particles;
@@ -579,7 +687,7 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector){
 
     // Counters for each particle type
     unsigned int mc_selected_muons     = 0;
@@ -603,7 +711,14 @@ namespace selection{
 
     for(const Event &e : ev_list){
       
-      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+      //if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
 
       mc_selected_muons     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 13);
       mc_selected_pions     += GeneralAnalysisHelper::CountMCParticlesByTopologySelected(e, topology, 211);
@@ -747,7 +862,7 @@ namespace selection{
   
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex){
+  void GeneralAnalysisHelper::FillTopologyBasedParticleMisIdStatisticsFile(const EventList &ev_list, const TopologyMap &topology, const std::string &topology_name, std::ofstream &os, const bool isTex, const int detector){
   
     /* 
      * Counters for particle type and mis-identified counterpart
@@ -778,8 +893,15 @@ namespace selection{
     unsigned int selected_proton_pion = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+     
       selected_muon        += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 13, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, 211, 13);
       selected_muon_pion   += GeneralAnalysisHelper::CountMisMatchedParticlesByTopologySelected(e, topology, -211, 13);
@@ -866,7 +988,7 @@ namespace selection{
       os << "\\begin{table}[h!] " << std::endl;
       os << "  \\centering " << std::endl;
       os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
-      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{3cm} } }" << endl;
       os << "    \\hline" << endl;
       os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
       os << "    $\\downarrow$ True &&& \\\\" << std::endl;
@@ -915,7 +1037,7 @@ namespace selection{
 
   //----------------------------------------------------------------------------------------
   
-  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex){
+  void GeneralAnalysisHelper::FillGeneralParticleStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector){
    
     unsigned int mc_muons           = 0;
     unsigned int mc_protons         = 0;
@@ -930,7 +1052,16 @@ namespace selection{
     unsigned int charged_pions      = 0;
     
     for(const Event &e : ev_list){
-      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
+     
+      //if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
       
       mc_muons           += e.CountMCParticlesWithPdg(13);
       mc_charged_pions   += e.CountMCParticlesWithPdg(211);
@@ -1027,7 +1158,7 @@ namespace selection{
   
   //----------------------------------------------------------------------------------------
 
-  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex){
+  void GeneralAnalysisHelper::FillGeneralParticleMisIdStatisticsFile(const EventList &ev_list, std::ofstream &os, const bool isTex, const int detector){
     /* 
      * Counters for particle type and mis-identified counterpart
      *    left particle:  reconstructed
@@ -1036,52 +1167,76 @@ namespace selection{
      * e.g. muon_charged_pion = charged pion has been misidentified as a muon
      *
      */
-    unsigned int muon        = 0;
-    unsigned int muon_pion   = 0;
-    unsigned int muon_proton = 0;
-    unsigned int pion        = 0;
-    unsigned int pion_muon   = 0;
-    unsigned int pion_proton = 0;
-    unsigned int proton      = 0;
-    unsigned int proton_muon = 0;
-    unsigned int proton_pion = 0;
-    unsigned int true_muon   = 0;
-    unsigned int true_pion   = 0;
-    unsigned int true_proton = 0;
-    unsigned int sel_muon    = 0;
-    unsigned int sel_pion    = 0;
-    unsigned int sel_proton  = 0;
+    unsigned int muon         = 0;
+    unsigned int muon_pion    = 0;
+    unsigned int muon_proton  = 0;
+    unsigned int pion         = 0;
+    unsigned int pion_muon    = 0;
+    unsigned int pion_proton  = 0;
+    unsigned int proton       = 0;
+    unsigned int proton_muon  = 0;
+    unsigned int proton_pion  = 0;
+    unsigned int true_muon    = 0;
+    unsigned int true_pion    = 0;
+    unsigned int true_proton  = 0;
+    unsigned int sig_muon     = 0;
+    unsigned int sig_pion     = 0;
+    unsigned int sig_proton   = 0;
+    unsigned int sel_muon     = 0;
+    unsigned int sel_pion     = 0;
+    unsigned int sel_proton   = 0;
+    unsigned int muon_other   = 0;
+    unsigned int pion_other   = 0;
+    unsigned int proton_other = 0;
 
     for(const Event &e : ev_list){
-      if(!e.IsTrueFiducial() || GeneralAnalysisHelper::NumberEscapingTracks(e) > 1) continue;
+      
+      bool cc_inclusive_passed = PassedCCInclusive(e,detector);
+
+      if(!e.IsRecoFiducial() || 
+         !e.IsTrueFiducial() || 
+         !GeneralAnalysisHelper::MaxOneLongEscapingTrack(e) || 
+         !GeneralAnalysisHelper::MinOneRecoTrack(e) ||
+         !cc_inclusive_passed) continue;
 
       true_muon  += e.CountMCParticlesWithPdg(13);
       true_pion  += e.CountMCParticlesWithPdg(211);
       true_pion  += e.CountMCParticlesWithPdg(-211);
       true_proton+= e.CountMCParticlesWithPdg(2212);
       
-      sel_muon  += e.CountRecoParticlesWithPdg(13);
-      sel_pion  += e.CountRecoParticlesWithPdg(211);
-      sel_pion  += e.CountRecoParticlesWithPdg(-211);
-      sel_proton+= e.CountRecoParticlesWithPdg(2212);
+      muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13, false);
+      sig_muon      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13, true);
+      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13, false);
+      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13, false);
+      muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 13, false);
+      muon_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 13, false);
 
-      muon          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 13);
-      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 13);
-      muon_pion     += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 13);
-      muon_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 13);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, -211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, -211, false);
+      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211, false);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, -211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, -211, true);
+      sig_pion      += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211, true);
+      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 211, false);
+      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, -211, false);
+      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 211, false);
+      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, -211, false);
+      pion_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 211, false);
+      pion_other    += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, -211, false);
 
-      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 211);
-      pion          += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 211);
-      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 211);
-      pion_muon     += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, -211);
-      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 211);
-      pion_proton   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, -211);
-
-      proton        += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212);
-      proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 2212);
-      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 2212);
-      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 2212);
+      proton        += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212, false);
+      sig_proton    += GeneralAnalysisHelper::CountMisMatchedParticles(e, 2212, 2212, true);
+      proton_muon   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 13, 2212, false);
+      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, 211, 2212, false);
+      proton_pion   += GeneralAnalysisHelper::CountMisMatchedParticles(e, -211, 2212, false);
+      proton_other  += GeneralAnalysisHelper::CountMisMatchedParticles(e, -999, 2212, false);
     }
+
+    sel_muon   = muon+muon_pion+muon_proton+muon_other;
+    sel_pion   = pion+pion_muon+pion_proton+pion_other;
+    sel_proton = proton+proton_pion+proton_muon+proton_other;
 
     if(!isTex){
       os << "-------------------------------------------------------------------------------------"    << std::endl;
@@ -1104,6 +1259,11 @@ namespace selection{
       os << std::setw(16) << pion_proton;
       os << std::setw(16) << proton;
       os << std::endl;
+      os << std::setw(35) << "Other";
+      os << std::setw(16) << muon_other;
+      os << std::setw(16) << pion_other;
+      os << std::setw(16) << proton_other;
+      os << std::endl;
       os << "-------------------------------------------------------------------------------------"    << std::endl;
     }
     else{
@@ -1111,7 +1271,7 @@ namespace selection{
       os << "\\begin{table}[h!] " << std::endl;
       os << "  \\centering " << std::endl;
       os << "  \\renewcommand{\\arraystretch}{1.4}" << std::endl;
-      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{2.5cm} } }" << endl;
+      os << "  \\begin{tabular}{ * {4}{ >{\\centering\\arraybackslash}m{3cm} } }" << endl;
       os << "    \\hline" << endl;
       os << "    Reco $\\rightarrow$ & \\multirow{2}{*}{$\\mu^{-}$} & \\multirow{2}{*}{$\\pi^{\\pm}$} & \\multirow{2}{*}{Proton} \\\\" << std::endl;
       os << "    $\\downarrow$ True &&& \\\\" << std::endl;
@@ -1131,11 +1291,16 @@ namespace selection{
       os << " & \\num{" << pion_proton << "}";
       os << " & \\num{" << proton << "}";
       os << " \\\\" << std::endl;
+      os << "Other";
+      os << " & \\num{" << muon_other << "}";
+      os << " & \\num{" << pion_other << "}";
+      os << " & \\num{" << proton_other << "}";
+      os << " \\\\" << std::endl;
       os << "    \\hdashline" << endl;
       os << "Efficiency";
-      os << " & " << std::fixed << std::setprecision(2) << 100*(muon/static_cast<double>(true_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(muon,true_muon) << " \\%";
-      os << " & " << std::fixed << std::setprecision(2) << 100*(pion/static_cast<double>(true_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(pion,true_pion) << " \\%";
-      os << " & " << std::fixed << std::setprecision(2) << 100*(proton/static_cast<double>(true_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(proton,true_proton) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_muon/static_cast<double>(true_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_muon,true_muon) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_pion/static_cast<double>(true_pion)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_pion,true_pion) << " \\%";
+      os << " & " << std::fixed << std::setprecision(2) << 100*(sig_proton/static_cast<double>(true_proton)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(sig_proton,true_proton) << " \\%";
       os << " \\\\" << std::endl;
       os << "Purity";
       os << " & " << std::fixed << std::setprecision(2) << 100*(muon/static_cast<double>(sel_muon)) << "~$\\pm$~" << std::fixed << std::setprecision(2) << 100*RatioUncertainty(muon,sel_muon) << " \\%";
@@ -1318,7 +1483,7 @@ namespace selection{
   //----------------------------------------------------------------------------------------
 
   double GeneralAnalysisHelper::RatioUncertainty(const double &num, const double &den){
-    // Bayesian uncertainty calculation from here:
+    // Bayesian uncertainty calculation from here: https://indico.cern.ch/event/66256/contributions/2071577/attachments/1017176/1447814/EfficiencyErrors.pdf
     // Instead use Bayesean Approach from: https://cds.cern.ch/record/1010669/files/0701199.pdf?version=1
     double VarA = ((num+1)*(num+2))/static_cast<double>((den+2)*(den+3));
     double VarB = TMath::Power(num+1,2)/static_cast<double>(TMath::Power(den+2,2));
