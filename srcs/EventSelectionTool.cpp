@@ -294,8 +294,8 @@ namespace selection{
     TBranch *b_range_mom_muon   = track_tree->GetBranch("tr_range_mom_muon");
     TBranch *b_range_mom_proton = track_tree->GetBranch("tr_range_mom_proton");
     TBranch *b_size             = track_tree->GetBranch("tr_dedx_size");      
-    TBranch *b_residual_range;
-    TBranch *b_dedx; 
+    TBranch *b_residual_range   = nullptr;
+    TBranch *b_dedx             = nullptr; 
 
     if(!runEverything){
       // Do not process the following branches
@@ -305,7 +305,7 @@ namespace selection{
     else{
       b_residual_range = track_tree->GetBranch("tr_residual_range"); 
       b_dedx           = track_tree->GetBranch("tr_dedx");
-    }
+    } 
     
     unsigned int n_entries = track_tree->GetEntries();
 

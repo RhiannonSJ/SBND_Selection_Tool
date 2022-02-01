@@ -87,6 +87,7 @@ int MainTest(const char *config){
     
     // Now loop over the events
     for(const Event &e : events){
+      std::cout << " Running event: " << e.GetId() << std::endl;
     }
   }
   std::cout << "-----------------------------------------------------------" << std::endl;
